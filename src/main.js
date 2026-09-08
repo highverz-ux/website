@@ -80,7 +80,7 @@ function boot() {
   if (document.querySelectorAll('.ig-reel-card').length > 0) {
     initInstagramReelsPlayer();
   } else if (!isDedicatedPage) {
-    const skipIntro = window.location.search.includes('no-intro');
+    const skipIntro = window.location.search.includes('no-intro') || sessionStorage.getItem('highverzIntroPlayed');
     if (skipIntro) {
       const introEl = document.getElementById('highverz-intro');
       if (introEl) introEl.remove();
@@ -88,6 +88,7 @@ function boot() {
       initHeroIntro();
     } else {
       // Home page entrance / refresh: play minimal premium Highverz intro
+      sessionStorage.setItem('highverzIntroPlayed', 'true');
       if (lenis) lenis.stop();
       initHighverzIntro({
         onComplete: () => {
@@ -317,8 +318,9 @@ function initCustomCursor() {
 
     // Content Hover targets with custom labels
     const hoverTargets = document.querySelectorAll('[data-cursor], a, button, .portfolio-vertical-card, .creator-card');
-    hoverTargets.forEach((el) => {
+    hoverTargets.forEach(el => {
       el.addEventListener('mouseenter', () => {
+        if (el.closest('#navbar') && !el.classList.contains('btn-nav-talk')) return;
         isHovering = true;
         const text = el.getAttribute('data-cursor') || (el.tagName === 'BUTTON' || el.tagName === 'A' ? 'CLICK ↗' : 'VIEW ↗');
         if (cursorText) cursorText.textContent = text;
@@ -327,7 +329,9 @@ function initCustomCursor() {
       });
 
       el.addEventListener('mouseleave', () => {
+        if (el.closest('#navbar') && !el.classList.contains('btn-nav-talk')) return;
         isHovering = false;
+        if (cursorText) cursorText.textContent = '';
         if (cursorRing) cursorRing.classList.remove('is-hovering');
         if (cursorDot) cursorDot.classList.remove('is-hidden');
       });

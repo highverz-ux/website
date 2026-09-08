@@ -65,6 +65,8 @@ export function initHV3D(canvasId, containerId) {
   // existing proportions, pedestal alignment, and full rotation range.
   modelStage.scale.setScalar(1.12);
   modelStage.rotation.y = -0.28;
+  let autoRotationY = modelStage.rotation.y;
+  let dragYaw = 0;
   scene.add(world);
 
   const environment = new THREE.Group();
@@ -332,9 +334,27 @@ export function initHV3D(canvasId, containerId) {
   const currentCursorLight = new THREE.Vector3(-2, 2, 3);
   const heroRegion = container.closest('.hero-section') || container;
   let lastPointerTime = -Infinity;
+  const CLICK_DISTANCE = 5;
+  const DRAG_SENSITIVITY = 0.01;
+  const MOMENTUM_DECAY = 0.94;
+  const MOMENTUM_EPSILON = 0.00008;
+  let isPlaying = true;
+  let momentumActive = false;
+  let returningToAuto = false;
+  let resumeAfterMomentum = true;
+  const dragRotation = new THREE.Vector2();
+  const momentum = new THREE.Vector2();
+  const interaction = {
+    pointerId: null,
+    isDown: false,
+    isDragging: false,
+    startX: 0,
+    startY: 0,
+    lastX: 0,
+    lastY: 0,
+  };
   const onPointerMove = (event) => {
     if (reducedMotion || event.pointerType === 'touch') return;
-    if (rotationPaused) rotationPaused = false;
     const bounds = heroRegion.getBoundingClientRect();
     if (event.clientY < bounds.top || event.clientY > bounds.bottom) { resetPointer(); return; }
     pointer.set(THREE.MathUtils.clamp((event.clientX - bounds.left) / bounds.width * 2 - 1, -1, 1), THREE.MathUtils.clamp((event.clientY - bounds.top) / bounds.height * 2 - 1, -1, 1));
@@ -345,9 +365,75 @@ export function initHV3D(canvasId, containerId) {
     lastPointerTime = performance.now();
   };
   window.addEventListener('pointermove', onPointerMove, { passive: true });
-  let rotationPaused = false;
-  const toggleRotation = () => { rotationPaused = !rotationPaused; };
-  canvas.addEventListener('click', toggleRotation);
+  const toggleRotation = () => {
+    isPlaying = !isPlaying;
+    // A click pauses immediately, including any momentum already in flight.
+    if (!isPlaying) {
+      momentum.set(0, 0);
+      momentumActive = false;
+      returningToAuto = false;
+    }
+  };
+  const onCanvasPointerDown = (event) => {
+    if (event.pointerType === 'touch' || event.button !== 0) return;
+    interaction.pointerId = event.pointerId;
+    interaction.isDown = true;
+    interaction.isDragging = false;
+    interaction.startX = interaction.lastX = event.clientX;
+    interaction.startY = interaction.lastY = event.clientY;
+    momentum.set(0, 0);
+    momentumActive = false;
+    returningToAuto = false;
+    resumeAfterMomentum = isPlaying;
+    canvas.setPointerCapture?.(event.pointerId);
+    event.preventDefault();
+  };
+  const onCanvasPointerMove = (event) => {
+    if (!interaction.isDown || event.pointerId !== interaction.pointerId) return;
+    const totalDistance = Math.hypot(event.clientX - interaction.startX, event.clientY - interaction.startY);
+    if (!interaction.isDragging && totalDistance > CLICK_DISTANCE) {
+      interaction.isDragging = true;
+      isPlaying = false;
+      momentumActive = false;
+    }
+    if (!interaction.isDragging) return;
+    const dx = event.clientX - interaction.lastX;
+    const dy = event.clientY - interaction.lastY;
+    const rotationX = dy * DRAG_SENSITIVITY;
+    const rotationY = dx * DRAG_SENSITIVITY;
+    dragYaw += rotationY;
+    dragRotation.x += rotationX;
+    momentum.set(rotationY, rotationX);
+    interaction.lastX = event.clientX;
+    interaction.lastY = event.clientY;
+    event.preventDefault();
+  };
+  const finishCanvasPointer = (event) => {
+    if (!interaction.isDown || event.pointerId !== interaction.pointerId) return;
+    const wasDragging = interaction.isDragging;
+    interaction.isDown = false;
+    interaction.isDragging = false;
+    interaction.pointerId = null;
+    if (canvas.hasPointerCapture?.(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
+    if (wasDragging) {
+      // Keep the pre-drag play state. Momentum owns rotation until it decays.
+      resumeAfterMomentum = resumeAfterMomentum;
+      momentumActive = Math.abs(momentum.x) > MOMENTUM_EPSILON || Math.abs(momentum.y) > MOMENTUM_EPSILON;
+      if (!momentumActive) returningToAuto = true;
+    } else {
+      toggleRotation();
+    }
+  };
+  const onCanvasPointerLeave = (event) => {
+    // Pointer capture normally keeps a fast drag alive; this handles browsers
+    // that release capture when the pointer exits the canvas.
+    if (interaction.isDown && event.buttons === 0) finishCanvasPointer(event);
+  };
+  canvas.addEventListener('pointerdown', onCanvasPointerDown);
+  canvas.addEventListener('pointermove', onCanvasPointerMove);
+  canvas.addEventListener('pointerup', finishCanvasPointer);
+  canvas.addEventListener('pointercancel', finishCanvasPointer);
+  canvas.addEventListener('pointerleave', onCanvasPointerLeave);
   canvas.addEventListener('keydown', (event) => {
     if (event.key === ' ' || event.key === 'Enter') {
       event.preventDefault();
@@ -355,6 +441,9 @@ export function initHV3D(canvasId, containerId) {
     }
   });
   canvas.tabIndex = 0;
+  // Keep the normal pointer while preserving canvas drag/click interaction.
+  canvas.style.cursor = 'default';
+  canvas.style.touchAction = 'none';
   const resetPointer = () => { targetCamera.set(0, 0); targetParallax.set(0, 0); };
   document.documentElement.addEventListener('pointerleave', resetPointer);
   const onMotionChange = () => {
@@ -491,15 +580,38 @@ export function initHV3D(canvasId, containerId) {
     particles.material.opacity = current.particleOpacity;
     camera.rotation.x = currentCamera.x;
     camera.rotation.y = currentCamera.y;
+    if (momentumActive) {
+      dragYaw += momentum.x;
+      dragRotation.x += momentum.y;
+      momentum.multiplyScalar(MOMENTUM_DECAY);
+      if (Math.abs(momentum.x) < MOMENTUM_EPSILON && Math.abs(momentum.y) < MOMENTUM_EPSILON) {
+        momentum.set(0, 0);
+        momentumActive = false;
+        returningToAuto = true;
+      }
+    }
+    if (returningToAuto && !interaction.isDragging && !momentumActive) {
+      // Return the temporary drag offset smoothly before restarting the
+      // original automatic orbit, without snapping the model.
+      dragYaw = damp(dragYaw, 0, 4.5, delta);
+      dragRotation.x = damp(dragRotation.x, 0, 4.5, delta);
+      if (Math.abs(dragYaw) < MOMENTUM_EPSILON && Math.abs(dragRotation.x) < MOMENTUM_EPSILON) {
+        dragYaw = 0;
+        dragRotation.x = 0;
+        returningToAuto = false;
+        isPlaying = resumeAfterMomentum;
+      }
+    }
     // The supplied renders use a restrained three-quarter product angle rather
     // than a flat front view. Orbit the complete stage so the pedestal and logo
     // keep the same perspective while the cyan key light sweeps across them.
     // Continuous product turn: the full stage completes a smooth 360-degree
     // loop and never eases back to its starting angle.
-    if (!rotationPaused) modelStage.rotation.y += delta * 0.25;
+    if (isPlaying && !interaction.isDragging && !momentumActive && !returningToAuto) autoRotationY += delta * 0.25;
+    modelStage.rotation.y = autoRotationY + dragYaw;
     // Layer the cursor tilt and a gentle hover drift on top of the full turn.
     // These values are intentionally noticeable but remain product-like.
-    modelStage.rotation.x = -0.06 + currentParallax.y * 0.28;
+    modelStage.rotation.x = -0.06 + currentParallax.y * 0.28 + dragRotation.x;
     modelStage.rotation.z = currentParallax.x * 0.09;
     modelStage.position.set(
       Math.sin(time * 0.00065) * 0.025 + currentParallax.x * 0.025,
@@ -541,7 +653,11 @@ export function initHV3D(canvasId, containerId) {
     cancelAnimationFrame(animationFrame);
     resizeObserver.disconnect(); visibilityObserver.disconnect(); themeObserver.disconnect();
     window.removeEventListener('pointermove', onPointerMove);
-    canvas.removeEventListener('click', toggleRotation);
+    canvas.removeEventListener('pointerdown', onCanvasPointerDown);
+    canvas.removeEventListener('pointermove', onCanvasPointerMove);
+    canvas.removeEventListener('pointerup', finishCanvasPointer);
+    canvas.removeEventListener('pointercancel', finishCanvasPointer);
+    canvas.removeEventListener('pointerleave', onCanvasPointerLeave);
     window.removeEventListener('scroll', onScroll);
     document.removeEventListener('visibilitychange', resume);
     document.documentElement.removeEventListener('pointerleave', resetPointer);

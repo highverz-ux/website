@@ -5,10 +5,10 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib.js';
 
 const PALETTES = {
-  dark: { logo: 0x1a1d24, side: 0x1a1d24, platform: 0x12151b, cyan: 0x00f2fe, frame: 0x1a242c, key: 0xf0f6ff, fill: 0x0d131f },
+  dark: { logo: 0x111a22, side: 0x1a1d24, platform: 0x0e171e, platformTop: 0x29464b, cyan: 0x00e5f2, frame: 0x1a242c, key: 0xf0f6ff, fill: 0x0d131f },
   // Keep the sculpture dark enough to separate from the white studio while
   // giving its bevels a clean cyan edge highlight.
-  light: { logo: 0x27343b, side: 0x16a8b8, platform: 0x344149, cyan: 0x00a9bd, frame: 0x6b9ca2, key: 0xfafcff, fill: 0xe8eef1 },
+  light: { logo: 0x27343b, side: 0x16a8b8, platform: 0x344149, platformTop: 0x647d83, cyan: 0x00a9bd, frame: 0x6b9ca2, key: 0xfafcff, fill: 0xe8eef1 },
 };
 
 const themeName = () => document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
@@ -35,6 +35,8 @@ export function initHV3D(canvasId, containerId) {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
+  renderer.setClearColor(0x000000, 0);
+  renderer.setClearAlpha(0);
 
   // A compact studio environment gives the imported metal believable
   // reflections without adding a large HDR texture to the page.
@@ -52,9 +54,16 @@ export function initHV3D(canvasId, containerId) {
   }
   sceneEnvironment(renderer, pmremGenerator, studioEnvironment);
   const camera = new THREE.PerspectiveCamera(28, 1, 0.1, 100);
-  camera.position.set(0, 0.15, 10.5);
+  // Leave enough breathing room for the enlarged stage at its widest
+  // three-quarter angle, so the pedestal and logo never touch the canvas edge.
+  camera.position.set(0, 0.15, 12);
+  // Keep the WebGL layer transparent; page CSS owns the haze and vignette.
+  scene.background = null;
   const world = new THREE.Group();
   const modelStage = new THREE.Group();
+  // Give the complete sculpture a little more presence while preserving the
+  // existing proportions, pedestal alignment, and full rotation range.
+  modelStage.scale.setScalar(1.12);
   modelStage.rotation.y = -0.28;
   scene.add(world);
 
@@ -241,7 +250,7 @@ export function initHV3D(canvasId, containerId) {
       object.visible = true;
       object.castShadow = true;
       object.receiveShadow = true;
-      if (object.name.includes('Pedestal')) {
+      if (object.name === 'hv-base' || object.name === 'hv-base-top' || object.name.includes('Pedestal')) {
         object.visible = false;
         return;
       }
@@ -263,6 +272,7 @@ export function initHV3D(canvasId, containerId) {
     logo: new THREE.Color(),
     side: new THREE.Color(),
     platform: new THREE.Color(),
+    platformTop: new THREE.Color(),
     frame: new THREE.Color(),
     cyan: new THREE.Color(),
     key: new THREE.Color(),
@@ -276,6 +286,7 @@ export function initHV3D(canvasId, containerId) {
     logo: new THREE.Color(),
     side: new THREE.Color(),
     platform: new THREE.Color(),
+    platformTop: new THREE.Color(),
     frame: new THREE.Color(),
     cyan: new THREE.Color(),
     key: new THREE.Color(),
@@ -291,6 +302,7 @@ export function initHV3D(canvasId, containerId) {
     target.logo.setHex(palette.logo);
     target.side.setHex(palette.side);
     target.platform.setHex(palette.platform);
+    target.platformTop.setHex(palette.platformTop);
     target.frame.setHex(palette.frame);
     target.cyan.setHex(palette.cyan);
     target.key.setHex(palette.key);
@@ -301,7 +313,7 @@ export function initHV3D(canvasId, containerId) {
     target.particleOpacity = themeName() === 'dark' ? 0.12 : 0.04;
     target.cyanIntensity = themeName() === 'dark' ? 0.12 : 0.035;
     if (instant) {
-      current.logo.copy(target.logo); current.side.copy(target.side); current.platform.copy(target.platform);
+      current.logo.copy(target.logo); current.side.copy(target.side); current.platform.copy(target.platform); current.platformTop.copy(target.platformTop);
       current.frame.copy(target.frame); current.cyan.copy(target.cyan); current.key.copy(target.key); current.fill.copy(target.fill);
       current.rimIntensity = target.rimIntensity; current.frameOpacity = target.frameOpacity;
       current.particleOpacity = target.particleOpacity; current.cyanIntensity = target.cyanIntensity;
@@ -322,14 +334,27 @@ export function initHV3D(canvasId, containerId) {
   let lastPointerTime = -Infinity;
   const onPointerMove = (event) => {
     if (reducedMotion || event.pointerType === 'touch') return;
+    if (rotationPaused) rotationPaused = false;
     const bounds = heroRegion.getBoundingClientRect();
     if (event.clientY < bounds.top || event.clientY > bounds.bottom) { resetPointer(); return; }
     pointer.set(THREE.MathUtils.clamp((event.clientX - bounds.left) / bounds.width * 2 - 1, -1, 1), THREE.MathUtils.clamp((event.clientY - bounds.top) / bounds.height * 2 - 1, -1, 1));
-    targetCamera.set(pointer.y * -0.008, pointer.x * 0.012);
+    // Use a wider camera response so cursor movement feels connected to the
+    // sculpture instead of producing an almost imperceptible micro-tilt.
+    targetCamera.set(pointer.y * -0.06, pointer.x * 0.1);
     targetParallax.set(pointer.x, -pointer.y);
     lastPointerTime = performance.now();
   };
   window.addEventListener('pointermove', onPointerMove, { passive: true });
+  let rotationPaused = false;
+  const toggleRotation = () => { rotationPaused = !rotationPaused; };
+  canvas.addEventListener('click', toggleRotation);
+  canvas.addEventListener('keydown', (event) => {
+    if (event.key === ' ' || event.key === 'Enter') {
+      event.preventDefault();
+      toggleRotation();
+    }
+  });
+  canvas.tabIndex = 0;
   const resetPointer = () => { targetCamera.set(0, 0); targetParallax.set(0, 0); };
   document.documentElement.addEventListener('pointerleave', resetPointer);
   const onMotionChange = () => {
@@ -368,8 +393,14 @@ export function initHV3D(canvasId, containerId) {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, window.innerWidth <= 900 ? 1.25 : 1.75));
     renderer.setSize(Math.max(1, rect.width), Math.max(1, rect.height), false);
     camera.aspect = Math.max(1, rect.width) / Math.max(1, rect.height);
-    const visibleWidth = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.position.z * camera.aspect;
-    camera.zoom = Math.min(1, visibleWidth / 6.1);
+    const visibleHeight = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.position.z;
+    const visibleWidth = visibleHeight * camera.aspect;
+    // Fit both axes with extra room for the free cursor tilt and full turn.
+    // The margin prevents the silhouette from touching the canvas edge at
+    // narrow layouts or when the pedestal is viewed three-quarter-on.
+    const widthFit = visibleWidth / 8.2;
+    const heightFit = visibleHeight / 4.9;
+    camera.zoom = Math.min(0.96, widthFit, heightFit);
     camera.updateProjectionMatrix();
   };
   const resizeObserver = new ResizeObserver(resize);
@@ -435,11 +466,13 @@ export function initHV3D(canvasId, containerId) {
     softbox.color.copy(current.key);
     softbox.intensity = (10 + studioDay * 3) * (0.4 + introProgress * 0.6);
     keyLight.intensity = 2.8 + studioDay * 0.4 + serviceResponse.x * 0.2;
-    fillLight.intensity = 0.6 + studioDay * 0.2;
+    fillLight.intensity = 0.6 + studioDay * 0.5;
     bounceLight.intensity = 3.2 - studioDay * 1.2;
     keyLight.position.x = -4 + currentParallax.x * 0.18;
     platformMaterial.color.copy(current.platform);
-    platformTop.material.color.copy(current.platform);
+    platformTop.material.color.copy(current.platformTop);
+    logoMaterial.roughness = 0.3 + studioDay * 0.04;
+    logoMaterial.clearcoat = 0.34;
     platformMaterial.opacity = 0.72 + introProgress * 0.28;
     platformTop.material.opacity = 0.72 + introProgress * 0.28;
     contactMaterial.opacity = (0.24 + studioDay * 0.12) * introProgress;
@@ -447,8 +480,8 @@ export function initHV3D(canvasId, containerId) {
     frameMaterial.color.copy(current.frame);
     frameMaterial.emissive.copy(current.cyan);
     frameMaterial.emissiveIntensity = 0.12 * (1 - studioDay);
-    haloMaterial.color.copy(current.frame);
-    haloMaterial.opacity = (0.22 - studioDay * 0.08) + Math.sin(time * 0.00075) * 0.035;
+    haloMaterial.color.copy(current.cyan);
+    haloMaterial.opacity = (0.15 - studioDay * 0.04) + Math.sin(time * 0.00075) * 0.025;
     particles.material.color.copy(current.cyan);
     keyLight.color.copy(current.key);
     fillLight.color.copy(current.fill);
@@ -463,16 +496,23 @@ export function initHV3D(canvasId, containerId) {
     // keep the same perspective while the cyan key light sweeps across them.
     // Continuous product turn: the full stage completes a smooth 360-degree
     // loop and never eases back to its starting angle.
-    modelStage.rotation.y += delta * 0.25;
-    modelStage.rotation.x = -0.045 + currentParallax.y * 0.1;
-    modelStage.rotation.z = currentParallax.x * 0.025;
-    environment.position.set(currentParallax.x * 0.04, currentParallax.y * 0.04, 0);
-    environment.rotation.z = Math.sin(time * 0.00018) * 0.022 + currentParallax.x * 0.008;
-    platform.position.set(currentParallax.x * 0.055, currentParallax.y * 0.035, 0);
-    logo.position.x = currentParallax.x * 0.085;
-    logo.position.y = 0.25 + Math.sin(time * 0.0012) * 0.065 + currentParallax.y * 0.045 - currentScroll * 0.2 + (reducedMotion ? 0 : serviceResponse.w * 0.05);
-    logo.rotation.y = -0.08 + Math.sin(time * 0.0009) * (0.028 + (reducedMotion ? 0 : serviceResponse.z * 0.006)) + currentParallax.x * 0.05;
-    logo.rotation.x = 0.035 + Math.sin(time * 0.001) * 0.018 + currentParallax.y * 0.035;
+    if (!rotationPaused) modelStage.rotation.y += delta * 0.25;
+    // Layer the cursor tilt and a gentle hover drift on top of the full turn.
+    // These values are intentionally noticeable but remain product-like.
+    modelStage.rotation.x = -0.06 + currentParallax.y * 0.28;
+    modelStage.rotation.z = currentParallax.x * 0.09;
+    modelStage.position.set(
+      Math.sin(time * 0.00065) * 0.025 + currentParallax.x * 0.025,
+      Math.sin(time * 0.0011) * 0.045 + currentParallax.y * 0.025,
+      0,
+    );
+    environment.position.set(currentParallax.x * 0.06, currentParallax.y * 0.06, 0);
+    environment.rotation.z = Math.sin(time * 0.00018) * 0.03 + currentParallax.x * 0.014;
+    platform.position.set(currentParallax.x * 0.085, currentParallax.y * 0.06, 0);
+    logo.position.x = currentParallax.x * 0.14;
+    logo.position.y = 0.25 + Math.sin(time * 0.0012) * 0.065 + currentParallax.y * 0.08 - currentScroll * 0.2 + (reducedMotion ? 0 : serviceResponse.w * 0.05);
+    logo.rotation.y = -0.08 + Math.sin(time * 0.0009) * (0.05 + (reducedMotion ? 0 : serviceResponse.z * 0.01)) + currentParallax.x * 0.1;
+    logo.rotation.x = 0.035 + Math.sin(time * 0.001) * 0.03 + currentParallax.y * 0.07;
     const introScale = 0.965 + introProgress * 0.035;
     const scrollScale = 1 - currentScroll * 0.07;
     logo.scale.setScalar(introScale * scrollScale);
@@ -490,7 +530,9 @@ export function initHV3D(canvasId, containerId) {
     cursorLight.position.copy(currentCursorLight);
     cyanLight.intensity = (0.42 + energyPulse * (2.4 - studioDay * 1.4)) * introProgress;
     cyanLight.position.set(-2.4 + Math.min(sweepPhase / 1.5, 1) * 4.8, 0.4, 0.9);
-    if (!document.hidden && isInViewport) renderer.render(scene, camera);
+    if (!document.hidden && isInViewport) {
+      renderer.render(scene, camera);
+    }
     animationFrame = requestAnimationFrame(animate);
   };
   resume();
@@ -499,6 +541,7 @@ export function initHV3D(canvasId, containerId) {
     cancelAnimationFrame(animationFrame);
     resizeObserver.disconnect(); visibilityObserver.disconnect(); themeObserver.disconnect();
     window.removeEventListener('pointermove', onPointerMove);
+    canvas.removeEventListener('click', toggleRotation);
     window.removeEventListener('scroll', onScroll);
     document.removeEventListener('visibilitychange', resume);
     document.documentElement.removeEventListener('pointerleave', resetPointer);

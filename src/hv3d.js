@@ -6,7 +6,9 @@ import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLigh
 
 const PALETTES = {
   dark: { logo: 0x1a1d24, side: 0x1a1d24, platform: 0x12151b, cyan: 0x00f2fe, frame: 0x1a242c, key: 0xf0f6ff, fill: 0x0d131f },
-  light: { logo: 0xe0e4ec, side: 0xd0d5e0, platform: 0xeaeaea, cyan: 0x00d2ff, frame: 0x718e91, key: 0xffffff, fill: 0xdce2e8 },
+  // Keep the sculpture dark enough to separate from the white studio while
+  // giving its bevels a clean cyan edge highlight.
+  light: { logo: 0x27343b, side: 0x16a8b8, platform: 0x344149, cyan: 0x00a9bd, frame: 0x6b9ca2, key: 0xfafcff, fill: 0xe8eef1 },
 };
 
 const themeName = () => document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
@@ -52,6 +54,8 @@ export function initHV3D(canvasId, containerId) {
   const camera = new THREE.PerspectiveCamera(28, 1, 0.1, 100);
   camera.position.set(0, 0.15, 10.5);
   const world = new THREE.Group();
+  const modelStage = new THREE.Group();
+  modelStage.rotation.y = -0.28;
   scene.add(world);
 
   const environment = new THREE.Group();
@@ -67,6 +71,8 @@ export function initHV3D(canvasId, containerId) {
   frameMaterial.customProgramCacheKey = () => 'hv-reference-arc-v1';
   const frame = new THREE.Mesh(new THREE.TorusGeometry(3.22, 0.025, 10, 128), frameMaterial);
   frame.position.set(0, 0.7, -0.65);
+  // The supplied product renders use an open atmosphere without the orbital ring.
+  frame.visible = false;
   environment.add(frame);
   const haloMaterial = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.08, depthWrite: false });
   // Feather the existing disc into the page instead of showing a hard edge.
@@ -84,6 +90,7 @@ export function initHV3D(canvasId, containerId) {
   halo.position.set(0, 0.7, -0.7);
   environment.add(halo);
   world.add(environment);
+  world.add(modelStage);
 
   const platform = new THREE.Group();
   const platformMaterial = new THREE.MeshPhysicalMaterial({ metalness: 0.05, roughness: 0.85, transparent: true });
@@ -100,14 +107,25 @@ export function initHV3D(canvasId, containerId) {
   contact.rotation.x = -Math.PI / 2;
   contact.position.set(0, -0.974, 0.1);
   platform.add(contact);
-  world.add(platform);
+  modelStage.add(platform);
 
   const logo = new THREE.Group();
   logo.position.set(0, 0.25, 0.18);
   logo.rotation.set(0.035, -0.08, 0);
-  world.add(logo);
-  const logoMaterial = new THREE.MeshPhysicalMaterial({ metalness: 0.95, roughness: 0.18, clearcoat: 0.5, clearcoatRoughness: 0.1, transparent: true, opacity: 0 });
-  const logoSideMaterial = new THREE.MeshPhysicalMaterial({ metalness: 0.98, roughness: 0.22, clearcoat: 0.2, clearcoatRoughness: 0.15, transparent: true, opacity: 0 });
+  modelStage.add(logo);
+  const logoMaterial = new THREE.MeshPhysicalMaterial({ metalness: 0.95, roughness: 0.18, clearcoat: 0.5, clearcoatRoughness: 0.1, transparent: true, opacity: 1, depthWrite: true });
+  const logoSideMaterial = new THREE.MeshPhysicalMaterial({ metalness: 0.98, roughness: 0.22, clearcoat: 0.2, clearcoatRoughness: 0.15, transparent: true, opacity: 1, depthWrite: true });
+  const logoGlowMaterial = new THREE.MeshStandardMaterial({
+    color: 0x22d3ee,
+    emissive: 0x22d3ee,
+    emissiveIntensity: 2.8,
+    toneMapped: false,
+    metalness: 0.05,
+    roughness: 0.28,
+    transparent: true,
+    opacity: 1,
+    depthWrite: false,
+  });
   // Existing bevel normals select a slightly smoother finish. No vertices
   // or normals are altered; the extrusion keeps its original geometry.
   logoSideMaterial.onBeforeCompile = (shader) => {
@@ -175,7 +193,7 @@ export function initHV3D(canvasId, containerId) {
   const particles = new THREE.Points(particleGeometry, new THREE.PointsMaterial({ size: 0.018, transparent: true, opacity: 0.3, depthWrite: false }));
   particles.visible = !reducedMotion;
   particles.position.z = 0.8;
-  world.add(particles);
+  modelStage.add(particles);
 
   // These are the visible physical scene layers. Both themes share them.
   environment.visible = true;
@@ -217,8 +235,10 @@ export function initHV3D(canvasId, containerId) {
     const importedModel = gltf.scene;
     importedModel.name = 'Imported_Highverz_HV_Model';
     importedModel.position.y = -0.33;
+    importedModel.visible = true;
     importedModel.traverse((object) => {
       if (!object.isMesh) return;
+      object.visible = true;
       object.castShadow = true;
       object.receiveShadow = true;
       if (object.name.includes('Pedestal')) {
@@ -226,7 +246,10 @@ export function initHV3D(canvasId, containerId) {
         return;
       }
       const original = [object.material].flat();
-      const refined = original.map((material) => /Edges|Side/i.test(material.name) ? logoSideMaterial : logoMaterial);
+      const refined = original.map((material) => {
+        if (object.name === 'hv-glow') return logoGlowMaterial;
+        return /Edges|Side/i.test(material.name) ? logoSideMaterial : logoMaterial;
+      });
       object.material = Array.isArray(object.material) ? refined : refined[0];
       original.forEach((material) => material.dispose());
     });
@@ -273,7 +296,8 @@ export function initHV3D(canvasId, containerId) {
     target.key.setHex(palette.key);
     target.fill.setHex(palette.fill);
     target.rimIntensity = themeName() === 'dark' ? 9 : 4;
-    target.frameOpacity = themeName() === 'dark' ? 0.72 : 0.48;
+    // Keep the orbital structure atmospheric so the sculpture remains the hero.
+    target.frameOpacity = themeName() === 'dark' ? 0.28 : 0.18;
     target.particleOpacity = themeName() === 'dark' ? 0.12 : 0.04;
     target.cyanIntensity = themeName() === 'dark' ? 0.12 : 0.035;
     if (instant) {
@@ -395,10 +419,16 @@ export function initHV3D(canvasId, containerId) {
     }
     logoMaterial.color.copy(current.logo);
     logoMaterial.emissive.copy(current.cyan);
-    logoMaterial.emissiveIntensity = 0;
+    logoMaterial.emissiveIntensity = 0.04;
     logoMaterial.opacity = introProgress;
     logoSideMaterial.opacity = introProgress;
+    logoGlowMaterial.opacity = introProgress;
     logoSideMaterial.color.copy(current.side);
+    logoGlowMaterial.color.copy(current.cyan);
+    logoGlowMaterial.emissive.copy(current.cyan);
+    logoGlowMaterial.emissiveIntensity = 2.8;
+    logoSideMaterial.emissive.copy(current.cyan);
+    logoSideMaterial.emissiveIntensity = 0.28;
     const studioDay = THREE.MathUtils.clamp((current.platform.r - nightPlatform) / (dayPlatform - nightPlatform), 0, 1);
     logoMaterial.envMapIntensity = 1.15 + studioDay * 0.7;
     logoSideMaterial.envMapIntensity = 1.5 + studioDay * 0.5;
@@ -413,12 +443,12 @@ export function initHV3D(canvasId, containerId) {
     platformMaterial.opacity = 0.72 + introProgress * 0.28;
     platformTop.material.opacity = 0.72 + introProgress * 0.28;
     contactMaterial.opacity = (0.24 + studioDay * 0.12) * introProgress;
-    contact.scale.setScalar(1 + Math.sin(time * 0.0009) * 0.02);
+    contact.scale.setScalar(1 + Math.sin(time * 0.0009) * 0.035);
     frameMaterial.color.copy(current.frame);
     frameMaterial.emissive.copy(current.cyan);
     frameMaterial.emissiveIntensity = 0.12 * (1 - studioDay);
     haloMaterial.color.copy(current.frame);
-    haloMaterial.opacity = 0.28 - studioDay * 0.08;
+    haloMaterial.opacity = (0.22 - studioDay * 0.08) + Math.sin(time * 0.00075) * 0.035;
     particles.material.color.copy(current.cyan);
     keyLight.color.copy(current.key);
     fillLight.color.copy(current.fill);
@@ -428,13 +458,21 @@ export function initHV3D(canvasId, containerId) {
     particles.material.opacity = current.particleOpacity;
     camera.rotation.x = currentCamera.x;
     camera.rotation.y = currentCamera.y;
+    // The supplied renders use a restrained three-quarter product angle rather
+    // than a flat front view. Orbit the complete stage so the pedestal and logo
+    // keep the same perspective while the cyan key light sweeps across them.
+    // Continuous product turn: the full stage completes a smooth 360-degree
+    // loop and never eases back to its starting angle.
+    modelStage.rotation.y += delta * 0.25;
+    modelStage.rotation.x = -0.045 + currentParallax.y * 0.1;
+    modelStage.rotation.z = currentParallax.x * 0.025;
     environment.position.set(currentParallax.x * 0.04, currentParallax.y * 0.04, 0);
-    environment.rotation.z = Math.sin(time * 0.00018) * 0.012 + currentParallax.x * 0.006;
+    environment.rotation.z = Math.sin(time * 0.00018) * 0.022 + currentParallax.x * 0.008;
     platform.position.set(currentParallax.x * 0.055, currentParallax.y * 0.035, 0);
     logo.position.x = currentParallax.x * 0.085;
-    logo.position.y = 0.25 + Math.sin(time * 0.0012) * 0.04 + currentParallax.y * 0.035 - currentScroll * 0.2 + (reducedMotion ? 0 : serviceResponse.w * 0.035);
-    logo.rotation.y = -0.08 + Math.sin(time * 0.0009) * (0.017 + (reducedMotion ? 0 : serviceResponse.z * 0.004)) + currentParallax.x * 0.035;
-    logo.rotation.x = 0.035 + Math.sin(time * 0.001) * 0.01 + currentParallax.y * 0.026;
+    logo.position.y = 0.25 + Math.sin(time * 0.0012) * 0.065 + currentParallax.y * 0.045 - currentScroll * 0.2 + (reducedMotion ? 0 : serviceResponse.w * 0.05);
+    logo.rotation.y = -0.08 + Math.sin(time * 0.0009) * (0.028 + (reducedMotion ? 0 : serviceResponse.z * 0.006)) + currentParallax.x * 0.05;
+    logo.rotation.x = 0.035 + Math.sin(time * 0.001) * 0.018 + currentParallax.y * 0.035;
     const introScale = 0.965 + introProgress * 0.035;
     const scrollScale = 1 - currentScroll * 0.07;
     logo.scale.setScalar(introScale * scrollScale);
@@ -450,7 +488,7 @@ export function initHV3D(canvasId, containerId) {
     targetCursorLight.set(-2 + currentParallax.x * 0.35, 2 + currentParallax.y * 0.25, 3.2);
     currentCursorLight.lerp(targetCursorLight, 1 - Math.exp(-delta * 2.2));
     cursorLight.position.copy(currentCursorLight);
-    cyanLight.intensity = energyPulse * (2.4 - studioDay * 1.4) * introProgress;
+    cyanLight.intensity = (0.42 + energyPulse * (2.4 - studioDay * 1.4)) * introProgress;
     cyanLight.position.set(-2.4 + Math.min(sweepPhase / 1.5, 1) * 4.8, 0.4, 0.9);
     if (!document.hidden && isInViewport) renderer.render(scene, camera);
     animationFrame = requestAnimationFrame(animate);

@@ -66,7 +66,8 @@ function boot() {
   const isWorkPage = window.location.pathname.includes('work') || !!document.querySelector('.work-hero-section');
   const isCaseStudyPage = window.location.pathname.includes('creator-') || !!document.querySelector('.case-hero-section') || !!document.querySelector('.ig-profile-shell');
   const isTeamPage = window.location.pathname.includes('team') || !!document.querySelector('.page-team');
-  const isDedicatedPage = isWorkPage || isCaseStudyPage || isTeamPage;
+  const isWhyUs = window.location.pathname.includes('why-us');
+  const isDedicatedPage = isWorkPage || isCaseStudyPage || isTeamPage || isWhyUs;
 
   if (isDedicatedPage) {
     // Dedicated pages (Work, Creators, Team) enter immediately without intro screen
@@ -386,6 +387,7 @@ function initMobileNav(navbar) {
     const isHome = pathname === '/' || pathname.endsWith('index.html') || (!pathname.includes('work') && !pathname.includes('team') && !pathname.includes('creator'));
     const isWork = pathname.includes('work.html');
     const isTeam = pathname.includes('team.html');
+    const isWhyUs = pathname.includes('why-us');
 
     overlay.innerHTML = `
       <div class="mobile-nav-backdrop-glow" aria-hidden="true"></div>
@@ -411,6 +413,12 @@ function initMobileNav(navbar) {
             <a href="/team.html" class="mobile-nav-link ${isTeam ? 'active' : ''}">
               <span class="mobile-nav-num">03</span>
               <span class="mobile-nav-text">Team</span>
+            </a>
+          </li>
+          <li class="mobile-nav-item">
+            <a href="/why-us.html" class="mobile-nav-link ${isWhyUs ? 'active' : ''}">
+              <span class="mobile-nav-num">04</span>
+              <span class="mobile-nav-text">Why Us</span>
             </a>
           </li>
         </ul>

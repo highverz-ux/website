@@ -5,8 +5,8 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib.js';
 
 const PALETTES = {
-  dark: { logo: 0x15191b, side: 0x202a2e, platform: 0x202e33, cyan: 0x20c7d9, frame: 0x31818b, key: 0xe5edf1, fill: 0xa8bdc8 },
-  light: { logo: 0x15191b, side: 0x202a2e, platform: 0xa6afae, cyan: 0x28bfd3, frame: 0x718e91, key: 0xfff8ee, fill: 0xe1e8eb },
+  dark: { logo: 0x1a1d24, side: 0x1a1d24, platform: 0x12151b, cyan: 0x00f2fe, frame: 0x1a242c, key: 0xf0f6ff, fill: 0x0d131f },
+  light: { logo: 0xe0e4ec, side: 0xd0d5e0, platform: 0xeaeaea, cyan: 0x00d2ff, frame: 0x718e91, key: 0xffffff, fill: 0xdce2e8 },
 };
 
 const themeName = () => document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
@@ -86,11 +86,11 @@ export function initHV3D(canvasId, containerId) {
   world.add(environment);
 
   const platform = new THREE.Group();
-  const platformMaterial = new THREE.MeshPhysicalMaterial({ metalness: 0.12, roughness: 0.64, transparent: true });
+  const platformMaterial = new THREE.MeshPhysicalMaterial({ metalness: 0.05, roughness: 0.85, transparent: true });
   const platformBody = new THREE.Mesh(new RoundedBoxGeometry(5.15, 0.35, 1.45, 4, 0.08), platformMaterial);
   platformBody.position.y = -1.2;
   platform.add(platformBody);
-  const platformTop = new THREE.Mesh(new RoundedBoxGeometry(5, 0.045, 1.34, 3, 0.035), new THREE.MeshPhysicalMaterial({ metalness: 0.18, roughness: 0.5, transparent: true }));
+  const platformTop = new THREE.Mesh(new RoundedBoxGeometry(5, 0.045, 1.34, 3, 0.035), new THREE.MeshPhysicalMaterial({ metalness: 0.1, roughness: 0.75, transparent: true }));
   platformTop.position.y = -1.0;
   platform.add(platformTop);
   // A diffuse proximity shadow anchors the suspended logo to the same plinth.
@@ -106,8 +106,8 @@ export function initHV3D(canvasId, containerId) {
   logo.position.set(0, 0.25, 0.18);
   logo.rotation.set(0.035, -0.08, 0);
   world.add(logo);
-  const logoMaterial = new THREE.MeshPhysicalMaterial({ metalness: 0.55, roughness: 0.4, clearcoat: 0.18, clearcoatRoughness: 0.32, transparent: true, opacity: 0 });
-  const logoSideMaterial = new THREE.MeshPhysicalMaterial({ metalness: 0.62, roughness: 0.3, clearcoat: 0.12, clearcoatRoughness: 0.22, transparent: true, opacity: 0 });
+  const logoMaterial = new THREE.MeshPhysicalMaterial({ metalness: 0.95, roughness: 0.18, clearcoat: 0.5, clearcoatRoughness: 0.1, transparent: true, opacity: 0 });
+  const logoSideMaterial = new THREE.MeshPhysicalMaterial({ metalness: 0.98, roughness: 0.22, clearcoat: 0.2, clearcoatRoughness: 0.15, transparent: true, opacity: 0 });
   // Existing bevel normals select a slightly smoother finish. No vertices
   // or normals are altered; the extrusion keeps its original geometry.
   logoSideMaterial.onBeforeCompile = (shader) => {
@@ -148,7 +148,7 @@ export function initHV3D(canvasId, containerId) {
   finishComposite(platformMaterial);
   finishComposite(platformTop.material);
   let logoLoaded = false;
-  const cyanLight = new THREE.PointLight(0x18c7d8, 0.3, 5.5, 2);
+  const cyanLight = new THREE.PointLight(0x00f2fe, 0.5, 6, 2);
   cyanLight.position.set(0, 0.3, 1.1);
   logo.add(cyanLight);
 
@@ -183,17 +183,17 @@ export function initHV3D(canvasId, containerId) {
   logo.visible = true;
   particles.visible = !reducedMotion;
 
-  const keyLight = new THREE.DirectionalLight(0xffffff, 2.2);
+  const keyLight = new THREE.DirectionalLight(0xffffff, 2.5);
   keyLight.position.set(-4, 5, 6);
   keyLight.castShadow = true;
   keyLight.shadow.mapSize.set(512, 512);
   keyLight.shadow.normalBias = 0.025;
   keyLight.shadow.radius = 3;
-  const fillLight = new THREE.AmbientLight(0xffffff, 0.65);
-  const rimLight = new THREE.RectAreaLight(0x18c7d8, 5, 1.4, 3.5);
-  rimLight.position.set(3, 1, -0.15);
+  const fillLight = new THREE.AmbientLight(0xffffff, 0.75);
+  const rimLight = new THREE.RectAreaLight(0x00f2fe, 8, 1.4, 3.5);
+  rimLight.position.set(3, 1, -0.25);
   rimLight.lookAt(0, 0.3, 0.18);
-  const bounceLight = new THREE.RectAreaLight(0xb2d9db, 1.5, 4, 0.6);
+  const bounceLight = new THREE.RectAreaLight(0xb2d9db, 1.8, 4, 0.6);
   bounceLight.position.set(0, -0.7, 1.4);
   bounceLight.lookAt(0, 0.4, 0);
   platformBody.receiveShadow = true;
@@ -432,9 +432,9 @@ export function initHV3D(canvasId, containerId) {
     environment.rotation.z = Math.sin(time * 0.00018) * 0.012 + currentParallax.x * 0.006;
     platform.position.set(currentParallax.x * 0.055, currentParallax.y * 0.035, 0);
     logo.position.x = currentParallax.x * 0.085;
-    logo.position.y = 0.25 + Math.sin(time * 0.0009) * 0.026 + currentParallax.y * 0.035 - currentScroll * 0.2 + (reducedMotion ? 0 : serviceResponse.w * 0.035);
+    logo.position.y = 0.25 + Math.sin(time * 0.0012) * 0.04 + currentParallax.y * 0.035 - currentScroll * 0.2 + (reducedMotion ? 0 : serviceResponse.w * 0.035);
     logo.rotation.y = -0.08 + Math.sin(time * 0.0009) * (0.017 + (reducedMotion ? 0 : serviceResponse.z * 0.004)) + currentParallax.x * 0.035;
-    logo.rotation.x = 0.035 + Math.sin(time * 0.0008) * 0.008 + currentParallax.y * 0.026;
+    logo.rotation.x = 0.035 + Math.sin(time * 0.001) * 0.01 + currentParallax.y * 0.026;
     const introScale = 0.965 + introProgress * 0.035;
     const scrollScale = 1 - currentScroll * 0.07;
     logo.scale.setScalar(introScale * scrollScale);

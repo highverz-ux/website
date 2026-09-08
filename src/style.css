@@ -5986,3 +5986,210 @@ body.mobile-menu-active {
     gap: 0.85rem;
   }
 }
+
+/* ==========================================================================
+   WHY US PAGE STYLES
+   ========================================================================== */
+.why-hero-section {
+  padding: 12rem 0 6rem;
+  text-align: center;
+  position: relative;
+}
+
+.why-hero-container {
+  max-width: var(--container-width);
+  margin: 0 auto;
+  padding: 0 var(--container-pad);
+}
+
+.why-hero-title {
+  font-size: clamp(3.5rem, 8vw, 5.5rem);
+  line-height: 1;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.02em;
+}
+
+.why-hero-subtitle {
+  font-size: 1.15rem;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Comparison Table */
+.comparison-section {
+  padding: 2rem 0 8rem;
+  position: relative;
+  z-index: 2;
+}
+
+.comparison-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 var(--container-pad);
+}
+
+.comparison-grid {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border-radius: 20px;
+  border: 1px solid var(--border-card);
+  overflow: visible;
+  position: relative;
+  box-shadow: var(--shadow-elevated);
+}
+
+.comp-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  align-items: center;
+}
+
+.comp-col {
+  padding: 1.5rem 2rem;
+  text-align: center;
+}
+
+.comp-feature-col {
+  text-align: left;
+  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-card);
+}
+
+.comp-trad-col {
+  border-bottom: 1px solid var(--border-card);
+  border-right: 1px solid var(--border-card);
+  color: var(--text-secondary);
+}
+
+.comp-hv-col {
+  padding: 0; /* Highlight box handles padding */
+}
+
+/* Header Row Adjustments */
+.comp-header-row .comp-feature-col {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--text-muted);
+  border-bottom: none;
+}
+
+.comp-header-row .comp-trad-col {
+  border-bottom: none;
+  padding-bottom: 2.5rem;
+}
+
+.comp-trad-col h4 {
+  font-size: 1.2rem;
+  color: var(--text-primary);
+  margin-bottom: 0.2rem;
+}
+
+.comp-trad-col span {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Highlight Box (Highverz Column) */
+.comp-hv-highlight {
+  background: var(--bg-primary); /* Darker/different contrast */
+  box-shadow: 0 0 40px var(--accent-cyan-glow);
+  padding: 1.5rem 2rem;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  border-left: 2px solid var(--accent-cyan);
+  border-right: 2px solid var(--accent-cyan);
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.comp-hv-highlight-header {
+  border-top: 2px solid var(--accent-cyan);
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  padding-bottom: 2.5rem;
+  padding-top: 2.5rem;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.comp-hv-highlight-header h4 {
+  color: var(--accent-cyan);
+  font-size: 1.3rem;
+}
+
+.comp-hv-highlight-header span {
+  font-size: 0.85rem;
+  color: var(--accent-cyan);
+  opacity: 0.8;
+}
+
+/* Values styling */
+.comp-trad-val {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.comp-hv-val {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+/* Icons */
+.icon-cross {
+  width: 18px;
+  height: 18px;
+  color: #ff4d4d;
+}
+
+.icon-check {
+  width: 20px;
+  height: 20px;
+  color: var(--accent-cyan);
+}
+
+/* Last Row */
+.comp-row:last-child .comp-feature-col,
+.comp-row:last-child .comp-trad-col {
+  border-bottom: none;
+}
+
+.comp-row:last-child .comp-hv-highlight {
+  border-bottom: 2px solid var(--accent-cyan);
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+}
+
+@media (max-width: 900px) {
+  .comp-row {
+    grid-template-columns: 1fr;
+  }
+  .comp-feature-col {
+    text-align: center;
+    border-bottom: none;
+    padding-bottom: 0.5rem;
+  }
+  .comp-trad-col {
+    border-right: none;
+  }
+  .comp-hv-highlight {
+    border-left: none;
+    border-right: none;
+    border-top: 1px solid var(--accent-cyan);
+    border-bottom: 1px solid var(--accent-cyan);
+  }
+}
+

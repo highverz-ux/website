@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <script>
+      (function(){var t=localStorage.getItem('highverz-theme');if(!t){t=window.matchMedia('(prefers-color-scheme:light)').matches?'light':'dark'}document.documentElement.setAttribute('data-theme',t)})();
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Leadership & Founders — Vivek & Krishna | Highverz Creative Agency</title>
+    <meta name="description" content="Meet the executive founders of Highverz Creative Agency: Vivek (Founder & Executive Creative Director) and Krishna (Co-Founder & Head of Operations & Growth). Engineering over 4.5 billion views." />
+
+    <!-- Favicon & Brand Icons -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
+
+    <!-- Google Font: Classic Luxury Editorial (Playfair Display, Instrument Serif) & Modern Precision Sans (Plus Jakarta Sans) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600;1,700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/coolvetica" />
+
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body class="theme-dark page-team">
+
+    <!-- Custom Cursor (Fluid Kinetic Magnetic Tracker) -->
+    <div class="custom-cursor" id="custom-cursor" aria-hidden="true">
+      <div class="cursor-glow" id="cursor-glow"></div>
+      <div class="cursor-ring" id="cursor-ring">
+        <span class="cursor-text" id="cursor-text">VIEW</span>
+      </div>
+      <div class="cursor-dot" id="cursor-dot"></div>
+    </div>
+
+    <!-- ================================================================
+         01. NAVIGATION
+         ================================================================ -->
+    <header class="navbar" id="navbar">
+      <div class="nav-container">
+
+        <!-- Brand Logo -->
+        <a href="/index.html" class="brand-logo" id="brand-logo" aria-label="Highverz Home" data-cursor="HOME">
+          <div class="logo-wrap">
+            <img src="/assets/logo-white.png" alt="Highverz" class="nav-brand-logo-img" />
+          </div>
+          <div class="brand-sub-badge">
+            <span class="brand-sub">Creative Agency</span>
+          </div>
+        </a>
+
+        <!-- Desktop Navigation Menu -->
+        <nav class="nav-menu" id="nav-menu" aria-label="Main Navigation">
+          <ul class="nav-list">
+            <li><a href="/index.html" class="nav-link" data-cursor="HOME">Home</a></li>
+            <li><a href="/work.html" class="nav-link" data-cursor="WORK">Work</a></li>
+            <li><a href="/team.html" class="nav-link active" data-cursor="TEAM">Team</a></li>
+          </ul>
+        </nav>
+
+        <!-- Nav Right CTA -->
+        <div class="nav-actions">
+          <a href="/index.html#contact" class="btn-nav-talk" id="btn-nav-talk" data-cursor="LET'S TALK">
+            <span>Let's Talk</span>
+            <span class="btn-arrow-icon">↗</span>
+          </a>
+
+          <button class="theme-switcher" id="theme-switcher" aria-label="Toggle theme" data-cursor="THEME">
+            <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+              <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+            <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          </button>
+
+          <!-- Mobile Toggle -->
+          <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle navigation">
+            <span class="toggle-bar"></span>
+            <span class="toggle-bar"></span>
+          </button>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- ================================================================
+         02. TEAM HERO SECTION
+         ================================================================ -->
+    <section class="team-hero-section" id="team-hero">
+      <div class="team-hero-glow" aria-hidden="true"></div>
+
+      <div class="team-hero-container">
+        <div class="team-hero-content">
+          <div class="team-hero-tag">AGENCY ARCHITECTS &amp; EXECUTIVE LEADERSHIP</div>
+
+          <h1 class="team-hero-title">
+            The Minds Behind<br />
+            <span class="highlight-cyan">The Scale.</span>
+          </h1>
+
+          <p class="team-hero-desc">
+            Highverz was founded on a simple conviction: in an era of infinite algorithmic noise, retention is the only real currency. Meet the founders engineering the narrative architecture, retention pacing, and automated distribution pipelines behind 4.5+ billion views.
+          </p>
+
+          <!-- Leadership Metrics HUD -->
+          <div class="team-metrics-grid">
+            <div class="team-metric-item">
+              <span class="team-metric-val cyan">4.5B+</span>
+              <span class="team-metric-label">Organic Views Directed</span>
+            </div>
+            <div class="team-metric-item">
+              <span class="team-metric-val">60 Days</span>
+              <span class="team-metric-label">Avg. Scale Horizon</span>
+            </div>
+            <div class="team-metric-item">
+              <span class="team-metric-val cyan">99.4%</span>
+              <span class="team-metric-label">Partner Retention Rate</span>
+            </div>
+            <div class="team-metric-item">
+              <span class="team-metric-val">Top 1%</span>
+              <span class="team-metric-label">Global Creator Standards</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         03. FOUNDERS SPOTLIGHT (ARCHITECTURAL DUAL SHOWCASE - NO PHOTOS)
+         ================================================================ -->
+    <section class="founders-section" id="founders" aria-label="Executive Founders">
+      <div class="founders-container">
+
+        <div class="founders-header">
+          <span class="section-tag">LEADERSHIP &amp; VISION</span>
+          <h2 class="founders-title">Executive <span class="highlight-cyan">Founders</span></h2>
+          <p class="founders-subtitle">
+            Directly helming every campaign, high-stakes brand repositioning, and creator distribution engine.
+          </p>
+        </div>
+
+        <div class="founders-grid">
+
+          <!-- Founder 1: Vivek -->
+          <article class="founder-card-architectural" id="founder-vivek">
+            <div class="founder-card-glow" aria-hidden="true"></div>
+
+            <!-- Top Header Row -->
+            <div class="founder-exec-header">
+              <div class="founder-emblem-wrap">
+                <div class="founder-emblem-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+                  </svg>
+                </div>
+                <div class="founder-status-badge">
+                  <span class="badge-dot"></span>
+                  <span>FOUNDER · CREATIVE DIRECTION</span>
+                </div>
+              </div>
+
+              <!-- Founder Socials -->
+              <div class="founder-socials">
+                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="founder-social-btn" aria-label="Vivek on LinkedIn" data-cursor="LINKEDIN ↗">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9v8.37H9.2V10.9H6.46M7.83 6.45a1.63 1.63 0 0 0-1.63 1.63c0 .9.73 1.63 1.63 1.63.9 0 1.63-.73 1.63-1.63 0-.9-.73-1.63-1.63-1.63z"/></svg>
+                </a>
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="founder-social-btn" aria-label="Vivek on Instagram" data-cursor="INSTAGRAM ↗">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                </a>
+              </div>
+            </div>
+
+            <!-- Founder Identity & Bio -->
+            <div class="founder-body">
+              <div class="founder-titles-block">
+                <span class="founder-role-micro">EXECUTIVE CREATIVE LEAD</span>
+                <h3 class="founder-full-name">Vivek</h3>
+                <span class="founder-role-title">Founder &amp; Executive Creative Director</span>
+              </div>
+
+              <!-- Domain Tags -->
+              <div class="founder-domains">
+                <span class="domain-chip">Narrative Architecture</span>
+                <span class="domain-chip">Brand Identity</span>
+                <span class="domain-chip">Cognitive Hook Design</span>
+                <span class="domain-chip">Kinetic Pacing</span>
+              </div>
+
+              <p class="founder-bio">
+                Pioneering the intersection of cinematic vertical storytelling and cognitive viewer retention. Vivek leads creative direction across Highverz's elite creator and corporate roster, architecting the visual signatures, frame pacing, and psychological hooks that turn fleeting impressions into dedicated audience equity.
+              </p>
+
+              <blockquote class="founder-quote">
+                “Content isn't about arbitrary volume—it's about undeniable resonance. If you don't command the first three seconds, you forfeit the entire narrative.”
+              </blockquote>
+            </div>
+
+            <!-- Achievements Footer -->
+            <div class="founder-achieve-footer">
+              <div class="achieve-col">
+                <span class="achieve-val">4.5B+</span>
+                <span class="achieve-lbl">Views Directed</span>
+              </div>
+              <div class="achieve-col">
+                <span class="achieve-val">60 Days</span>
+                <span class="achieve-lbl">Avg. Scale Horizon</span>
+              </div>
+              <div class="achieve-col">
+                <span class="achieve-val">100%</span>
+                <span class="achieve-lbl">Bespoke Storytelling</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Founder 2: Krishna -->
+          <article class="founder-card-architectural" id="founder-krishna">
+            <div class="founder-card-glow" aria-hidden="true"></div>
+
+            <!-- Top Header Row -->
+            <div class="founder-exec-header">
+              <div class="founder-emblem-wrap">
+                <div class="founder-emblem-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/>
+                  </svg>
+                </div>
+                <div class="founder-status-badge">
+                  <span class="badge-dot"></span>
+                  <span>CO-FOUNDER · GROWTH &amp; SCALE</span>
+                </div>
+              </div>
+
+              <!-- Founder Socials -->
+              <div class="founder-socials">
+                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="founder-social-btn" aria-label="Krishna on LinkedIn" data-cursor="LINKEDIN ↗">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9v8.37H9.2V10.9H6.46M7.83 6.45a1.63 1.63 0 0 0-1.63 1.63c0 .9.73 1.63 1.63 1.63.9 0 1.63-.73 1.63-1.63 0-.9-.73-1.63-1.63-1.63z"/></svg>
+                </a>
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="founder-social-btn" aria-label="Krishna on Instagram" data-cursor="INSTAGRAM ↗">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                </a>
+              </div>
+            </div>
+
+            <!-- Founder Identity & Bio -->
+            <div class="founder-body">
+              <div class="founder-titles-block">
+                <span class="founder-role-micro">EXECUTIVE OPERATIONS &amp; GROWTH</span>
+                <h3 class="founder-full-name">Krishna</h3>
+                <span class="founder-role-title">Co-Founder &amp; Head of Operations</span>
+              </div>
+
+              <!-- Domain Tags -->
+              <div class="founder-domains">
+                <span class="domain-chip">Algorithmic Distribution</span>
+                <span class="domain-chip">Viral Syndication</span>
+                <span class="domain-chip">Omnichannel Clipping</span>
+                <span class="domain-chip">Operational Velocity</span>
+              </div>
+
+              <p class="founder-bio">
+                The strategic growth engine powering Highverz's exponential delivery velocity. Krishna oversees the multi-platform distribution pipelines, viral syndication infrastructure, and retention analytics loops that systematically compound audience reach across Instagram, YouTube Shorts, and TikTok.
+              </p>
+
+              <blockquote class="founder-quote">
+                “Scale is fundamentally an engineering discipline. When you couple world-class creative with rigorous algorithmic distribution, viral compounding stops being accidental and becomes predictable.”
+              </blockquote>
+            </div>
+
+            <!-- Achievements Footer -->
+            <div class="founder-achieve-footer">
+              <div class="achieve-col">
+                <span class="achieve-val">24–48h</span>
+                <span class="achieve-lbl">Pipeline Velocity</span>
+              </div>
+              <div class="achieve-col">
+                <span class="achieve-val">92%+</span>
+                <span class="achieve-lbl">Avg. Retention Hold</span>
+              </div>
+              <div class="achieve-col">
+                <span class="achieve-val">Omni</span>
+                <span class="achieve-lbl">Platform Syndication</span>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         04. OPERATING PHILOSOPHY & PILLARS
+         ================================================================ -->
+    <section class="team-pillars-section" aria-label="Agency Pillars">
+      <div class="team-pillars-container">
+
+        <div class="pillars-header">
+          <span class="section-tag">THE HIGHVERZ STANDARD</span>
+          <h2 class="pillars-title">Our Operating <span class="highlight-cyan">Code</span></h2>
+        </div>
+
+        <div class="pillars-grid">
+
+          <!-- Pillar 1 -->
+          <div class="pillar-card">
+            <div class="pillar-num">01</div>
+            <h3 class="pillar-card-title">Cognitive Attention Engineering</h3>
+            <p class="pillar-card-desc">
+              Every millisecond of vertical video is calculated. We structure hooks, pattern interrupts, and sonic cues to bypass subconscious scroll habits and command uncompromising viewer focus.
+            </p>
+          </div>
+
+          <!-- Pillar 2 -->
+          <div class="pillar-card">
+            <div class="pillar-num">02</div>
+            <h3 class="pillar-card-title">Obsessive Craft at High Velocity</h3>
+            <p class="pillar-card-desc">
+              Zero filler footage, zero cookie-cutter templates. Every asset is treated like a high-budget commercial campaign, engineered with bespoke color grading, kinetic typography, and 3D precision.
+            </p>
+          </div>
+
+          <!-- Pillar 3 -->
+          <div class="pillar-card">
+            <div class="pillar-num">03</div>
+            <h3 class="pillar-card-title">Compounding Audience Equity</h3>
+            <p class="pillar-card-desc">
+              We do not chase vanity metrics that disappear in 24 hours. We engineer content ecosystems designed to convert attention into authority, high-ticket partnerships, and enterprise valuation.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         05. FOUNDERS COLLABORATION CTA BANNER
+         ================================================================ -->
+    <section class="team-cta-section">
+      <div class="team-cta-container">
+        <div class="team-cta-box">
+          <span class="section-tag">DIRECT PARTNERSHIP</span>
+          <h2 class="team-cta-title">Ready to Build with<br /><span>The Highverz Team?</span></h2>
+          <p class="team-cta-desc">
+            We personally review every creator and enterprise collaboration to guarantee alignment with our high-retention standard. Book a private strategy session directly with our team.
+          </p>
+
+          <a href="/index.html#contact" class="btn-primary-cyan-large" data-cursor="COLLABORATE ↗">
+            <span>Book a Private Strategy Call</span>
+            <span class="btn-arrow">↗</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         06. GLOBAL FOOTER
+         ================================================================ -->
+    <footer class="footer" id="footer">
+      <div class="footer-container">
+        <div class="footer-row-content">
+          <div class="footer-left-info">
+            <img src="/assets/logo-white.png" alt="Highverz" class="footer-logo-img" />
+            <span class="footer-copy">© 2026 Highverz Creative Agency. All rights reserved.</span>
+            <button type="button" class="admin-leads-trigger" id="admin-leads-trigger" title="Executive Leads HUD (Shift + L)" style="background: none; border: none; opacity: 0.3; font-size: 0.72rem; color: #64748b; cursor: pointer; padding: 0 0.4rem; transition: opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.3">🔒 Leads Portal</button>
+          </div>
+
+          <div class="footer-social-links">
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="f-social">Instagram</a>
+            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="f-social">LinkedIn</a>
+            <a href="https://behance.net" target="_blank" rel="noopener noreferrer" class="f-social">Behance</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Main Highverz Script Bundle -->
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

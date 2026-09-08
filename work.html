@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <script>
+      (function(){var t=localStorage.getItem('highverz-theme');if(!t){t=window.matchMedia('(prefers-color-scheme:light)').matches?'light':'dark'}document.documentElement.setAttribute('data-theme',t)})();
+    </script>
+    <meta charset="UTF-8" />
+    <!-- Favicon & Brand Icons -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Work & Services — HIGHVERZ Creative Agency</title>
+    <meta name="description" content="Explore Highverz's full suite of creative services, video editing, 3D CGI visual effects, viral short-form systems, brand design, and featured case studies." />
+
+    <!-- Google Font: Classic Luxury Editorial (Playfair Display, Instrument Serif) & Modern Precision Sans (Plus Jakarta Sans) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600;1,700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/coolvetica" />
+
+    <!-- Core Style Bundle -->
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <!-- Ambient Background Glow -->
+    <div class="ambient-glow" aria-hidden="true"></div>
+
+    <!-- Custom Cursor (Fluid Kinetic Magnetic Tracker) -->
+    <div class="custom-cursor" id="custom-cursor" aria-hidden="true">
+      <div class="cursor-glow" id="cursor-glow"></div>
+      <div class="cursor-ring" id="cursor-ring">
+        <span class="cursor-text" id="cursor-text">EXPLORE</span>
+      </div>
+      <div class="cursor-dot" id="cursor-dot"></div>
+    </div>
+
+    <!-- ================================================================
+         01. NAVIGATION
+         ================================================================ -->
+    <header class="navbar" id="navbar">
+      <div class="nav-container">
+
+        <!-- Brand Logo linking to Home -->
+        <a href="/index.html" class="brand-logo" id="brand-logo" aria-label="Highverz Home" data-cursor="HOME">
+          <div class="logo-wrap">
+            <img src="/assets/logo-white.png" alt="Highverz" class="nav-brand-logo-img" />
+          </div>
+          <div class="brand-sub-badge">
+            <span class="brand-sub">Creative Agency</span>
+          </div>
+        </a>
+
+        <!-- Desktop Navigation Menu -->
+        <nav class="nav-menu" id="nav-menu" aria-label="Main Navigation">
+          <ul class="nav-list">
+            <li><a href="/index.html" class="nav-link" data-cursor="HOME">Home</a></li>
+            <li><a href="/work.html" class="nav-link active" data-cursor="WORK">Work</a></li>
+            <li><a href="/team.html" class="nav-link" data-cursor="TEAM">Team</a></li>
+          </ul>
+        </nav>
+
+        <!-- Nav Right CTA -->
+        <div class="nav-actions">
+          <a href="#contact" class="btn-nav-talk" id="btn-nav-talk" data-cursor="LET'S TALK">
+            <span>Let's Talk</span>
+            <span class="btn-arrow-icon">↗</span>
+          </a>
+
+          <button class="theme-switcher" id="theme-switcher" aria-label="Toggle theme" data-cursor="THEME">
+            <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+              <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+            <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          </button>
+
+          <!-- Mobile Toggle -->
+          <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle navigation">
+            <span class="toggle-bar"></span>
+            <span class="toggle-bar"></span>
+          </button>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- ================================================================
+         02. WORK HERO SECTION
+         ================================================================ -->
+    <section class="work-hero-section" id="work-hero">
+      <div class="work-hero-container">
+        <div class="work-hero-content">
+          <div class="work-hero-tag">OUR WORK &amp; CAPABILITIES</div>
+          <h1 class="work-hero-title">
+            End-to-End Creative<br />
+            <span class="highlight-cyan">Solutions.</span>
+          </h1>
+          <p class="work-hero-desc">
+            Highverz is a full-service creative agency powering high-growth personal brands, global consumer products, and disruptive tech companies with world-class visual content, viral distribution systems, and hyper-realistic 3D experiences.
+          </p>
+
+          <!-- Key Agency Metrics -->
+          <div class="work-hero-metrics">
+            <div class="work-metric-item">
+              <span class="work-metric-val" data-metric-target="4.5" data-metric-suffix="B+">4.5B+</span>
+              <span class="work-metric-label">Views Generated</span>
+            </div>
+            <div class="work-metric-item">
+              <span class="work-metric-val" data-metric-target="100" data-metric-suffix="+">100+</span>
+              <span class="work-metric-label">High-Impact Campaigns</span>
+            </div>
+            <div class="work-metric-item">
+              <span class="work-metric-val" data-metric-target="99.4" data-metric-suffix="%">99.4%</span>
+              <span class="work-metric-label">Client Retention</span>
+            </div>
+            <div class="work-metric-item">
+              <span class="work-metric-val" data-metric-target="48" data-metric-prefix="24-" data-metric-suffix="h">24-48h</span>
+              <span class="work-metric-label">Production Velocity</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         03. SERVICES SECTION — "WHAT WE DO" (EXPANDED SUITE)
+         ================================================================ -->
+    <section class="section-services" id="services">
+      <div class="services-container">
+
+        <!-- Header Row -->
+        <div class="services-header-row">
+          <div class="services-label-box">
+            <span class="section-tag">WHAT WE DO</span>
+            <h2 class="services-main-title">End-to-End Creative<br/>Solutions</h2>
+          </div>
+          <div class="services-header-link">
+            <a href="#contact" class="explore-services-btn">
+              <span>Start Your Project</span>
+              <span class="btn-arrow-icon">↗</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Capability Filter Bar -->
+        <div class="services-filter-bar">
+          <button class="service-filter-btn active" data-filter="all">
+            <span>All Capabilities</span>
+            <span class="filter-count">(9)</span>
+          </button>
+          <button class="service-filter-btn" data-filter="video">
+            <span>Video &amp; Motion</span>
+            <span class="filter-count">(3)</span>
+          </button>
+          <button class="service-filter-btn" data-filter="3d">
+            <span>3D &amp; CGI</span>
+            <span class="filter-count">(1)</span>
+          </button>
+          <button class="service-filter-btn" data-filter="design">
+            <span>Branding &amp; Design</span>
+            <span class="filter-count">(3)</span>
+          </button>
+          <button class="service-filter-btn" data-filter="growth">
+            <span>Growth &amp; Ads</span>
+            <span class="filter-count">(2)</span>
+          </button>
+        </div>
+
+        <!-- 10 Comprehensive Service Cards -->
+        <div class="services-cards-grid expanded-grid" id="services-grid">
+
+          <!-- Card 1: Graphic Design -->
+          <div class="service-card-item" data-category="design" data-cursor="EXPLORE">
+            <div class="service-card-top">
+              <div class="service-card-icon-box">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/>
+                </svg>
+              </div>
+              <span class="service-card-category">Brand Identity</span>
+            </div>
+            <h3 class="service-card-title">Graphic Design</h3>
+            <p class="service-card-desc">Visual identities, color systems, guidelines, and marketing creatives that communicate your brand story with authority.</p>
+            <div class="service-card-tags">
+              <span class="service-tag-pill">Design Systems</span>
+              <span class="service-tag-pill">Key Visuals</span>
+              <span class="service-tag-pill">Collateral</span>
+            </div>
+          </div>
+
+          <!-- Card 2: Video Editing -->
+          <div class="service-card-item" data-category="video" data-cursor="EXPLORE">
+            <div class="service-card-top">
+              <div class="service-card-icon-box">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/>
+                </svg>
+              </div>
+              <span class="service-card-category">Post-Production</span>
+            </div>
+            <h3 class="service-card-title">Video Editing</h3>
+            <p class="service-card-desc">Cinematic pacing, bespoke sound design, precision color grading, and dynamic cuts that engage, entertain, and convert.</p>
+            <div class="service-card-tags">
+              <span class="service-tag-pill">Sound Architecture</span>
+              <span class="service-tag-pill">Color Grading</span>
+              <span class="service-tag-pill">4K Mastering</span>
+            </div>
+          </div>
+
+          <!-- Card 3: Short Form Content -->
+          <div class="service-card-item" data-category="video" data-cursor="EXPLORE">
+            <div class="service-card-top">
+              <div class="service-card-icon-box">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+              </div>
+              <span class="service-card-category">Viral Systems</span>
+            </div>
+            <h3 class="service-card-title">Short Form Content</h3>
+            <p class="service-card-desc">Scroll-stopping vertical video systems for TikTok, Reels &amp; YouTube Shorts. High-retention hooks and multi-platform distribution.</p>
+            <div class="service-card-tags">
+              <span class="service-tag-pill">Hook Engineering</span>
+              <span class="service-tag-pill">Dynamic Subtitles</span>
+              <span class="service-tag-pill">High Retention</span>
+            </div>
+          </div>
+
+          <!-- Card 4: 3D / CGI -->
+          <div class="service-card-item" data-category="3d" data-cursor="EXPLORE">
+            <div class="service-card-top">
+              <div class="service-card-icon-box">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+                </svg>
+              </div>
+              <span class="service-card-category">Visual Effects</span>
+            </div>
+            <h3 class="service-card-title">3D / CGI</h3>
+            <p class="service-card-desc">Photorealistic 3D product renders, abstract physical simulations, and surreal motion visuals that bring bold ideas to life with depth.</p>
+            <div class="service-card-tags">
+              <span class="service-tag-pill">Product Renders</span>
+              <span class="service-tag-pill">Blender / Octane</span>
+              <span class="service-tag-pill">Physics Sims</span>
+            </div>
+          </div>
+
+
+          <!-- Card 6: Motion Graphics -->
+          <div class="service-card-item" data-category="video" data-cursor="EXPLORE">
+            <div class="service-card-top">
+              <div class="service-card-icon-box">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+              </div>
+              <span class="service-card-category">Motion Design</span>
+            </div>
+            <h3 class="service-card-title">Motion Graphics</h3>
+            <p class="service-card-desc">Kinetic typography, animated logo reveals, UI motion graphics, and title sequences designed for slick brand prestige and high retention.</p>
+            <div class="service-card-tags">
+              <span class="service-tag-pill">Kinetic Type</span>
+              <span class="service-tag-pill">Logo Reveals</span>
+              <span class="service-tag-pill">UI Motion</span>
+            </div>
+          </div>
+
+          <!-- Card 7: Brand Strategy -->
+          <div class="service-card-item" data-category="design" data-cursor="EXPLORE">
+            <div class="service-card-top">
+              <div class="service-card-icon-box">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+                </svg>
+              </div>
+              <span class="service-card-category">Strategy</span>
+            </div>
+            <h3 class="service-card-title">Brand Strategy</h3>
+            <p class="service-card-desc">Narrative positioning, core messaging frameworks, market differentiation, and personal brand architecture for founders and executives.</p>
+            <div class="service-card-tags">
+              <span class="service-tag-pill">Positioning</span>
+              <span class="service-tag-pill">Messaging Playbook</span>
+              <span class="service-tag-pill">Executive Branding</span>
+            </div>
+          </div>
+
+          <!-- Card 8: Paid Ad Creatives -->
+          <div class="service-card-item" data-category="growth" data-cursor="EXPLORE">
+            <div class="service-card-top">
+              <div class="service-card-icon-box">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+              </div>
+              <span class="service-card-category">Performance</span>
+            </div>
+            <h3 class="service-card-title">Paid Ad Creatives</h3>
+            <p class="service-card-desc">Direct-response video concepts, high-CTR hook testing variations, and scalable ad creative systems engineered to lower customer acquisition costs.</p>
+            <div class="service-card-tags">
+              <span class="service-tag-pill">Direct Response</span>
+              <span class="service-tag-pill">Meta &amp; TikTok Ads</span>
+              <span class="service-tag-pill">Hook Variations</span>
+            </div>
+          </div>
+
+          <!-- Card 9: Thumbnails & Packaging -->
+          <div class="service-card-item" data-category="design" data-cursor="EXPLORE">
+            <div class="service-card-top">
+              <div class="service-card-icon-box">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
+                </svg>
+              </div>
+              <span class="service-card-category">CTR Design</span>
+            </div>
+            <h3 class="service-card-title">Thumbnails &amp; Packaging</h3>
+            <p class="service-card-desc">Psychology-driven YouTube thumbnails engineered for high click-through rates, bespoke physical box packaging, and 3D unboxing mockups.</p>
+            <div class="service-card-tags">
+              <span class="service-tag-pill">CTR Psychology</span>
+              <span class="service-tag-pill">3D Mockups</span>
+              <span class="service-tag-pill">Print Prepress</span>
+            </div>
+          </div>
+
+          <!-- Card 10: Web & Digital Experiences -->
+          <div class="service-card-item" data-category="growth" data-cursor="EXPLORE">
+            <div class="service-card-top">
+              <div class="service-card-icon-box">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+              </div>
+              <span class="service-card-category">Digital Flagship</span>
+            </div>
+            <h3 class="service-card-title">Web &amp; Digital Experiences</h3>
+            <p class="service-card-desc">Modern interactive web experiences, high-converting landing pages, and WebGL animations designed to captivate visitors and drive conversions.</p>
+            <div class="service-card-tags">
+              <span class="service-tag-pill">Interactive UI</span>
+              <span class="service-tag-pill">GSAP Motion</span>
+              <span class="service-tag-pill">High Conversion</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================================================================
+         04. FEATURED PORTFOLIO — CRAFTED FOR IMPACT
+         ================================================================ -->
+    <section class="section-portfolio" id="work">
+      <div class="portfolio-header-container">
+        <div class="portfolio-meta-box">
+          <span class="section-tag">FEATURED WORK</span>
+          <h2 class="portfolio-section-title">Crafted for<br/>Impact.</h2>
+        </div>
+
+        <div class="portfolio-header-right">
+          <!-- Clean Toggle Pill (Influencers First) -->
+          <div class="portfolio-toggle-pill" role="tablist" aria-label="Portfolio category filter">
+            <button class="portfolio-toggle-btn active" data-portfolio-tab="influencers" role="tab" aria-selected="true" data-cursor="INFLUENCERS">
+              <span class="toggle-text">Influencers</span>
+              <span class="toggle-count">08</span>
+            </button>
+            <button class="portfolio-toggle-btn" data-portfolio-tab="brands" role="tab" aria-selected="false" data-cursor="BRANDS">
+              <span class="toggle-text">Brands</span>
+              <span class="toggle-count">06</span>
+            </button>
+            <div class="portfolio-toggle-glider" id="portfolio-glider"></div>
+          </div>
+
+          <a href="#contact" class="explore-services-btn" data-cursor="TALK">
+            <span>Start a Campaign</span>
+            <span class="btn-arrow-icon">↗</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Main Showcase Container (Non-Marquee Editorial Grid Layout) -->
+      <div class="work-portfolio-container">
+
+        <!-- Showcase 1: Creator Roster Grid (Active by default) -->
+        <div class="work-showcase-wrapper active" id="portfolio-showcase-influencers">
+          <!-- Category Filter Bar -->
+          <div class="work-creators-filter-bar">
+            <button class="work-filter-chip active" data-creator-filter="all">
+              <span>All Creators</span>
+              <span class="chip-count">(08)</span>
+            </button>
+            <button class="work-filter-chip" data-creator-filter="personal-brand">
+              <span>Personal Brands</span>
+              <span class="chip-count">(03)</span>
+            </button>
+            <button class="work-filter-chip" data-creator-filter="viral-media">
+              <span>Viral Media</span>
+              <span class="chip-count">(02)</span>
+            </button>
+            <button class="work-filter-chip" data-creator-filter="finance-scale">
+              <span>Finance &amp; Scale</span>
+              <span class="chip-count">(03)</span>
+            </button>
+          </div>
+
+          <!-- 4-Column Editorial Creator Grid -->
+          <div class="work-creators-grid">
+
+            <!-- 01. NIV0NE -->
+            <a href="https://www.instagram.com/niv0ne/" target="_blank" rel="noopener noreferrer" class="work-creator-card" data-category="personal-brand" data-cursor="INSTAGRAM ↗">
+              <div class="work-creator-visual">
+                <div class="work-creator-top-badges">
+                  <span class="w-badge-status"><span class="w-status-dot"></span>VERIFIED</span>
+                  <span class="w-badge-metric">100K+</span>
+                </div>
+                <img src="/assets/creators/niv0ne.png" alt="Niv0ne — Highverz Creator Partner" class="work-creator-img" loading="eager" />
+                <div class="work-creator-overlay-grad"></div>
+              </div>
+              <div class="work-creator-body">
+                <div class="work-creator-main-info">
+                  <div class="work-creator-header-row">
+                    <h3 class="work-creator-name">NIV0NE</h3>
+                    <span class="work-creator-handle">@niv0ne</span>
+                  </div>
+                  <p class="work-creator-niche">Personal Brand • Visual Hook Architecture</p>
+                </div>
+                <div class="work-creator-stat-box">
+                  <div class="w-stat-primary">
+                    <span class="w-stat-num">2K → 100K+</span>
+                    <span class="w-stat-lbl">Follower Growth</span>
+                  </div>
+                  <span class="w-stat-pill">+4,900%</span>
+                </div>
+                <div class="work-creator-tags">
+                  <span class="work-creator-tag-item">Visual Identity</span>
+                  <span class="work-creator-tag-item">Retention Hooks</span>
+                  <span class="work-creator-tag-item">Phase 1 &amp; 2</span>
+                </div>
+                <div class="work-creator-cta-row">
+                  <span>Visit Instagram</span>
+                  <span class="work-creator-arrow">↗</span>
+                </div>
+              </div>
+            </a>
+
+            <!-- 02. UMARPNJ -->
+            <a href="https://www.instagram.com/umarpnj/" target="_blank" rel="noopener noreferrer" class="work-creator-card" data-category="viral-media" data-cursor="INSTAGRAM ↗">
+              <div class="work-creator-visual">
+                <div class="work-creator-top-badges">
+                  <span class="w-badge-status"><span class="w-status-dot"></span>VIRAL MEDIA</span>
+                  <span class="w-badge-metric">400K+</span>
+                </div>
+                <img src="/assets/creators/umarpnj.png" alt="Umarpnj — Highverz Creator Partner" class="work-creator-img" loading="eager" />
+                <div class="work-creator-overlay-grad"></div>
+              </div>
+              <div class="work-creator-body">
+                <div class="work-creator-main-info">
+                  <div class="work-creator-header-row">
+                    <h3 class="work-creator-name">UMARPNJ</h3>
+                    <span class="work-creator-handle">@umarpnj</span>
+                  </div>
+                  <p class="work-creator-niche">Motivation, Lifestyle &amp; High-Pace Culture</p>
+                </div>
+                <div class="work-creator-stat-box">
+                  <div class="w-stat-primary">
+                    <span class="w-stat-num">42.8M+</span>
+                    <span class="w-stat-lbl">Total Views</span>
+                  </div>
+                  <span class="w-stat-pill">0 → 400K+</span>
+                </div>
+                <div class="work-creator-tags">
+                  <span class="work-creator-tag-item">Sound Design</span>
+                  <span class="work-creator-tag-item">Rapid Pacing</span>
+                  <span class="work-creator-tag-item">Viral Systems</span>
+                </div>
+                <div class="work-creator-cta-row">
+                  <span>Visit Instagram</span>
+                  <span class="work-creator-arrow">↗</span>
+                </div>
+              </div>
+            </a>
+
+            <!-- 03. BEN AZOULAY -->
+            <a href="https://www.instagram.com/ben_azoulay/" target="_blank" rel="noopener noreferrer" class="work-creator-card" data-category="finance-scale" data-cursor="INSTAGRAM ↗">
+              <div class="work-creator-visual">
+                <div class="work-creator-top-badges">
+                  <span class="w-badge-status"><span class="w-status-dot"></span>ENTREPRENEUR</span>
+                  <span class="w-badge-metric">200K+ REEL</span>
+                </div>
+                <img src="/assets/creators/ben-azoulay.png" alt="Ben Azoulay — Luxury Entrepreneur" class="work-creator-img" loading="eager" />
+                <div class="work-creator-overlay-grad"></div>
+              </div>
+              <div class="work-creator-body">
+                <div class="work-creator-main-info">
+                  <div class="work-creator-header-row">
+                    <h3 class="work-creator-name">BEN AZOULAY</h3>
+                    <span class="work-creator-handle">@ben_azoulay</span>
+                  </div>
+                  <p class="work-creator-niche">Luxury Entrepreneur • Aviation &amp; Business</p>
+                </div>
+                <div class="work-creator-stat-box">
+                  <div class="w-stat-primary">
+                    <span class="w-stat-num">200K+</span>
+                    <span class="w-stat-lbl">Day-1 Views</span>
+                  </div>
+                  <span class="w-stat-pill">9.4% Eng.</span>
+                </div>
+                <div class="work-creator-tags">
+                  <span class="work-creator-tag-item">Cinema Grading</span>
+                  <span class="work-creator-tag-item">Executive Polish</span>
+                  <span class="work-creator-tag-item">Motion Design</span>
+                </div>
+                <div class="work-creator-cta-row">
+                  <span>Visit Instagram</span>
+                  <span class="work-creator-arrow">↗</span>
+                </div>
+              </div>
+            </a>
+
+            <!-- 04. DANIEL BITTON -->
+            <a href="https://www.instagram.com/danielbitton/" target="_blank" rel="noopener noreferrer" class="work-creator-card" data-category="finance-scale" data-cursor="INSTAGRAM ↗">
+              <div class="work-creator-visual">
+                <div class="work-creator-top-badges">
+                  <span class="w-badge-status"><span class="w-status-dot"></span>E-COMMERCE</span>
+                  <span class="w-badge-metric">5M+ REACH</span>
+                </div>
+                <img src="/assets/creators/daniel-bitton.png" alt="Daniel Bitton — Digital Creator" class="work-creator-img" loading="eager" />
+                <div class="work-creator-overlay-grad"></div>
+              </div>
+              <div class="work-creator-body">
+                <div class="work-creator-main-info">
+                  <div class="work-creator-header-row">
+                    <h3 class="work-creator-name">DANIEL BITTON</h3>
+                    <span class="work-creator-handle">@danielbitton</span>
+                  </div>
+                  <p class="work-creator-niche">E-Commerce Scale • Digital Brand Systems</p>
+                </div>
+                <div class="work-creator-stat-box">
+                  <div class="w-stat-primary">
+                    <span class="w-stat-num">5M+</span>
+                    <span class="w-stat-lbl">Impressions</span>
+                  </div>
+                  <span class="w-stat-pill">88% Watch</span>
+                </div>
+                <div class="work-creator-tags">
+                  <span class="work-creator-tag-item">Conversion Video</span>
+                  <span class="work-creator-tag-item">Scale Creative</span>
+                  <span class="work-creator-tag-item">Ad Funnels</span>
+                </div>
+                <div class="work-creator-cta-row">
+                  <span>Visit Instagram</span>
+                  <span class="work-creator-arrow">↗</span>
+                </div>
+              </div>
+            </a>
+
+            <!-- 05. ALEX GONZALEZ -->
+            <a href="https://www.instagram.com/alexgonzalez/" target="_blank" rel="noopener noreferrer" class="work-creator-card" data-category="finance-scale" data-cursor="INSTAGRAM ↗">
+              <div class="work-creator-visual">
+                <div class="work-creator-top-badges">
+                  <span class="w-badge-status"><span class="w-status-dot"></span>TRADING</span>
+                  <span class="w-badge-metric">1M+ REACH</span>
+                </div>
+                <img src="/assets/creators/alex-gonzalez.jpg" alt="Alex Gonzalez — Swing Trading Lab" class="work-creator-img" loading="lazy" />
+                <div class="work-creator-overlay-grad"></div>
+              </div>
+              <div class="work-creator-body">
+                <div class="work-creator-main-info">
+                  <div class="work-creator-header-row">
+                    <h3 class="work-creator-name">ALEX GONZALEZ</h3>
+                    <span class="work-creator-handle">@alexgonzalez</span>
+                  </div>
+                  <p class="work-creator-niche">Founder, Swing Trading Lab • Wealth &amp; Mindset</p>
+                </div>
+                <div class="work-creator-stat-box">
+                  <div class="w-stat-primary">
+                    <span class="w-stat-num">1M+</span>
+                    <span class="w-stat-lbl">Monthly Reach</span>
+                  </div>
+                  <span class="w-stat-pill">3.2x Scale</span>
+                </div>
+                <div class="work-creator-tags">
+                  <span class="work-creator-tag-item">Authority Media</span>
+                  <span class="work-creator-tag-item">YouTube Systems</span>
+                  <span class="work-creator-tag-item">Kinetic Motion</span>
+                </div>
+                <div class="work-creator-cta-row">
+                  <span>Visit Instagram</span>
+                  <span class="work-creator-arrow">↗</span>
+                </div>
+              </div>
+            </a>
+
+            <!-- 06. SABRI SUBY -->
+            <a href="https://www.instagram.com/sabrisuby/" target="_blank" rel="noopener noreferrer" class="work-creator-card" data-category="personal-brand" data-cursor="INSTAGRAM ↗">
+              <div class="work-creator-visual">
+                <div class="work-creator-top-badges">
+                  <span class="w-badge-status"><span class="w-status-dot"></span>AGENCY TITAN</span>
+                  <span class="w-badge-metric">100M+ VIEWS</span>
+                </div>
+                <img src="/assets/creators/sabri-suby.jpg" alt="Sabri Suby — King Kong Founder" class="work-creator-img" loading="lazy" />
+                <div class="work-creator-overlay-grad"></div>
+              </div>
+              <div class="work-creator-body">
+                <div class="work-creator-main-info">
+                  <div class="work-creator-header-row">
+                    <h3 class="work-creator-name">SABRI SUBY</h3>
+                    <span class="work-creator-handle">@sabrisuby</span>
+                  </div>
+                  <p class="work-creator-niche">Founder King Kong • Best-Selling Author</p>
+                </div>
+                <div class="work-creator-stat-box">
+                  <div class="w-stat-primary">
+                    <span class="w-stat-num">100M+</span>
+                    <span class="w-stat-lbl">Views Generated</span>
+                  </div>
+                  <span class="w-stat-pill">$1.33B Sales</span>
+                </div>
+                <div class="work-creator-tags">
+                  <span class="work-creator-tag-item">Direct Response</span>
+                  <span class="work-creator-tag-item">High-Energy Edits</span>
+                  <span class="work-creator-tag-item">Viral Copy</span>
+                </div>
+                <div class="work-creator-cta-row">
+                  <span>Visit Instagram</span>
+                  <span class="work-creator-arrow">↗</span>
+                </div>
+              </div>
+            </a>
+
+            <!-- 07. IMAN GADZHI -->
+            <a href="https://www.instagram.com/imangadzhi/" target="_blank" rel="noopener noreferrer" class="work-creator-card" data-category="personal-brand" data-cursor="INSTAGRAM ↗">
+              <div class="work-creator-visual">
+                <div class="work-creator-top-badges">
+                  <span class="w-badge-status"><span class="w-status-dot"></span>TOP 0.01%</span>
+                  <span class="w-badge-metric">4.5M+ SUBS</span>
+                </div>
+                <img src="/assets/creators/iman-gadzhi.jpg" alt="Iman Gadzhi — Educate Founder" class="work-creator-img" loading="lazy" />
+                <div class="work-creator-overlay-grad"></div>
+              </div>
+              <div class="work-creator-body">
+                <div class="work-creator-main-info">
+                  <div class="work-creator-header-row">
+                    <h3 class="work-creator-name">IMAN GADZHI</h3>
+                    <span class="work-creator-handle">@imangadzhi</span>
+                  </div>
+                  <p class="work-creator-niche">Founder Educate &amp; IAG Media • Education Pioneer</p>
+                </div>
+                <div class="work-creator-stat-box">
+                  <div class="w-stat-primary">
+                    <span class="w-stat-num">250M+</span>
+                    <span class="w-stat-lbl">Channel Views</span>
+                  </div>
+                  <span class="w-stat-pill">Tier-1 Brand</span>
+                </div>
+                <div class="work-creator-tags">
+                  <span class="work-creator-tag-item">Documentary Polish</span>
+                  <span class="work-creator-tag-item">3D CGI Visuals</span>
+                  <span class="work-creator-tag-item">Cinema Hooks</span>
+                </div>
+                <div class="work-creator-cta-row">
+                  <span>Visit Instagram</span>
+                  <span class="work-creator-arrow">↗</span>
+                </div>
+              </div>
+            </a>
+
+            <!-- 08. JACK NEEL -->
+            <a href="https://www.instagram.com/jackneel/" target="_blank" rel="noopener noreferrer" class="work-creator-card" data-category="viral-media" data-cursor="INSTAGRAM ↗">
+              <div class="work-creator-visual">
+                <div class="work-creator-top-badges">
+                  <span class="w-badge-status"><span class="w-status-dot"></span>STORYTELLER</span>
+                  <span class="w-badge-metric">10M+</span>
+                </div>
+                <img src="/assets/creators/jack-neel.jpg" alt="Jack Neel — Viral Creator" class="work-creator-img" loading="lazy" />
+                <div class="work-creator-overlay-grad"></div>
+              </div>
+              <div class="work-creator-body">
+                <div class="work-creator-main-info">
+                  <div class="work-creator-header-row">
+                    <h3 class="work-creator-name">JACK NEEL</h3>
+                    <span class="work-creator-handle">@jackneel</span>
+                  </div>
+                  <p class="work-creator-niche">Viral Storyteller • 10M+ Digital Community</p>
+                </div>
+                <div class="work-creator-stat-box">
+                  <div class="w-stat-primary">
+                    <span class="w-stat-num">1.2B+</span>
+                    <span class="w-stat-lbl">Impressions</span>
+                  </div>
+                  <span class="w-stat-pill">10M+ Family</span>
+                </div>
+                <div class="work-creator-tags">
+                  <span class="work-creator-tag-item">Viral Pacing</span>
+                  <span class="work-creator-tag-item">Custom 3D VFX</span>
+                  <span class="work-creator-tag-item">SFX Design</span>
+                </div>
+                <div class="work-creator-cta-row">
+                  <span>Visit Instagram</span>
+                  <span class="work-creator-arrow">↗</span>
+                </div>
+              </div>
+            </a>
+
+          </div>
+        </div>
+
+        <!-- Showcase 2: Brand Campaigns Grid (Toggled) -->
+        <div class="work-showcase-wrapper hidden" id="portfolio-showcase-brands">
+          <div class="work-brands-grid">
+
+            <a href="#contact" class="portfolio-vertical-card brand-card brand-samsung" data-cursor="VIEW PROJECT ↗">
+              <div class="p-card-media-wrap brand-logo-media">
+                <div class="p-brand-ambient-glow"></div>
+                <div class="p-brand-logo-stage">
+                  <img src="/assets/brands/samsung.svg" alt="Samsung Logo" class="p-brand-hero-logo" loading="lazy" />
+                </div>
+                <div class="p-card-gradient"></div>
+              </div>
+              <div class="p-card-top-row">
+                <span class="p-brand-tag"><span class="tag-pulse-cyan"></span>BRAND</span>
+                <span class="p-case-num">01</span>
+              </div>
+              <div class="p-card-body">
+                <h3 class="p-client-name">SAMSUNG</h3>
+                <span class="p-category">Visual Campaign • Galaxy Launch</span>
+                <div class="p-link-cta">
+                  <span>View Project</span>
+                  <span class="p-arrow">↗</span>
+                </div>
+              </div>
+            </a>
+
+            <a href="#contact" class="portfolio-vertical-card brand-card brand-gillette" data-cursor="VIEW PROJECT ↗">
+              <div class="p-card-media-wrap brand-logo-media">
+                <div class="p-brand-ambient-glow"></div>
+                <div class="p-brand-logo-stage">
+                  <img src="/assets/brands/gillette.svg" alt="Gillette Logo" class="p-brand-hero-logo" loading="lazy" />
+                </div>
+                <div class="p-card-gradient"></div>
+              </div>
+              <div class="p-card-top-row">
+                <span class="p-brand-tag"><span class="tag-pulse-cyan"></span>BRAND</span>
+                <span class="p-case-num">02</span>
+              </div>
+              <div class="p-card-body">
+                <h3 class="p-client-name">GILLETTE</h3>
+                <span class="p-category">Global Social Campaign</span>
+                <div class="p-link-cta">
+                  <span>View Project</span>
+                  <span class="p-arrow">↗</span>
+                </div>
+              </div>
+            </a>
+
+            <a href="#contact" class="portfolio-vertical-card brand-card brand-amd" data-cursor="VIEW PROJECT ↗">
+              <div class="p-card-media-wrap brand-logo-media">
+                <div class="p-brand-ambient-glow"></div>
+                <div class="p-brand-logo-stage">
+                  <img src="/assets/brands/amd.svg" alt="AMD Logo" class="p-brand-hero-logo" loading="lazy" />
+                </div>
+                <div class="p-card-gradient"></div>
+              </div>
+              <div class="p-card-top-row">
+                <span class="p-brand-tag"><span class="tag-pulse-cyan"></span>BRAND</span>
+                <span class="p-case-num">03</span>
+              </div>
+              <div class="p-card-body">
+                <h3 class="p-client-name">AMD</h3>
+                <span class="p-category">Gaming Campaign • Hardware Launch</span>
+                <div class="p-link-cta">
+                  <span>View Project</span>
+                  <span class="p-arrow">↗</span>
+                </div>
+              </div>
+            </a>
+
+            <a href="#contact" class="portfolio-vertical-card brand-card brand-intel" data-cursor="VIEW PROJECT ↗">
+              <div class="p-card-media-wrap brand-logo-media">
+                <div class="p-brand-ambient-glow"></div>
+                <div class="p-brand-logo-stage">
+                  <img src="/assets/brands/intel.svg" alt="Intel Logo" class="p-brand-hero-logo" loading="lazy" />
+                </div>
+                <div class="p-card-gradient"></div>
+              </div>
+              <div class="p-card-top-row">
+                <span class="p-brand-tag"><span class="tag-pulse-cyan"></span>BRAND</span>
+                <span class="p-case-num">04</span>
+              </div>
+              <div class="p-card-body">
+                <h3 class="p-client-name">INTEL</h3>
+                <span class="p-category">CGI Architecture • Core Ultra</span>
+                <div class="p-link-cta">
+                  <span>View Project</span>
+                  <span class="p-arrow">↗</span>
+                </div>
+              </div>
+            </a>
+
+            <a href="#contact" class="portfolio-vertical-card brand-card brand-nivea" data-cursor="VIEW PROJECT ↗">
+              <div class="p-card-media-wrap brand-logo-media">
+                <div class="p-brand-ambient-glow"></div>
+                <div class="p-brand-logo-stage">
+                  <img src="/assets/brands/nivea.svg" alt="Nivea Men Logo" class="p-brand-hero-logo" loading="lazy" />
+                </div>
+                <div class="p-card-gradient"></div>
+              </div>
+              <div class="p-card-top-row">
+                <span class="p-brand-tag"><span class="tag-pulse-cyan"></span>BRAND</span>
+                <span class="p-case-num">05</span>
+              </div>
+              <div class="p-card-body">
+                <h3 class="p-client-name">NIVEA MEN</h3>
+                <span class="p-category">Commercial Film Production</span>
+                <div class="p-link-cta">
+                  <span>View Project</span>
+                  <span class="p-arrow">↗</span>
+                </div>
+              </div>
+            </a>
+
+            <a href="#contact" class="portfolio-vertical-card brand-card brand-zoomlion" data-cursor="VIEW PROJECT ↗">
+              <div class="p-card-media-wrap brand-logo-media">
+                <div class="p-brand-ambient-glow"></div>
+                <div class="p-brand-logo-stage">
+                  <img src="/assets/brands/zoomlion.svg" alt="Zoomlion Logo" class="p-brand-hero-logo" loading="lazy" />
+                </div>
+                <div class="p-card-gradient"></div>
+              </div>
+              <div class="p-card-top-row">
+                <span class="p-brand-tag"><span class="tag-pulse-cyan"></span>BRAND</span>
+                <span class="p-case-num">06</span>
+              </div>
+              <div class="p-card-body">
+                <h3 class="p-client-name">ZOOMLION</h3>
+                <span class="p-category">Industrial Visuals &amp; 3D Media</span>
+                <div class="p-link-cta">
+                  <span>View Project</span>
+                  <span class="p-arrow">↗</span>
+                </div>
+              </div>
+            </a>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================================================================
+         05. THE HIGHVERZ PRODUCTION STANDARD
+         ================================================================ -->
+    <section class="section-standards" id="standards">
+      <div class="services-container">
+        <div class="services-label-box">
+          <span class="section-tag">AGENCY BENCHMARK</span>
+          <h2 class="services-main-title">The Highverz Standard.</h2>
+        </div>
+
+        <div class="standards-grid">
+          <div class="standard-card">
+            <span class="standard-num">01</span>
+            <h3 class="standard-title">High-Velocity Sprints</h3>
+            <p class="standard-desc">Rapid turnaround cycles without sacrificing visual polish. Move fast, capture trends, and dominate feeds.</p>
+          </div>
+          <div class="standard-card">
+            <span class="standard-num">02</span>
+            <h3 class="standard-title">Cinema-Grade Polish</h3>
+            <p class="standard-desc">Mastered in 4K with custom sound architecture, high-end color grading, and meticulous frame-by-frame scrutiny.</p>
+          </div>
+          <div class="standard-card">
+            <span class="standard-num">03</span>
+            <h3 class="standard-title">Data-Backed Retention</h3>
+            <p class="standard-desc">Every cut, title, and sound effect is engineered to hook viewers in the first 3 seconds and hold attention.</p>
+          </div>
+          <div class="standard-card">
+            <span class="standard-num">04</span>
+            <h3 class="standard-title">Dedicated Creative Director</h3>
+            <p class="standard-desc">Direct access to an executive creative director guiding strategy, revisions, and brand alignment seamlessly.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================
+         06. CTA SECTION
+         ================================================================ -->
+    <section class="section-cta" id="contact">
+      <div class="cta-container">
+
+        <div class="cta-inner-layout">
+          <!-- Left Callout Content -->
+          <div class="cta-left-content">
+            <span class="section-tag">LET'S COLLABORATE</span>
+            <h2 class="cta-display-title">
+              Let's make something<br/>
+              <span class="highlight-cyan">extraordinary.</span>
+            </h2>
+            <p class="cta-support-desc">
+              Whether you need end-to-end video systems, 3D CGI visual assets, or a full brand transformation, we're ready to scale your vision.
+            </p>
+          </div>
+
+          <!-- Middle Action Button -->
+          <div class="cta-action-box">
+            <a href="mailto:hello@highverz.com" class="btn-primary-cyan-large" data-cursor="START ↗">
+              <span>Start a Project</span>
+              <span class="btn-arrow">↗</span>
+            </a>
+          </div>
+
+          <!-- Right Contact & Cyan Logo -->
+          <div class="cta-right-box">
+            <div class="cta-contact-rows">
+              <a href="mailto:hello@highverz.com" class="cta-contact-link">
+                <span class="contact-icon">✉</span>
+                <span>hello@highverz.com</span>
+              </a>
+              <div class="cta-contact-link">
+                <span class="contact-icon">📍</span>
+                <span>Gujarat, India</span>
+              </div>
+            </div>
+
+            <div class="cta-brand-mark-box">
+              <img src="/assets/logo-cyan.svg" alt="Highverz" class="cta-cyan-logo-img" />
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================================================================
+         07. FOOTER
+         ================================================================ -->
+    <footer class="footer" id="footer">
+      <div class="footer-container">
+
+        <div class="footer-row-content">
+          <div class="footer-left-info">
+            <img src="/assets/logo-white.png" alt="Highverz" class="footer-logo-img" />
+            <span class="footer-copy">© 2026 Highverz Creative Agency. All rights reserved.</span>
+            <button type="button" class="admin-leads-trigger" id="admin-leads-trigger" title="Executive Leads HUD (Shift + L)" style="background: none; border: none; opacity: 0.3; font-size: 0.72rem; color: #64748b; cursor: pointer; padding: 0 0.4rem; transition: opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.3">🔒 Leads Portal</button>
+          </div>
+
+          <div class="footer-social-links">
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="f-social">Instagram</a>
+            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="f-social">LinkedIn</a>
+            <a href="https://behance.net" target="_blank" rel="noopener noreferrer" class="f-social">Behance</a>
+          </div>
+        </div>
+
+      </div>
+    </footer>
+
+    <!-- Main JS Application Bundle -->
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

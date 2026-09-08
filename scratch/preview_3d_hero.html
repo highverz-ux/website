@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>3D Hero Test</title>
+  <style>
+    body {
+      margin: 0;
+      background: #04070a;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: sans-serif;
+    }
+    #container {
+      width: 900px;
+      height: 700px;
+      position: relative;
+      background: radial-gradient(circle at 60% 45%, #052630 0%, #031017 45%, #020508 100%);
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "/node_modules/three/build/three.module.js",
+        "three/addons/": "/node_modules/three/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="container">
+    <canvas id="c"></canvas>
+  </div>
+
+  <script type="module">
+    import * as THREE from 'three';
+
+    const canvas = document.getElementById('c');
+    const container = document.getElementById('container');
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(34, width / height, 0.1, 100);
+    camera.position.set(0, 0.2, 5.2);
+
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: true,
+      alpha: true,
+      powerPreference: 'high-performance'
+    });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(2);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.35;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+    // ---- Create Studio Environment Map ----
+    const envCanvas = document.createElement('canvas');
+    envCanvas.width = 1024;
+    envCanvas.height = 512;
+    const ectx = envCanvas.getContext('2d');
+    ectx.fillStyle = '#020508';
+    ectx.fillRect(0, 0, 1024, 512);
+
+    // Cyan portal glow in rear
+    const rearGrad = ectx.createRadialGradient(512, 256, 10, 512, 256, 260);
+    rearGrad.addColorStop(0, '#00f5ff');
+    rearGrad.addColorStop(0.35, 'rgba(0, 200, 255, 0.6)');
+    rearGrad.addColorStop(0.7, 'rgba(0, 100, 180, 0.2)');
+    rearGrad.addColorStop(1, 'rgba(2, 5, 8, 0)');
+    ectx.fillStyle = rearGrad;
+    ectx.fillRect(0, 0, 1024, 512);
+
+    // Top softbox studio light
+    const topGrad = ectx.createLinearGradient(0, 0, 0, 180);
+    topGrad.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
+    topGrad.addColorStop(0.5, 'rgba(200, 240, 255, 0.5)');
+    topGrad.addColorStop(1, 'rgba(2, 5, 8, 0)');
+    ectx.fillStyle = topGrad;
+    ectx.fillRect(200, 0, 624, 180);
+
+    // Front-side rim lights
+    const sideGrad = ectx.createLinearGradient(0, 0, 200, 0);
+    sideGrad.addColorStop(0, 'rgba(0, 229, 255, 0.8)');
+    sideGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ectx.fillStyle = sideGrad;
+    ectx.fillRect(0, 100, 200, 312);
+
+    const envTex = new THREE.CanvasTexture(envCanvas);
+    envTex.mapping = THREE.EquirectangularReflectionMapping;
+    envTex.colorSpace = THREE.SRGBColorSpace;
+
+    const pmremGen = new THREE.PMREMGenerator(renderer);
+    pmremGen.compileEquirectangularShader();
+    const envMap = pmremGen.fromEquirectangular(envTex).texture;
+    scene.environment = envMap;
+
+    // ---- Master Group ----
+    const masterGroup = new THREE.Group();
+    // Default cinematic tilt matching the reference:
+    // Tilted slightly up and right (approx 12 deg Y, 8 deg X)
+    masterGroup.rotation.y = 0.18;
+    masterGroup.rotation.x = 0.12;
+    masterGroup.position.set(0.15, -0.05, 0);
+    scene.add(masterGroup);
+
+    // ---- 1. Glowing Neon Portal Ring in Background ----
+    const portalGroup = new THREE.Group();
+    portalGroup.position.set(0, 0.2, -1.2);
+    masterGroup.add(portalGroup);
+
+    // Outer neon ring
+    const ringGeom = new THREE.TorusGeometry(1.65, 0.022, 16, 128);
+    const ringMat = new THREE.MeshBasicMaterial({
+      color: 0x00f5ff,
+      toneMapped: false
+    });
+    const ringMesh = new THREE.Mesh(ringGeom, ringMat);
+    portalGroup.add(ringMesh);
+
+    // Soft glow ring
+    const glowRingGeom = new THREE.TorusGeometry(1.65, 0.07, 16, 128);
+    const glowRingMat = new THREE.MeshBasicMaterial({
+      color: 0x00b4d8,
+      transparent: true,
+      opacity: 0.35,
+      blending: THREE.AdditiveBlending
+    });
+    portalGroup.add(new THREE.Mesh(glowRingGeom, glowRingMat));
+
+    // ---- 2. Real 3D Extruded HV Emblem ----
+    const pathStr = 'M 0 13 L 0 20 L 3 28 L 101 186 L 101 188 L 242 417 L 252 429 L 266 435 L 441 435 L 445 433 L 450 427 L 450 418 L 337 231 L 337 217 L 343 211 L 350 209 L 407 210 L 422 215 L 440 229 L 458 255 L 558 425 L 566 431 L 576 434 L 713 434 L 722 431 L 733 422 L 745 404 L 745 402 L 777 353 L 777 351 L 892 167 L 892 159 L 889 153 L 885 149 L 878 147 L 663 147 L 658 148 L 650 156 L 649 162 L 652 172 L 737 304 L 737 311 L 706 357 L 695 376 L 692 379 L 689 379 L 685 375 L 647 311 L 602 240 L 598 231 L 579 202 L 562 172 L 551 159 L 537 150 L 526 147 L 302 147 L 295 144 L 287 136 L 218 22 L 207 10 L 193 2 L 185 0 L 17 0 L 7 4 Z';
+    const tokens = pathStr.trim().split(/\s+/);
+    const shape = new THREE.Shape();
+    let i = 0;
+    while (i < tokens.length) {
+      const cmd = tokens[i++];
+      if (cmd === 'M') shape.moveTo(parseFloat(tokens[i++]), -parseFloat(tokens[i++]));
+      else if (cmd === 'L') shape.lineTo(parseFloat(tokens[i++]), -parseFloat(tokens[i++]));
+      else if (cmd === 'Z') shape.closePath();
+    }
+
+    const extrudeSettings = {
+      depth: 70,
+      bevelEnabled: true,
+      bevelSegments: 10,
+      steps: 3,
+      bevelSize: 10,
+      bevelThickness: 10
+    };
+    const emblemGeom = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+    emblemGeom.center();
+    emblemGeom.computeVertexNormals();
+
+    // Scale to fit ~2.7 units wide
+    const emblemScale = 2.7 / 893;
+    emblemGeom.scale(emblemScale, emblemScale, emblemScale);
+
+    // Luxury Gunmetal Chrome / Titanium Physical Material
+    const chromeMat = new THREE.MeshPhysicalMaterial({
+      color: 0x181c20,
+      emissive: 0x010508,
+      metalness: 0.96,
+      roughness: 0.16,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.1,
+      reflectivity: 1.0,
+      envMapIntensity: 2.2
+    });
+
+    const emblemMesh = new THREE.Mesh(emblemGeom, chromeMat);
+    emblemMesh.position.set(0, 0.38, 0);
+    masterGroup.add(emblemMesh);
+
+    // ---- 3. Realistic Chiseled Obsidian Pedestal (Plinth) ----
+    const pedestalGeom = new THREE.CylinderGeometry(1.6, 1.85, 0.85, 32, 4);
+    // Add procedural jitter to vertices to create chiseled rock look
+    const pos = pedestalGeom.attributes.position;
+    for (let j = 0; j < pos.count; j++) {
+      const y = pos.getY(j);
+      // Displace side and top slightly
+      const angle = Math.atan2(pos.getZ(j), pos.getX(j));
+      const noise = Math.sin(angle * 7) * 0.05 + Math.cos(angle * 13) * 0.03 + Math.sin(y * 12) * 0.04;
+      pos.setX(j, pos.getX(j) * (1 + noise));
+      pos.setZ(j, pos.getZ(j) * (1 + noise));
+      if (y > 0.4) {
+        pos.setY(j, y + Math.sin(pos.getX(j) * 10) * 0.03);
+      }
+    }
+    pedestalGeom.computeVertexNormals();
+
+    const pedestalMat = new THREE.MeshStandardMaterial({
+      color: 0x0b0e12,
+      roughness: 0.78,
+      metalness: 0.25,
+      envMapIntensity: 0.8
+    });
+    const pedestal = new THREE.Mesh(pedestalGeom, pedestalMat);
+    pedestal.position.set(0, -0.65, 0);
+    masterGroup.add(pedestal);
+
+    // ---- 4. Studio Multi-Point Lighting ----
+    // A. Rear Cyan Portal Light (creates bright neon rim light on emblem silhouette)
+    const portalBackLight = new THREE.PointLight(0x00f5ff, 5.5, 8);
+    portalBackLight.position.set(0, 0.3, -1.0);
+    masterGroup.add(portalBackLight);
+
+    // B. Inner Notch Accent Light (creates glowing teal bounce inside the HV cleft)
+    const innerCleftLight = new THREE.PointLight(0x00e5ff, 4.0, 3.5);
+    innerCleftLight.position.set(-0.15, 0.25, 0.4);
+    masterGroup.add(innerCleftLight);
+
+    // C. Top-Right Key Light (cool white studio highlight on top chamfers)
+    const keyLight = new THREE.DirectionalLight(0xe8f4ff, 3.5);
+    keyLight.position.set(3, 4, 3.5);
+    scene.add(keyLight);
+
+    // D. Subtle Left Fill Light (deep sapphire)
+    const fillLight = new THREE.DirectionalLight(0x1a3d60, 1.8);
+    fillLight.position.set(-3, 1, 2);
+    scene.add(fillLight);
+
+    // E. Dynamic Interactive Specular Light (follows mouse cursor)
+    const interactiveLight = new THREE.PointLight(0x00ffff, 3.0, 4);
+    interactiveLight.position.set(0.5, 0.8, 1.8);
+    masterGroup.add(interactiveLight);
+
+    // ---- 5. Atmospheric Floating Particle Field ----
+    const pCount = 180;
+    const pGeom = new THREE.BufferGeometry();
+    const pPos = new Float32Array(pCount * 3);
+    for (let k = 0; k < pCount; k++) {
+      pPos[k * 3 + 0] = (Math.random() - 0.5) * 5.0;
+      pPos[k * 3 + 1] = (Math.random() - 0.5) * 4.0;
+      pPos[k * 3 + 2] = (Math.random() - 0.5) * 3.0;
+    }
+    pGeom.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+    const pMat = new THREE.PointsMaterial({
+      color: 0x88f0ff,
+      size: 0.024,
+      transparent: true,
+      opacity: 0.65,
+      blending: THREE.AdditiveBlending
+    });
+    const particles = new THREE.Points(pGeom, pMat);
+    masterGroup.add(particles);
+
+    // Render static frame for screenshot
+    renderer.render(scene, camera);
+    window.__RENDERED__ = true;
+  </script>
+</body>
+</html>

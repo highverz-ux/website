@@ -69,14 +69,15 @@ function boot() {
   const isWorkPage = window.location.pathname.includes('work') || !!document.querySelector('.work-hero-section');
   const isCaseStudyPage = window.location.pathname.includes('creator-') || !!document.querySelector('.case-hero-section') || !!document.querySelector('.ig-profile-shell');
   const isTeamPage = window.location.pathname.includes('team') || !!document.querySelector('.page-team');
-  const isWhyUs = window.location.pathname.includes('why-us');
+  const isWhyUs = window.location.pathname.includes('why-us') || !!document.querySelector('.page-why-us') || !!document.querySelector('.comparison-section');
   const isDedicatedPage = isWorkPage || isCaseStudyPage || isTeamPage || isWhyUs;
 
   if (isDedicatedPage) {
-    // Dedicated pages (Work, Creators, Team) enter immediately without intro screen
+    // Dedicated pages (Work, Creators, Team, Why Us) enter immediately without intro screen
     if (lenis) lenis.start();
     if (isWorkPage) initWorkHeroIntro();
     if (isTeamPage) initTeamPageAnimations();
+    if (isWhyUs) initWhyUsAnimations();
   }
 
   // Always initialize reels player if reel cards exist on any page
@@ -1498,6 +1499,211 @@ function initTeamPageAnimations() {
         }
       }
     );
+  }
+}
+
+// ==========================================================================
+// WHY US & COMPARISON SECTION APPEAR ANIMATIONS
+// ==========================================================================
+function initWhyUsAnimations() {
+  const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // 1. Hero Entrance
+  const whyHero = document.querySelector('.why-hero-section');
+  if (whyHero) {
+    if (isReducedMotion) {
+      gsap.set(['.why-hero-title', '.why-hero-subtitle'], { opacity: 1, y: 0 });
+    } else {
+      const heroTl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+      heroTl.fromTo('.why-hero-title',
+        { opacity: 0, y: 35 },
+        { opacity: 1, y: 0, duration: 1.0, delay: 0.1 }
+      );
+      heroTl.fromTo('.why-hero-subtitle',
+        { opacity: 0, y: 22 },
+        { opacity: 1, y: 0, duration: 0.85 },
+        '-=0.6'
+      );
+    }
+  }
+
+  // 2. Philosophy Cards Grid Stagger Entrance
+  const philGrid = document.querySelector('.section-services .services-cards-grid');
+  if (philGrid) {
+    const philCards = philGrid.querySelectorAll('.service-card-item');
+    if (philCards.length > 0) {
+      if (isReducedMotion) {
+        gsap.set(philCards, { opacity: 1, y: 0 });
+      } else {
+        gsap.fromTo(philCards,
+          { opacity: 0, y: 35, scale: 0.97 },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.85,
+            stagger: 0.12,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: philGrid,
+              start: 'top 85%',
+              toggleActions: 'play none none none'
+            }
+          }
+        );
+      }
+    }
+  }
+
+  // 3. Comparison Section ("What makes us different") Appear Animations
+  const compSection = document.querySelector('.comparison-section');
+  if (!compSection) return;
+
+  const compTitle = compSection.querySelector('.comp-main-title');
+  const compCards = compSection.querySelector('.comp-dual-cards');
+  const cardTrad = compSection.querySelector('.comp-card-traditional');
+  const cardHv = compSection.querySelector('.comp-card-hv');
+  const tradRows = compSection.querySelectorAll('.comp-card-traditional .comp-list-row');
+  const hvRows = compSection.querySelectorAll('.comp-card-hv .comp-list-row');
+  const tradDashes = compSection.querySelectorAll('.comp-card-traditional .val-dash-icon');
+  const hvChecks = compSection.querySelectorAll('.comp-card-hv .val-check-icon');
+  const compCta = compSection.querySelector('.comparison-cta');
+
+  if (isReducedMotion) {
+    if (compTitle) gsap.set(compTitle, { opacity: 1, y: 0 });
+    if (cardTrad) gsap.set(cardTrad, { opacity: 1, x: 0, y: 0, scale: 1 });
+    if (cardHv) gsap.set(cardHv, { opacity: 1, x: 0, y: 0, scale: 1 });
+    gsap.set([...tradRows, ...hvRows], { opacity: 1, x: 0, y: 0 });
+    gsap.set([...tradDashes, ...hvChecks], { opacity: 1, scale: 1 });
+    if (compCta) gsap.set(compCta, { opacity: 1, y: 0 });
+    return;
+  }
+
+  // Section Header Entrance
+  if (compTitle) {
+    gsap.fromTo(compTitle,
+      { opacity: 0, y: 36 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.95,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: compSection,
+          start: 'top 85%',
+          toggleActions: 'play none none none'
+        }
+      }
+    );
+  }
+
+  // Dual Comparison Cards & Rows Orchestrated Entrance
+  if (compCards && cardTrad && cardHv) {
+    const isMobile = window.innerWidth <= 860;
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: compCards,
+        start: 'top 80%',
+        toggleActions: 'play none none none'
+      }
+    });
+
+    // 1. Cards Entrance: Glide in with gentle 3D-depth perspective
+    tl.fromTo(cardTrad,
+      {
+        opacity: 0,
+        y: 45,
+        x: isMobile ? 0 : -32,
+        scale: 0.96
+      },
+      {
+        opacity: 1,
+        y: 0,
+        x: 0,
+        scale: 1,
+        duration: 0.95,
+        ease: 'power3.out'
+      }
+    );
+
+    tl.fromTo(cardHv,
+      {
+        opacity: 0,
+        y: 45,
+        x: isMobile ? 0 : 32,
+        scale: 0.96
+      },
+      {
+        opacity: 1,
+        y: 0,
+        x: 0,
+        scale: 1,
+        duration: 0.95,
+        ease: 'power3.out'
+      },
+      '-=0.75'
+    );
+
+    // 2. Card Top Headers (Badges & Titles)
+    const cardTops = compCards.querySelectorAll('.comp-card-top');
+    if (cardTops.length > 0) {
+      tl.fromTo(cardTops,
+        { opacity: 0, y: 16 },
+        { opacity: 1, y: 0, duration: 0.55, stagger: 0.1, ease: 'power2.out' },
+        '-=0.55'
+      );
+    }
+
+    // 3. Comparison Rows Stagger: Stagger down both cards
+    if (tradRows.length > 0) {
+      tl.fromTo(tradRows,
+        { opacity: 0, y: 12, x: isMobile ? 0 : -10 },
+        { opacity: 1, y: 0, x: 0, duration: 0.5, stagger: 0.06, ease: 'power2.out' },
+        '-=0.45'
+      );
+    }
+
+    if (hvRows.length > 0) {
+      tl.fromTo(hvRows,
+        { opacity: 0, y: 12, x: isMobile ? 0 : 10 },
+        { opacity: 1, y: 0, x: 0, duration: 0.5, stagger: 0.06, ease: 'power2.out' },
+        '-=0.65'
+      );
+    }
+
+    // 4. Dash icons on traditional card fade in
+    if (tradDashes.length > 0) {
+      tl.fromTo(tradDashes,
+        { opacity: 0, scale: 0.7 },
+        { opacity: 1, scale: 1, duration: 0.4, stagger: 0.05, ease: 'power2.out' },
+        '-=0.5'
+      );
+    }
+
+    // 5. Highverz checkmark badges burst in with spring pop
+    if (hvChecks.length > 0) {
+      tl.fromTo(hvChecks,
+        { scale: 0, opacity: 0, rotation: -30 },
+        {
+          scale: 1,
+          opacity: 1,
+          rotation: 0,
+          duration: 0.55,
+          stagger: 0.07,
+          ease: 'back.out(2.5)'
+        },
+        '-=0.6'
+      );
+    }
+
+    // 6. Call to Action Button Entrance
+    if (compCta) {
+      tl.fromTo(compCta,
+        { opacity: 0, y: 24 },
+        { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' },
+        '-=0.25'
+      );
+    }
   }
 }
 

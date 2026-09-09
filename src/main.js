@@ -83,15 +83,22 @@ function boot() {
   // Always initialize reels player if reel cards exist on any page
   if (document.querySelectorAll('.ig-reel-card').length > 0) {
     initInstagramReelsPlayer();
-  } else if (!isDedicatedPage) {
+  }
+
+  if (!isDedicatedPage) {
     const skipIntro = window.location.search.includes('no-intro') || sessionStorage.getItem('highverzIntroPlayed');
     if (skipIntro) {
-      // Intro overlay already played — remove it and run hero animation directly
+      // Intro overlay already played — remove it and run hero animation directly on reload
       const introEl = document.getElementById('highverz-intro');
       if (introEl) introEl.remove();
-      if (lenis) lenis.start();
-      // Still animate the hero words — just skip the intro overlay wait
-      initHeroIntro(false);
+      if (lenis) {
+        lenis.start();
+        lenis.scrollTo(0, { immediate: true });
+      }
+      // Animate the hero lines and text effects directly on reload (buffered to guarantee paint)
+      setTimeout(() => {
+        initHeroIntro(false);
+      }, 70);
     } else {
       // First visit: play the premium Highverz intro screen, then animate hero
       sessionStorage.setItem('highverzIntroPlayed', 'true');
@@ -795,120 +802,141 @@ function initMobileNav(navbar) {
 // 03. HERO CHOREOGRAPHY (WORD BLUR-FADE REVEAL — ROI Media style)
 // ==========================================================================
 function initHeroIntro(immediate = false) {
-  const heroLabel = document.getElementById('hero-label');
-  if (!heroLabel) return;
+  const heroHeadline = document.getElementById('hero-headline');
+  if (!heroHeadline) return;
+
+  const line1Words = heroHeadline.querySelectorAll('.hero-headline-line:nth-child(1) .hl-word');
+  const line2Words = heroHeadline.querySelectorAll('.hero-headline-line:nth-child(2) .hl-word');
+  const platformChips = heroHeadline.querySelectorAll('.hl-platform-chips .platform-chip');
+  const headlineLines = heroHeadline.querySelectorAll('.hero-headline-line');
+
   if (immediate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    gsap.set('#hero-label, .hl-word, #hero-desc, #hero-actions, .hero-sculpture-col, .floating-badge-item, #scroll-indicator, .section-trusted', { 
+    gsap.set('.hl-word, #hero-platform-icons, .platform-chip, #hero-desc, #hero-actions, .section-trusted', { 
       opacity: 1, y: 0, x: 0, scale: 1, filter: 'none', clearProps: 'all' 
     });
+    headlineLines.forEach((line) => { line.style.overflow = 'visible'; });
     return;
   }
 
-  // Set initial hidden state via GSAP (overrides CSS) so fromTo works reliably
-  gsap.set('.hl-word', { opacity: 0, filter: 'blur(14px)', y: 10 });
-  gsap.set('#hero-label', { opacity: 0, y: 12, filter: 'blur(6px)' });
+  headlineLines.forEach((line) => { line.style.overflow = 'visible'; });
 
-  const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+  // Normal clean transition — zero blur, crisp fade and gentle upward slide
+  gsap.set('.hl-word', { opacity: 0, y: 22 });
+  if (platformChips.length) {
+    gsap.set(platformChips, { opacity: 0, y: 10, scale: 0.9 });
+  }
+  gsap.set('#hero-platform-icons', { opacity: 1 });
+  gsap.set('#hero-desc', { opacity: 0, y: 16 });
+  gsap.set('#hero-actions', { opacity: 0, y: 18 });
 
-  // 1. Micro label: subtle fade up
-  tl.fromTo('#hero-label',
-    { opacity: 0, y: 12, filter: 'blur(6px)' },
-    { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.55 },
-    0.2
-  );
+  const tl = gsap.timeline({
+    defaults: { ease: 'power3.out' },
+    onComplete: () => {
+      // Clear inline properties so text is 100% natural, crisp, and responsive
+      gsap.set('.hl-word, #hero-platform-icons, .platform-chip, #hero-desc, #hero-actions', { clearProps: 'opacity,transform,y,scale' });
+    }
+  });
 
-  // 2. Headline — word-by-word blur-fade reveal (ROI Media style)
-  //    Explicitly from blurred/invisible to sharp/visible with per-word stagger
-  tl.fromTo('.hl-word',
-    { opacity: 0, filter: 'blur(14px)', y: 10 },
+  // 1. Line 1: Normal clean word reveal
+  tl.fromTo(line1Words.length ? line1Words : '.hl-word',
+    { opacity: 0, y: 22 },
     {
       opacity: 1,
-      filter: 'blur(0px)',
       y: 0,
-      duration: 0.55,
-      stagger: { each: 0.08, ease: 'none' },
+      duration: 0.65,
+      stagger: 0.045,
       ease: 'power3.out',
     },
-    0.3
+    0.05
   );
 
-  // 3. Editorial paragraph: blur-fade in
+  // 2. Inline Platform Chips: normal clean slide-up
+  if (platformChips.length) {
+    tl.fromTo(platformChips,
+      { opacity: 0, y: 10, scale: 0.9 },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.5,
+        stagger: 0.06,
+        ease: 'power2.out'
+      },
+      0.3
+    );
+  } else {
+    tl.fromTo('#hero-platform-icons',
+      { opacity: 0, y: 10 },
+      { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' },
+      0.3
+    );
+  }
+
+  // 3. Line 2: Normal clean word reveal
+  if (line2Words.length) {
+    tl.fromTo(line2Words,
+      { opacity: 0, y: 22 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.65,
+        stagger: 0.045,
+        ease: 'power3.out',
+      },
+      0.22
+    );
+  }
+
+  // 4. Subtitle paragraph: normal clean fade in
   tl.fromTo('#hero-desc',
-    { opacity: 0, y: 14, filter: 'blur(6px)' },
-    { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.55, ease: 'power3.out' },
-    1.0
+    { opacity: 0, y: 16 },
+    { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' },
+    0.45
   );
 
-  // 4. Action buttons
-  tl.to('#hero-actions', {
-    opacity: 1,
-    y: 0,
-    duration: 0.5,
-    ease: 'power3.out',
-  }, 1.25);
-
-  // 4b. Sculpture stage reveal
-  tl.fromTo('.hero-sculpture-col',
-    { opacity: 0, scale: 0.94 },
-    { opacity: 1, scale: 1, duration: 0.9, ease: 'power3.out' },
-    0.2
+  // 5. Action gradient buttons: normal clean fade in
+  tl.fromTo('#hero-actions',
+    { opacity: 0, y: 18 },
+    { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' },
+    0.6
   );
 
-  // 5. Floating badges with stagger cascade
-  tl.fromTo('.floating-badge-item',
-    { opacity: 0, x: 8, scale: 1 },
-    { opacity: 1, x: 0, scale: 1, duration: 0.4, stagger: 0.08, ease: 'power3.out' },
-    1.2
-  );
-
-  // 6. Scroll indicator
-  tl.to('#scroll-indicator', {
-    opacity: 1,
-    duration: 0.8,
-  }, '-=0.4');
-
-  // 7. Trusted by ambitious brands strip
+  // 6. Trusted by ambitious brands strip (if present)
   tl.fromTo('.section-trusted',
-    { opacity: 0, y: 15 },
-    { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' },
-    '-=0.6'
+    { opacity: 0, y: 12 },
+    { opacity: 1, y: 0, duration: 0.65, ease: 'power3.out' },
+    0.75
   );
 
-  // Hero parallax on scroll (push content up with depth)
+  // Hero parallax on scroll (gentle depth push)
   gsap.to('.hero-content', {
-    y: -80,
-    opacity: 0.3,
-    ease: 'none',
-    scrollTrigger: {
-      trigger: '.hero-section',
-      start: 'top top',
-      end: 'bottom top',
-      scrub: 1.5,
-    }
-  });
-
-  gsap.to('.hero-sculpture-col', {
-    y: -50,
-    scale: 0.95,
-    ease: 'none',
-    scrollTrigger: {
-      trigger: '.hero-section',
-      start: 'top top',
-      end: 'bottom top',
-      scrub: 2,
-    }
-  });
-
-  gsap.to('.hero-badges-track', {
     y: -40,
-    opacity: 0,
+    opacity: 0.5,
     ease: 'none',
     scrollTrigger: {
       trigger: '.hero-section',
-      start: '30% top',
+      start: 'top top',
       end: 'bottom top',
-      scrub: 1.8,
+      scrub: 1.2,
     }
+  });
+
+  // Replay trigger on headline for testing & interactive polish
+  if (!heroHeadline.hasAttribute('data-replay-attached')) {
+    heroHeadline.setAttribute('data-replay-attached', 'true');
+    heroHeadline.addEventListener('click', () => {
+      initHeroIntro(false);
+    });
+  }
+}
+
+// Expose globally for replay / testing
+window.initHeroIntro = initHeroIntro;
+
+// Automatically re-trigger hero intro on Vite hot reload so updates are instantly visible
+if (import.meta.hot) {
+  import.meta.hot.accept(() => {
+    setTimeout(() => initHeroIntro(false), 80);
   });
 }
 

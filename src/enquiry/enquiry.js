@@ -163,10 +163,7 @@ function injectEnquiryModal() {
           </div>
 
           <div class="enquiry-success-actions">
-            <a href="#" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-chat" id="btn-success-whatsapp">
-              <span>Chat on WhatsApp</span>
-              <span>↗</span>
-            </a>
+            <button type="button" class="btn-primary-cyan-enquiry" id="btn-success-close">Done</button>
             <button type="button" class="btn-enquiry-reset" id="btn-enquiry-reset">Send Another Note</button>
           </div>
         </div>
@@ -328,20 +325,6 @@ function bindModalEvents() {
     // Save lead into persistent storage & forward to Google Sheets
     const saved = await saveLead(data);
 
-    // Update success screen
-    document.getElementById('lead-ref-id').textContent = saved ? saved.id : 'HV-RECEIVED';
-
-    // WhatsApp shortcut
-    const waText = encodeURIComponent(
-      `Hello Highverz Team, I just submitted an inquiry on Highverz!\n\n` +
-      `Name: ${data.name}\n` +
-      `Contact: ${data.contact}\n` +
-      `Link: ${data.handle}\n` +
-      `Message: ${data.message || 'Ready to connect'}`
-    );
-    const waBtn = document.getElementById('btn-success-whatsapp');
-    waBtn.href = `https://wa.me/919999999999?text=${waText}`;
-
     submitBtn.disabled = false;
     submitBtnText.textContent = 'Send Inquiry';
 
@@ -349,6 +332,14 @@ function bindModalEvents() {
     formStage.style.display = 'none';
     successStage.classList.add('is-visible');
   });
+
+  // Done button to close modal
+  const doneBtn = document.getElementById('btn-success-close');
+  if (doneBtn) {
+    doneBtn.addEventListener('click', () => {
+      closeEnquiryModal();
+    });
+  }
 
   // Reset form to submit another
   resetBtn.addEventListener('click', () => {

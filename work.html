@@ -13,14 +13,18 @@
     <title>Work & Services — HIGHVERZ Creative Agency</title>
     <meta name="description" content="Explore Highverz's full suite of creative services, video editing, 3D CGI visual effects, viral short-form systems, brand design, and featured case studies." />
 
-    <!-- Google Font: Classic Luxury Editorial (Playfair Display, Instrument Serif) & Modern Precision Sans (Plus Jakarta Sans) -->
+    <!-- Typography System: Satoshi (Display Headlines) & Inter (Precision Sans) matching Clutra reference -->
+    <link rel="preconnect" href="https://api.fontshare.com" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600;1,700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap"
+      href="https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,400,300,901,701,501,401,301&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/coolvetica" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap"
+      rel="stylesheet"
+    />
 
     <!-- Core Style Bundle -->
     <link rel="stylesheet" href="/src/style.css" />
@@ -144,46 +148,41 @@
     </section>
 
     <!-- ================================================================
-         04. FEATURED PORTFOLIO — CRAFTED FOR IMPACT
+         04. FEATURED PORTFOLIO — CLEAN SHOWCASE
          ================================================================ -->
-    <section class="section-portfolio" id="work">
-      <div class="portfolio-header-container">
-        <div class="portfolio-meta-box">
-          <span class="section-tag">FEATURED WORK</span>
-          <h2 class="portfolio-section-title">Crafted for<br/>Impact.</h2>
-        </div>
-
-        <div class="portfolio-header-right">
-          <a href="#contact" class="explore-services-btn" data-cursor="TALK">
-            <span>Start a Campaign</span>
-            <span class="btn-arrow-icon">↗</span>
-          </a>
-        </div>
-      </div>
-
+    <section class="section-portfolio work-section-clean" id="work">
       <!-- Main Showcase Container (Non-Marquee Editorial Grid Layout) -->
       <div class="work-portfolio-container">
 
         <!-- Showcase 1: Creator Roster Grid (Active by default) -->
         <div class="work-showcase-wrapper active" id="portfolio-showcase-influencers">
-          <!-- Category Filter Bar -->
-          <div class="work-creators-filter-bar">
-            <button class="work-filter-chip active" data-creator-filter="all">
-              <span>All Creators</span>
-              <span class="chip-count">(08)</span>
-            </button>
-            <button class="work-filter-chip" data-creator-filter="personal-brand">
-              <span>Personal Brands</span>
-              <span class="chip-count">(03)</span>
-            </button>
-            <button class="work-filter-chip" data-creator-filter="viral-media">
-              <span>Viral Media</span>
-              <span class="chip-count">(02)</span>
-            </button>
-            <button class="work-filter-chip" data-creator-filter="finance-scale">
-              <span>Finance &amp; Scale</span>
-              <span class="chip-count">(03)</span>
-            </button>
+          <!-- Clean Category Filter Bar & Action Row -->
+          <div class="work-toolbar-row">
+            <div class="work-creators-filter-bar">
+              <button class="work-filter-chip active" data-creator-filter="all">
+                <span>All Creators</span>
+                <span class="chip-count">(08)</span>
+              </button>
+              <button class="work-filter-chip" data-creator-filter="personal-brand">
+                <span>Personal Brands</span>
+                <span class="chip-count">(03)</span>
+              </button>
+              <button class="work-filter-chip" data-creator-filter="viral-media">
+                <span>Viral Media</span>
+                <span class="chip-count">(02)</span>
+              </button>
+              <button class="work-filter-chip" data-creator-filter="finance-scale">
+                <span>Finance &amp; Scale</span>
+                <span class="chip-count">(03)</span>
+              </button>
+            </div>
+
+            <div class="work-toolbar-action">
+              <a href="#contact" class="explore-services-btn" data-cursor="TALK">
+                <span>Start a Campaign</span>
+                <span class="btn-arrow-icon">↗</span>
+              </a>
+            </div>
           </div>
 
           <!-- 4-Column Editorial Creator Grid -->

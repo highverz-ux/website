@@ -118,6 +118,13 @@ export class HighverzIntro {
     }
     if (this.container) gsap.set(this.container, { opacity: 1 });
 
+    this.safetyTimer = setTimeout(() => {
+      if (!this.isCompleted) {
+        devLog('safety timeout triggered');
+        this.arrive();
+      }
+    }, 3800);
+
     this.timeline = gsap.timeline({
       onComplete: () => {
         this.arrive();
@@ -269,6 +276,11 @@ export class HighverzIntro {
     if (this.isDestroyed) return;
     this.isDestroyed = true;
 
+    if (this.safetyTimer) {
+      clearTimeout(this.safetyTimer);
+      this.safetyTimer = null;
+    }
+
     if (this.timeline) {
       this.timeline.kill();
       this.timeline = null;
@@ -385,7 +397,15 @@ export function initHighverzIntro(options = {}) {
  */
 export function replayHighverzIntro() {
   devLog('replay');
-  initHighverzIntro({ force: true });
+  initHighverzIntro({ 
+    force: true,
+    onComplete: () => {
+      if (window.lenis) window.lenis.start();
+      if (typeof window.initHeroIntro === 'function') {
+        window.initHeroIntro(false);
+      }
+    }
+  });
 }
 
 // Dev console access

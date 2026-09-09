@@ -9,14 +9,18 @@
     <title>Highverz- Creative Agency</title>
     <meta name="description" content="Highverz is a creative agency turning ideas into powerful visual stories that connect, engage & convert." />
 
-    <!-- Google Font: Classic Luxury Editorial (Playfair Display, Instrument Serif) & Modern Precision Sans (Plus Jakarta Sans) -->
+    <!-- Typography System: Satoshi (Display Headlines) & Inter (Precision Sans) matching Clutra reference -->
+    <link rel="preconnect" href="https://api.fontshare.com" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600;1,700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap"
+      href="https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,400,300,901,701,501,401,301&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/coolvetica" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap"
+      rel="stylesheet"
+    />
 
     <!-- Favicon & Brand Icons -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -156,23 +160,87 @@
     </header>
 
     <!-- ================================================================
-         02. HERO SECTION (100% MATCHING REFERENCE DESIGN)
+         02. HERO SECTION — REDESIGNED (Clutra-Inspired Centered Layout)
          ================================================================ -->
     <section class="hero-section" id="hero">
       <div class="hero-bg-accent" aria-hidden="true"></div>
 
       <div class="hero-container">
+
+        <!-- Centered Hero Content -->
+        <div class="hero-content hero-content--centered">
+
+          <!-- Display Headline — Centered with platform chip badges inline -->
+          <h1 class="hero-headline hero-headline--centered" id="hero-headline">
+            <span class="hero-headline-line">
+              <span class="hl-word" data-word>Turn</span>
+              <span class="hl-word" data-word>Your</span>
+              <span class="hl-word" data-word>Content</span>
+              <span class="hl-word" data-word>Into</span>
+              <span class="hl-word highlight-cyan font-bold-italic" data-word>Reach</span>
+              <!-- Platform Chip Badges Inline (Matching Clutra Reference) -->
+              <span class="hl-platform-chips" id="hero-platform-icons">
+                <span class="platform-chip platform-chip--yt" aria-label="YouTube Shorts">
+                  <span class="platform-chip-inner">
+                    <img src="/logos/youtube-shorts.png" alt="YouTube Shorts" class="platform-chip-img platform-chip-img--yt" />
+                  </span>
+                </span>
+                <span class="platform-chip platform-chip--tt" aria-label="TikTok">
+                  <span class="platform-chip-inner">
+                    <img src="/logos/tiktok.svg" alt="TikTok" class="platform-chip-img platform-chip-img--tt" />
+                  </span>
+                </span>
+                <span class="platform-chip platform-chip--meta" aria-label="Meta">
+                  <span class="platform-chip-inner">
+                    <img src="/logos/meta.png" alt="Meta" class="platform-chip-img platform-chip-img--meta" />
+                  </span>
+                </span>
+              </span>
+            </span>
+            <span class="hero-headline-line">
+              <span class="hl-word" data-word>Turn</span>
+              <span class="hl-word" data-word>Your</span>
+              <span class="hl-word" data-word>Name</span>
+              <span class="hl-word" data-word>Into</span>
+              <span class="hl-word" data-word>a</span>
+              <span class="hl-word highlight-cyan font-bold-italic" data-word>Brand</span>
+            </span>
+          </h1>
+
+          <p class="hero-description hero-description--centered" id="hero-desc">
+            We build the accounts in-house, post daily, and track every clip to a sale.<br class="hide-mobile">
+            We get you real revenue, not just views.
+          </p>
+
+          <!-- CTA Buttons — Centered -->
+          <div class="hero-actions hero-actions--centered" id="hero-actions">
+            <a href="#contact" class="btn-primary-cyan" data-cursor="START">
+              <span>Book a Strategy Call</span>
+              <span class="btn-arrow">↗</span>
+            </a>
+            <a href="#about" class="btn-secondary-dark" data-cursor="EXPLORE">
+              <span>Our Story</span>
+              <span class="btn-arrow">↗</span>
+            </a>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================================================================
+         PRESERVED: Original Hero Section (uncomment to restore)
+         ================================================================
+    <section class="hero-section-original" id="hero-original">
+      <div class="hero-bg-accent" aria-hidden="true"></div>
+      <div class="hero-container">
         <div class="hero-layout">
-
-          <!-- Left Editorial Content -->
           <div class="hero-content">
-
             <div class="hero-label-wrap">
-              <span class="hero-micro-label" id="hero-label">STRATEGY. CONTENT. DISTRIBUTION. IMPACT.</span>
+              <span class="hero-micro-label" id="hero-label-orig">STRATEGY. CONTENT. DISTRIBUTION. IMPACT.</span>
             </div>
-
-            <!-- Display Headline (Word-by-Word Blur Reveal, ROI Media style) -->
-            <h1 class="hero-headline" id="hero-headline">
+            <h1 class="hero-headline" id="hero-headline-orig">
               <span class="hero-headline-line">
                 <span class="hl-word" data-word>Turn</span>
                 <span class="hl-word" data-word>Your</span>
@@ -189,87 +257,51 @@
                 <span class="hl-word highlight-cyan" data-word>Brand.</span>
               </span>
             </h1>
-
-            <p class="hero-description" id="hero-desc">
+            <p class="hero-description" id="hero-desc-orig">
               Highverz helps creators and brands turn powerful content into attention, distribution and measurable growth.
             </p>
-
-            <!-- Buttons matching Reference Design -->
-            <div class="hero-actions" id="hero-actions">
+            <div class="hero-actions" id="hero-actions-orig">
               <a href="#work" class="btn-primary-cyan" data-cursor="EXPLORE">
-                <span>View Our Work</span>
-                <span class="btn-arrow">↗</span>
+                <span>View Our Work</span><span class="btn-arrow">↗</span>
               </a>
               <a href="#contact" class="btn-secondary-dark" data-cursor="START">
-                <span>Let's Talk</span>
-                <span class="btn-arrow">↗</span>
+                <span>Let's Talk</span><span class="btn-arrow">↗</span>
               </a>
             </div>
-
           </div>
-
-          <!-- Middle 2D Monolith Brand Visual Stage -->
-          <div class="hero-sculpture-col" id="hero-sculpture-col">
+          <div class="hero-sculpture-col" id="hero-sculpture-col-orig">
             <div class="sculpture-halo" aria-hidden="true"></div>
-            <div class="canvas-3d-wrapper" id="hv-canvas-container">
-              <canvas id="hv-canvas" style="display: none;"></canvas>
+            <div class="canvas-3d-wrapper" id="hv-canvas-container-orig">
+              <canvas id="hv-canvas-orig" style="display: none;"></canvas>
             </div>
           </div>
-
-          <!-- Right Floating Badges Track (Connected Line matching Reference) -->
-          <div class="hero-badges-track" id="hero-badges">
+          <div class="hero-badges-track" id="hero-badges-orig">
             <div class="badges-vertical-line" aria-hidden="true"></div>
-
             <div class="floating-badge-item" data-cursor="STRATEGY">
-              <div class="badge-icon-wrap">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
-                </svg>
-              </div>
+              <div class="badge-icon-wrap"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
               <span class="badge-text">Brand Strategy</span>
             </div>
-
             <div class="floating-badge-item" data-cursor="DESIGN">
-              <div class="badge-icon-wrap">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/>
-                </svg>
-              </div>
+              <div class="badge-icon-wrap"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg></div>
               <span class="badge-text">Creative Design</span>
             </div>
-
             <div class="floating-badge-item" data-cursor="MOTION">
-              <div class="badge-icon-wrap">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
-                </svg>
-              </div>
+              <div class="badge-icon-wrap"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></div>
               <span class="badge-text">Motion & Video</span>
             </div>
-
             <div class="floating-badge-item" data-cursor="GROWTH">
-              <div class="badge-icon-wrap">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/>
-                </svg>
-              </div>
+              <div class="badge-icon-wrap"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg></div>
               <span class="badge-text">Growth Driven</span>
             </div>
           </div>
-
         </div>
       </div>
-
-      <!-- Scroll Down Indicator matching Reference Design -->
-      <div class="scroll-indicator" id="scroll-indicator">
-        <div class="scroll-circle-icon">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>
-          </svg>
-        </div>
+      <div class="scroll-indicator" id="scroll-indicator-orig">
+        <div class="scroll-circle-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></div>
         <span class="scroll-text">SCROLL TO EXPLORE</span>
       </div>
     </section>
+    -->
 
 
 

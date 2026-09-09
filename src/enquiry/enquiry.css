@@ -134,7 +134,7 @@ body.enquiry-modal-open .admin-leads-close {
 }
 
 .enquiry-title {
-  font-family: var(--font-display, 'Syne', sans-serif);
+  font-family: var(--font-display, 'Satoshi', sans-serif);
   font-size: 2rem;
   font-weight: 900;
   color: var(--text-primary, #ffffff);
@@ -385,7 +385,7 @@ body.enquiry-modal-open .admin-leads-close {
 }
 
 .enquiry-success-title {
-  font-family: var(--font-display, 'Syne', sans-serif);
+  font-family: var(--font-display, 'Satoshi', sans-serif);
   font-size: 1.85rem;
   font-weight: 900;
   color: var(--text-primary, #ffffff);
@@ -417,24 +417,28 @@ body.enquiry-modal-open .admin-leads-close {
   justify-content: center;
 }
 
-.btn-whatsapp-chat {
+.btn-primary-cyan-enquiry {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  background: #25d366;
-  color: #000000;
+  background: var(--accent-cyan, #00e5ff);
+  color: #07090b;
   font-size: 0.9rem;
   font-weight: 800;
-  padding: 0.75rem 1.4rem;
+  padding: 0.75rem 1.6rem;
   border-radius: 10px;
   text-decoration: none;
-  box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 229, 255, 0.3);
   transition: all 0.25s ease;
 }
 
-.btn-whatsapp-chat:hover {
+.btn-primary-cyan-enquiry:hover {
+  background: #26ecff;
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(37, 211, 102, 0.5);
+  box-shadow: 0 8px 25px rgba(0, 229, 255, 0.5);
 }
 
 .btn-enquiry-reset {
@@ -525,7 +529,7 @@ body.enquiry-modal-open .admin-leads-close {
 }
 
 .admin-leads-title {
-  font-family: var(--font-display, 'Syne', sans-serif);
+  font-family: var(--font-display, 'Satoshi', sans-serif);
   font-size: 1.6rem;
   font-weight: 800;
   color: #ffffff;

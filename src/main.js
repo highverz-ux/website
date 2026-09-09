@@ -44,7 +44,10 @@ function initLenis() {
 }
 
 // Initialize on DOM Ready or immediately if document is already ready
+let hasBooted = false;
 function boot() {
+  if (hasBooted) return;
+  hasBooted = true;
   initLenis();
   initThemeSystem();
   initCustomCursor();
@@ -82,18 +85,20 @@ function boot() {
   } else if (!isDedicatedPage) {
     const skipIntro = window.location.search.includes('no-intro') || sessionStorage.getItem('highverzIntroPlayed');
     if (skipIntro) {
+      // Intro overlay already played — remove it and run hero animation directly
       const introEl = document.getElementById('highverz-intro');
       if (introEl) introEl.remove();
       if (lenis) lenis.start();
-      initHeroIntro();
+      // Still animate the hero words — just skip the intro overlay wait
+      initHeroIntro(false);
     } else {
-      // Home page entrance / refresh: play minimal premium Highverz intro
+      // First visit: play the premium Highverz intro screen, then animate hero
       sessionStorage.setItem('highverzIntroPlayed', 'true');
       if (lenis) lenis.stop();
       initHighverzIntro({
         onComplete: () => {
           if (lenis) lenis.start();
-          initHeroIntro();
+          initHeroIntro(false);
         }
       });
     }
@@ -342,23 +347,259 @@ function initCustomCursor() {
 }
 
 // ==========================================================================
-// 02. NAVBAR SCROLL BLUR & TRANSITION
+// ==========================================================================
+// 02. NAVBAR SCROLL ANIMATION, SMART DIRECTION & ACTIVE INDICATOR
 // ==========================================================================
 function initNavbar() {
   const navbar = document.getElementById('navbar');
   if (!navbar) return;
 
-  ScrollTrigger.create({
-    start: 60,
-    onUpdate: (self) => {
-      if (self.scroll() > 60) {
-        navbar.classList.add('scrolled');
-      } else {
+  const navList = navbar.querySelector('.nav-list');
+  const navLinks = navbar.querySelectorAll('.nav-link');
+  let activeLink = navbar.querySelector('.nav-link.active');
+
+  // ------------------------------------------------------------------------
+  // A. Desktop Sliding Pill Indicator (.nav-indicator)
+  // ------------------------------------------------------------------------
+  let indicator = null;
+  function positionIndicator(targetEl, isHover = false) {
+    if (!indicator || !navList) return;
+    if (!targetEl || targetEl.offsetParent === null) {
+      indicator.style.opacity = '0';
+      return;
+    }
+
+    const rect = targetEl.getBoundingClientRect();
+    const listRect = navList.getBoundingClientRect();
+    const left = rect.left - listRect.left;
+    const width = rect.width;
+
+    indicator.style.width = `${Math.round(width)}px`;
+    indicator.style.transform = `translate(${Math.round(left)}px, -50%) translateZ(0)`;
+    indicator.style.opacity = '1';
+
+    if (isHover) {
+      indicator.classList.add('is-hovered');
+    } else {
+      indicator.classList.remove('is-hovered');
+    }
+  }
+
+  if (navList) {
+    indicator = navList.querySelector('.nav-indicator');
+    if (!indicator) {
+      indicator = document.createElement('div');
+      indicator.className = 'nav-indicator';
+      indicator.setAttribute('aria-hidden', 'true');
+      navList.appendChild(indicator);
+    }
+
+    // Set initial indicator position
+    if (activeLink) {
+      requestAnimationFrame(() => positionIndicator(activeLink, false));
+    }
+
+    // Hover interactions across desktop nav items
+    navLinks.forEach((link) => {
+      link.addEventListener('mouseenter', () => positionIndicator(link, true));
+      link.addEventListener('focus', () => positionIndicator(link, true));
+    });
+
+    navList.addEventListener('mouseleave', () => {
+      activeLink = navbar.querySelector('.nav-link.active');
+      if (activeLink) {
+        positionIndicator(activeLink, false);
+      } else if (indicator) {
+        indicator.style.opacity = '0';
+      }
+    });
+
+    // Recalculate indicator on resize / font load
+    const handleResize = () => {
+      activeLink = navbar.querySelector('.nav-link.active');
+      if (activeLink) positionIndicator(activeLink, false);
+    };
+    window.addEventListener('resize', handleResize, { passive: true });
+    if (document.fonts) {
+      document.fonts.ready.then(handleResize);
+    }
+  }
+
+  // ------------------------------------------------------------------------
+  // B. Scroll Direction & Floating State Transition
+  // ------------------------------------------------------------------------
+  let lastScrollY = window.scrollY || 0;
+  let isHidden = false;
+  let isScrolled = false;
+  let isProgrammaticScroll = false;
+  let scrollDownDistance = 0;
+  let scrollUpDistance = 0;
+  let lastScrollTime = performance.now();
+
+  function onScrollUpdate(currentScrollY) {
+    const scrollY = Math.max(0, currentScrollY);
+
+    // Initial state near top of page (hero navbar)
+    if (scrollY <= 55) {
+      if (isScrolled) {
         navbar.classList.remove('scrolled');
+        isScrolled = false;
+      }
+      if (isHidden) {
+        navbar.classList.remove('nav-hidden');
+        isHidden = false;
+      }
+      scrollDownDistance = 0;
+      scrollUpDistance = 0;
+      lastScrollY = scrollY;
+      return;
+    }
+
+    // Scrolled state (compact, higher blur, sleek shadow)
+    if (scrollY > 55 && !isScrolled) {
+      navbar.classList.add('scrolled');
+      isScrolled = true;
+    }
+
+    // If scrolling programmatically or mobile drawer is active, keep navbar pinned and visible
+    if (isProgrammaticScroll || document.body.classList.contains('mobile-menu-active')) {
+      if (isHidden) {
+        navbar.classList.remove('nav-hidden');
+        isHidden = false;
+      }
+      lastScrollY = scrollY;
+      return;
+    }
+
+    const delta = scrollY - lastScrollY;
+    const now = performance.now();
+    const timeDelta = Math.max(now - lastScrollTime, 1);
+    const velocity = Math.abs(delta) / timeDelta;
+    lastScrollTime = now;
+
+    if (delta > 3) {
+      // Scrolling down
+      scrollUpDistance = 0;
+      scrollDownDistance += delta;
+
+      // Only hide if scrolled well past hero (> 280px) AND user is scrolling down quickly
+      if (scrollY > 280 && (scrollDownDistance > 140 || velocity > 1.2) && !isHidden) {
+        navbar.classList.add('nav-hidden');
+        isHidden = true;
+      }
+    } else if (delta < -3) {
+      // Scrolling up
+      scrollDownDistance = 0;
+      scrollUpDistance += Math.abs(delta);
+
+      // Any intentional upward scroll reveals navbar smoothly
+      if ((scrollUpDistance > 8 || scrollY <= 140) && isHidden) {
+        navbar.classList.remove('nav-hidden');
+        isHidden = false;
       }
     }
+
+    lastScrollY = scrollY;
+  }
+
+  // Hook into Lenis smooth scroll and native scroll
+  if (window.lenis) {
+    window.lenis.on('scroll', (e) => onScrollUpdate(e.scroll));
+  }
+  window.addEventListener('scroll', () => {
+    onScrollUpdate(window.scrollY);
+  }, { passive: true });
+
+  // Peek reveal: when cursor moves to top 50px of the viewport, bring navbar back
+  window.addEventListener('mousemove', (e) => {
+    if (e.clientY <= 50 && isHidden) {
+      navbar.classList.remove('nav-hidden');
+      isHidden = false;
+    }
+  }, { passive: true });
+
+  // ------------------------------------------------------------------------
+  // C. Section Scroll & In-Page Smooth Navigation
+  // ------------------------------------------------------------------------
+  const inPageLinks = navbar.querySelectorAll('.nav-menu a, .brand-logo');
+  inPageLinks.forEach((link) => {
+    link.addEventListener('click', (e) => {
+      const href = link.getAttribute('href');
+      if (!href) return;
+
+      let targetEl = null;
+      if (href.startsWith('#')) {
+        targetEl = document.querySelector(href);
+      } else if (href === '/index.html' && (window.location.pathname === '/' || window.location.pathname.endsWith('index.html'))) {
+        targetEl = document.getElementById('hero');
+      }
+
+      if (targetEl) {
+        e.preventDefault();
+        isProgrammaticScroll = true;
+        navbar.classList.remove('nav-hidden');
+        isHidden = false;
+
+        // Update active class & slide indicator
+        if (link.classList.contains('nav-link')) {
+          navLinks.forEach((l) => l.classList.remove('active'));
+          link.classList.add('active');
+          activeLink = link;
+          positionIndicator(link, false);
+        }
+
+        if (window.lenis) {
+          window.lenis.scrollTo(targetEl, {
+            offset: -80,
+            duration: 1.2,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t))
+          });
+        } else {
+          const top = targetEl.getBoundingClientRect().top + window.scrollY - 80;
+          window.scrollTo({ top, behavior: 'smooth' });
+        }
+
+        setTimeout(() => {
+          isProgrammaticScroll = false;
+        }, 1300);
+      }
+    });
   });
 
+  // ------------------------------------------------------------------------
+  // D. ScrollSpy on Homepage Sections
+  // ------------------------------------------------------------------------
+  const isHomepage = window.location.pathname === '/' || window.location.pathname.endsWith('index.html');
+  if (isHomepage && 'IntersectionObserver' in window) {
+    const sectionSelectors = [
+      { id: 'hero', linkSelector: '.nav-link[href="/index.html"]' }
+    ];
+
+    const observer = new IntersectionObserver((entries) => {
+      if (isProgrammaticScroll) return;
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const match = sectionSelectors.find((s) => s.id === entry.target.id);
+          if (match) {
+            const targetNav = navbar.querySelector(match.linkSelector);
+            if (targetNav && !targetNav.classList.contains('active')) {
+              navLinks.forEach((l) => l.classList.remove('active'));
+              targetNav.classList.add('active');
+              activeLink = targetNav;
+              positionIndicator(targetNav, false);
+            }
+          }
+        }
+      });
+    }, { rootMargin: '-30% 0px -60% 0px' });
+
+    sectionSelectors.forEach((item) => {
+      const el = document.getElementById(item.id);
+      if (el) observer.observe(el);
+    });
+  }
+
+  // Initialize mobile drawer
   initMobileNav(navbar);
 }
 
@@ -445,20 +686,57 @@ function initMobileNav(navbar) {
 
   function openMenu() {
     isOpen = true;
-    if (toggleBtn) toggleBtn.classList.add('is-active');
+    if (toggleBtn) {
+      toggleBtn.classList.add('is-active');
+      toggleBtn.setAttribute('aria-expanded', 'true');
+    }
     overlay.classList.add('is-open');
     overlay.setAttribute('aria-hidden', 'false');
     document.body.classList.add('mobile-menu-active');
     if (window.lenis) window.lenis.stop();
+
+    // Staggered Entrance Animation
+    if (typeof gsap !== 'undefined') {
+      gsap.fromTo(overlay,
+        { opacity: 0, y: -20 },
+        { opacity: 1, y: 0, duration: 0.38, ease: 'power3.out' }
+      );
+      gsap.fromTo(overlay.querySelectorAll('.mobile-nav-item'),
+        { opacity: 0, y: 24 },
+        { opacity: 1, y: 0, duration: 0.45, stagger: 0.065, ease: 'power3.out', delay: 0.08 }
+      );
+      gsap.fromTo(overlay.querySelector('.mobile-nav-cta-box'),
+        { opacity: 0, y: 18 },
+        { opacity: 1, y: 0, duration: 0.4, ease: 'power3.out', delay: 0.28 }
+      );
+    }
   }
 
   function closeMenu() {
+    if (!isOpen) return;
     isOpen = false;
-    if (toggleBtn) toggleBtn.classList.remove('is-active');
-    overlay.classList.remove('is-open');
-    overlay.setAttribute('aria-hidden', 'true');
+    if (toggleBtn) {
+      toggleBtn.classList.remove('is-active');
+      toggleBtn.setAttribute('aria-expanded', 'false');
+    }
     document.body.classList.remove('mobile-menu-active');
     if (window.lenis) window.lenis.start();
+
+    if (typeof gsap !== 'undefined') {
+      gsap.to(overlay, {
+        opacity: 0,
+        y: -16,
+        duration: 0.25,
+        ease: 'power2.in',
+        onComplete: () => {
+          overlay.classList.remove('is-open');
+          overlay.setAttribute('aria-hidden', 'true');
+        }
+      });
+    } else {
+      overlay.classList.remove('is-open');
+      overlay.setAttribute('aria-hidden', 'true');
+    }
   }
 
   if (toggleBtn) {
@@ -513,38 +791,52 @@ function initMobileNav(navbar) {
 }
 
 // ==========================================================================
-// 03. HERO CHOREOGRAPHY (MASKED REVEAL & BADGES)
+// 03. HERO CHOREOGRAPHY (WORD BLUR-FADE REVEAL — ROI Media style)
 // ==========================================================================
-function initHeroIntro() {
+function initHeroIntro(immediate = false) {
   const heroLabel = document.getElementById('hero-label');
   if (!heroLabel) return;
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    gsap.set('#hero-label, .hl-word, #hero-desc, #hero-actions, .hero-sculpture-col, .floating-badge-item, #scroll-indicator', { opacity: 1, y: 0, x: 0, scale: 1, filter: 'none' });
+  if (immediate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    gsap.set('#hero-label, .hl-word, #hero-desc, #hero-actions, .hero-sculpture-col, .floating-badge-item, #scroll-indicator, .section-trusted', { 
+      opacity: 1, y: 0, x: 0, scale: 1, filter: 'none', clearProps: 'all' 
+    });
     return;
   }
-  const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
 
-  // 1. Micro label reveals
-  tl.fromTo('#hero-label', 
-    { opacity: 0, y: 15 },
-    { opacity: 1, y: 0, duration: 0.45 }, 0.65
+  // Set initial hidden state via GSAP (overrides CSS) so fromTo works reliably
+  gsap.set('.hl-word', { opacity: 0, filter: 'blur(14px)', y: 10 });
+  gsap.set('#hero-label', { opacity: 0, y: 12, filter: 'blur(6px)' });
+
+  const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+  // 1. Micro label: subtle fade up
+  tl.fromTo('#hero-label',
+    { opacity: 0, y: 12, filter: 'blur(6px)' },
+    { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.55 },
+    0.2
   );
 
-  // 2. Display headline masked line reveal
-  tl.to('.hl-word', {
-    y: '0%',
-    duration: 0.6,
-    stagger: 0.12,
-    ease: 'power4.out',
-  }, 0.75);
+  // 2. Headline — word-by-word blur-fade reveal (ROI Media style)
+  //    Explicitly from blurred/invisible to sharp/visible with per-word stagger
+  tl.fromTo('.hl-word',
+    { opacity: 0, filter: 'blur(14px)', y: 10 },
+    {
+      opacity: 1,
+      filter: 'blur(0px)',
+      y: 0,
+      duration: 0.55,
+      stagger: { each: 0.08, ease: 'none' },
+      ease: 'power3.out',
+    },
+    0.3
+  );
 
-  // 3. Editorial paragraph
-  tl.to('#hero-desc', {
-    opacity: 1,
-    y: 0,
-    duration: 0.55,
-    ease: 'power3.out',
-  }, 1.0);
+  // 3. Editorial paragraph: blur-fade in
+  tl.fromTo('#hero-desc',
+    { opacity: 0, y: 14, filter: 'blur(6px)' },
+    { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.55, ease: 'power3.out' },
+    1.0
+  );
 
   // 4. Action buttons
   tl.to('#hero-actions', {
@@ -552,7 +844,7 @@ function initHeroIntro() {
     y: 0,
     duration: 0.5,
     ease: 'power3.out',
-  }, 1.15);
+  }, 1.25);
 
   // 4b. Sculpture stage reveal
   tl.fromTo('.hero-sculpture-col',
@@ -565,7 +857,7 @@ function initHeroIntro() {
   tl.fromTo('.floating-badge-item',
     { opacity: 0, x: 8, scale: 1 },
     { opacity: 1, x: 0, scale: 1, duration: 0.4, stagger: 0.08, ease: 'power3.out' },
-    1.3
+    1.2
   );
 
   // 6. Scroll indicator
@@ -819,13 +1111,13 @@ function initCreatorsSection() {
       ease: 'expo.out',
       scrollTrigger: {
         trigger: section,
-        start: 'top 82%',
-        toggleActions: 'play none none reverse',
+        start: 'top 85%',
+        once: true,
       }
     }
   );
 
-  // Cards reveal with staggered entrance
+  // Cards reveal with staggered entrance (once: true guarantees cards never disappear on scroll)
   gsap.fromTo(cards,
     { opacity: 0, y: 40 },
     {
@@ -833,25 +1125,29 @@ function initCreatorsSection() {
       duration: 1.1,
       stagger: 0.18,
       ease: 'expo.out',
+      clearProps: 'transform',
       scrollTrigger: {
         trigger: section,
-        start: 'top 78%',
-        toggleActions: 'play none none reverse',
+        start: 'top 85%',
+        once: true,
       }
     }
   );
 
-  // Trigger stat animation whenever the creators section enters the viewport (scrolling down or back up)
+  // Trigger stat animation whenever the creators section enters the viewport
   ScrollTrigger.create({
     trigger: section,
-    start: 'top 75%',
+    start: 'top 80%',
+    once: true,
     onEnter: () => {
-      animateStats();
-    },
-    onEnterBack: () => {
       animateStats();
     }
   });
+
+  // If section is already within viewport on page load/refresh
+  if (section.getBoundingClientRect().top < window.innerHeight) {
+    animateStats();
+  }
 }
 
 
@@ -892,7 +1188,7 @@ function initStatementParallax() {
       scrollTrigger: {
         trigger: '.statement-caption',
         start: 'top 88%',
-        toggleActions: 'play none none reverse',
+        once: true,
       }
     }
   );
@@ -977,34 +1273,58 @@ function initWorkHeroIntro() {
   const workHero = document.querySelector('.work-hero-section');
   if (!workHero) return;
 
-  const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    gsap.set('.work-hero-tag, .work-hero-title, .work-hero-desc, .work-hero-cta, .work-metric-item',
+      { opacity: 1, y: 0, filter: 'none', clearProps: 'all' }
+    );
+    return;
+  }
+
+  // Set initial state immediately (CSS opacity:0 already prevents FOUC)
+  gsap.set('.work-hero-tag',    { opacity: 0, y: 14, filter: 'blur(8px)' });
+  gsap.set('.work-hero-title',  { opacity: 0, y: 28, filter: 'blur(10px)' });
+  gsap.set('.work-hero-desc',   { opacity: 0, y: 18, filter: 'blur(6px)' });
+  gsap.set('.work-hero-cta',    { opacity: 0, y: 12 });
+  gsap.set('.work-metric-item', { opacity: 0, y: 20, scale: 0.96 });
+
+  const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
 
   tl.fromTo('.work-hero-tag',
-    { opacity: 0, y: 15 },
-    { opacity: 1, y: 0, duration: 0.8, delay: 0.15 }
+    { opacity: 0, y: 14, filter: 'blur(8px)' },
+    { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.55 },
+    0.15
   );
 
   tl.fromTo('.work-hero-title',
-    { opacity: 0, y: 35 },
-    { opacity: 1, y: 0, duration: 1.1 },
-    '-=0.5'
+    { opacity: 0, y: 28, filter: 'blur(10px)' },
+    { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.7 },
+    0.28
   );
 
   tl.fromTo('.work-hero-desc',
-    { opacity: 0, y: 25 },
-    { opacity: 1, y: 0, duration: 0.9 },
-    '-=0.7'
+    { opacity: 0, y: 18, filter: 'blur(6px)' },
+    { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.6 },
+    0.48
   );
 
+  tl.fromTo('.work-hero-cta',
+    { opacity: 0, y: 12 },
+    { opacity: 1, y: 0, duration: 0.5 },
+    0.65
+  );
+
+  // Metrics grid — stagger with scale spring for the 2x2 feel
   tl.fromTo('.work-metric-item',
-    { opacity: 0, y: 20 },
+    { opacity: 0, y: 20, scale: 0.96 },
     {
-      opacity: 1, y: 0, duration: 0.7, stagger: 0.08,
+      opacity: 1, y: 0, scale: 1,
+      duration: 0.55, stagger: 0.1,
+      ease: 'back.out(1.2)',
       onComplete: () => {
         animateWorkMetrics();
       }
     },
-    '-=0.6'
+    0.35
   );
 
   function animateWorkMetrics() {
@@ -1067,48 +1387,98 @@ function initTeamPageAnimations() {
     '-=0.6'
   );
 
-  // Founder Cards ScrollTrigger Entrance
-  const founderCards = document.querySelectorAll('.founder-card');
-  founderCards.forEach((card, idx) => {
-    gsap.fromTo(card,
-      { opacity: 0, y: 50 },
-      {
-        opacity: 1,
-        y: 0,
-        duration: 1.2,
-        delay: idx * 0.15,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: card,
-          start: 'top 85%',
-          toggleActions: 'play none none none'
+  // Founder Accordion Cards Entrance & Expand/Collapse Interactivity
+  const accordCards = document.querySelectorAll('.founder-accord-card');
+  if (accordCards.length > 0) {
+    accordCards.forEach((card, idx) => {
+      // Entrance animation
+      gsap.fromTo(card,
+        { opacity: 0, y: 35 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.9,
+          delay: idx * 0.12,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: card,
+            start: 'top 88%',
+            toggleActions: 'play none none none'
+          }
+        }
+      );
+
+      const body = card.querySelector('.accord-body');
+      if (!body) return;
+
+      // Ensure initially closed
+      gsap.set(body, { height: 0, opacity: 0, overflow: 'hidden' });
+
+      function toggleAccordion() {
+        const isOpen = card.classList.contains('is-open');
+
+        if (isOpen) {
+          // Collapse
+          card.classList.remove('is-open');
+          card.setAttribute('aria-expanded', 'false');
+          gsap.to(body, {
+            height: 0,
+            opacity: 0,
+            duration: 0.38,
+            ease: 'power3.inOut',
+            onComplete: () => {
+              if (window.ScrollTrigger) ScrollTrigger.refresh();
+            }
+          });
+        } else {
+          // Collapse any other open cards
+          accordCards.forEach((other) => {
+            if (other !== card && other.classList.contains('is-open')) {
+              other.classList.remove('is-open');
+              other.setAttribute('aria-expanded', 'false');
+              const otherBody = other.querySelector('.accord-body');
+              if (otherBody) {
+                gsap.to(otherBody, { height: 0, opacity: 0, duration: 0.32, ease: 'power3.inOut' });
+              }
+            }
+          });
+
+          // Expand current
+          card.classList.add('is-open');
+          card.setAttribute('aria-expanded', 'true');
+          gsap.fromTo(body,
+            { height: 0, opacity: 0 },
+            {
+              height: 'auto',
+              opacity: 1,
+              duration: 0.45,
+              ease: 'power3.out',
+              onComplete: () => {
+                if (window.ScrollTrigger) ScrollTrigger.refresh();
+              }
+            }
+          );
         }
       }
-    );
 
-    // Subtle 3D tilt on mousemove
-    card.addEventListener('mousemove', (e) => {
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left - rect.width / 2;
-      const y = e.clientY - rect.top - rect.height / 2;
-      gsap.to(card, {
-        rotationY: x * 0.02,
-        rotationX: -y * 0.02,
-        transformPerspective: 1000,
-        duration: 0.4,
-        ease: 'power2.out'
+      card.setAttribute('tabindex', '0');
+      card.setAttribute('role', 'button');
+      card.setAttribute('aria-expanded', 'false');
+
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('a') || e.target.closest('button')) return;
+        toggleAccordion();
+      });
+
+      card.addEventListener('keydown', (e) => {
+        if (e.key === ' ' || e.key === 'Enter') {
+          if (e.target.closest('a')) return;
+          e.preventDefault();
+          toggleAccordion();
+        }
       });
     });
-
-    card.addEventListener('mouseleave', () => {
-      gsap.to(card, {
-        rotationY: 0,
-        rotationX: 0,
-        duration: 0.7,
-        ease: 'power3.out'
-      });
-    });
-  });
+  }
 
   // Pillar Cards Entrance
   const pillarCards = document.querySelectorAll('.pillar-card');
@@ -1356,8 +1726,9 @@ function initPortfolioGrid() {
 // 09. TESTIMONIALS REVEAL
 // ==========================================================================
 function initTestimonialsReveal() {
+  const section = document.querySelector('.section-testimonials');
   const cards = document.querySelectorAll('.testi-card');
-  if (!cards.length) return;
+  if (!section || !cards.length) return;
 
   gsap.fromTo('.testimonials-header',
     { opacity: 0, y: 40 },
@@ -1366,25 +1737,26 @@ function initTestimonialsReveal() {
       duration: 1.2,
       ease: 'expo.out',
       scrollTrigger: {
-        trigger: '.section-testimonials',
-        start: 'top 80%',
-        toggleActions: 'play none none reverse',
+        trigger: section,
+        start: 'top 85%',
+        once: true,
       }
     }
   );
 
   cards.forEach((card, i) => {
     gsap.fromTo(card,
-      { opacity: 0, y: 50, scale: 0.95 },
+      { opacity: 0, y: 40, scale: 0.98 },
       {
         opacity: 1, y: 0, scale: 1,
-        duration: 1,
-        delay: i * 0.12,
+        duration: 0.9,
+        delay: i * 0.1,
         ease: 'expo.out',
+        clearProps: 'transform',
         scrollTrigger: {
-          trigger: card,
-          start: 'top 88%',
-          toggleActions: 'play none none reverse',
+          trigger: section,
+          start: 'top 85%',
+          once: true,
         }
       }
     );
@@ -1411,7 +1783,7 @@ function initProcessScrollDraw() {
       scrollTrigger: {
         trigger: processSection,
         start: 'top 80%',
-        toggleActions: 'play none none reverse',
+        once: true,
       }
     }
   );
@@ -1463,7 +1835,7 @@ function initCTAReveal() {
       scrollTrigger: {
         trigger: ctaSection,
         start: 'top 75%',
-        toggleActions: 'play none none reverse',
+        once: true,
       }
     }
   );
@@ -1478,7 +1850,7 @@ function initCTAReveal() {
       scrollTrigger: {
         trigger: ctaSection,
         start: 'top 72%',
-        toggleActions: 'play none none reverse',
+        once: true,
       }
     }
   );
@@ -1493,7 +1865,7 @@ function initCTAReveal() {
       scrollTrigger: {
         trigger: ctaSection,
         start: 'top 70%',
-        toggleActions: 'play none none reverse',
+        once: true,
       }
     }
   );

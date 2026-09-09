@@ -148,146 +148,96 @@
           </p>
         </div>
 
-        <div class="founders-grid">
+        <div class="founders-accordion-grid">
 
           <!-- Founder 1: Vivek -->
-          <article class="founder-card-architectural" id="founder-vivek">
-            <div class="founder-card-glow" aria-hidden="true"></div>
-
-            <!-- Top Header Row -->
-            <div class="founder-exec-header">
-              <div class="founder-emblem-wrap">
-                <div class="founder-emblem-icon">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
-                  </svg>
+          <article class="founder-accord-card" id="founder-vivek" data-founder="vivek">
+            <!-- Collapsed header (always visible) -->
+            <div class="accord-header">
+              <div class="accord-header-left">
+                <div class="accord-avatar">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
                 </div>
-                <div class="founder-status-badge">
-                  <span class="badge-dot"></span>
-                  <span>FOUNDER · CREATIVE DIRECTION</span>
+                <div class="accord-name-block">
+                  <h3 class="accord-name">Vivek</h3>
+                  <span class="accord-role">Founder &amp; Executive Creative Director</span>
                 </div>
               </div>
-
-              <!-- Founder Socials -->
-              <div class="founder-socials">
-                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="founder-social-btn" aria-label="Vivek on LinkedIn" data-cursor="LINKEDIN ↗">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9v8.37H9.2V10.9H6.46M7.83 6.45a1.63 1.63 0 0 0-1.63 1.63c0 .9.73 1.63 1.63 1.63.9 0 1.63-.73 1.63-1.63 0-.9-.73-1.63-1.63-1.63z"/></svg>
-                </a>
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="founder-social-btn" aria-label="Vivek on Instagram" data-cursor="INSTAGRAM ↗">
+              <div class="accord-header-right">
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="accord-social" aria-label="Instagram" onclick="event.stopPropagation()">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
                 </a>
+                <div class="accord-toggle-icon" aria-hidden="true">
+                  <span></span><span></span>
+                </div>
               </div>
             </div>
 
-            <!-- Founder Identity & Bio -->
-            <div class="founder-body">
-              <div class="founder-titles-block">
-                <span class="founder-role-micro">EXECUTIVE CREATIVE LEAD</span>
-                <h3 class="founder-full-name">Vivek</h3>
-                <span class="founder-role-title">Founder &amp; Executive Creative Director</span>
-              </div>
-
-              <!-- Domain Tags -->
-              <div class="founder-domains">
-                <span class="domain-chip">Narrative Architecture</span>
-                <span class="domain-chip">Brand Identity</span>
-                <span class="domain-chip">Cognitive Hook Design</span>
-                <span class="domain-chip">Kinetic Pacing</span>
-              </div>
-
-              <p class="founder-bio">
-                Pioneering the intersection of cinematic vertical storytelling and cognitive viewer retention. Vivek leads creative direction across Highverz's elite creator and corporate roster, architecting the visual signatures, frame pacing, and psychological hooks that turn fleeting impressions into dedicated audience equity.
-              </p>
-
-              <blockquote class="founder-quote">
-                “Content isn't about arbitrary volume—it's about undeniable resonance. If you don't command the first three seconds, you forfeit the entire narrative.”
-              </blockquote>
-            </div>
-
-            <!-- Achievements Footer -->
-            <div class="founder-achieve-footer">
-              <div class="achieve-col">
-                <span class="achieve-val">4.5B+</span>
-                <span class="achieve-lbl">Views Directed</span>
-              </div>
-              <div class="achieve-col">
-                <span class="achieve-val">60 Days</span>
-                <span class="achieve-lbl">Avg. Scale Horizon</span>
-              </div>
-              <div class="achieve-col">
-                <span class="achieve-val">100%</span>
-                <span class="achieve-lbl">Bespoke Storytelling</span>
+            <!-- Expanded details (hidden initially) -->
+            <div class="accord-body">
+              <div class="accord-body-inner">
+                <div class="accord-tags">
+                  <span class="domain-chip">Narrative Architecture</span>
+                  <span class="domain-chip">Brand Identity</span>
+                  <span class="domain-chip">Cognitive Hook Design</span>
+                  <span class="domain-chip">Kinetic Pacing</span>
+                </div>
+                <p class="founder-bio">
+                  Pioneering the intersection of cinematic vertical storytelling and cognitive viewer retention. Vivek leads creative direction across Highverz's elite creator and corporate roster, architecting the visual signatures, frame pacing, and psychological hooks that turn fleeting impressions into dedicated audience equity.
+                </p>
+                <blockquote class="founder-quote">
+                  "Content isn't about arbitrary volume—it's about undeniable resonance. If you don't command the first three seconds, you forfeit the entire narrative."
+                </blockquote>
+                <div class="accord-stats">
+                  <div class="accord-stat"><span class="accord-stat-val">4.5B+</span><span class="accord-stat-lbl">Views Directed</span></div>
+                  <div class="accord-stat"><span class="accord-stat-val">60 Days</span><span class="accord-stat-lbl">Avg. Scale Horizon</span></div>
+                  <div class="accord-stat"><span class="accord-stat-val">100%</span><span class="accord-stat-lbl">Bespoke Storytelling</span></div>
+                </div>
               </div>
             </div>
           </article>
 
           <!-- Founder 2: Krishna -->
-          <article class="founder-card-architectural" id="founder-krishna">
-            <div class="founder-card-glow" aria-hidden="true"></div>
-
-            <!-- Top Header Row -->
-            <div class="founder-exec-header">
-              <div class="founder-emblem-wrap">
-                <div class="founder-emblem-icon">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/>
-                  </svg>
+          <article class="founder-accord-card" id="founder-krishna" data-founder="krishna">
+            <div class="accord-header">
+              <div class="accord-header-left">
+                <div class="accord-avatar">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
                 </div>
-                <div class="founder-status-badge">
-                  <span class="badge-dot"></span>
-                  <span>CO-FOUNDER · GROWTH &amp; SCALE</span>
+                <div class="accord-name-block">
+                  <h3 class="accord-name">Krishna</h3>
+                  <span class="accord-role">Co-Founder &amp; Head of Operations</span>
                 </div>
               </div>
-
-              <!-- Founder Socials -->
-              <div class="founder-socials">
-                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="founder-social-btn" aria-label="Krishna on LinkedIn" data-cursor="LINKEDIN ↗">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9v8.37H9.2V10.9H6.46M7.83 6.45a1.63 1.63 0 0 0-1.63 1.63c0 .9.73 1.63 1.63 1.63.9 0 1.63-.73 1.63-1.63 0-.9-.73-1.63-1.63-1.63z"/></svg>
-                </a>
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="founder-social-btn" aria-label="Krishna on Instagram" data-cursor="INSTAGRAM ↗">
+              <div class="accord-header-right">
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="accord-social" aria-label="Instagram" onclick="event.stopPropagation()">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
                 </a>
+                <div class="accord-toggle-icon" aria-hidden="true">
+                  <span></span><span></span>
+                </div>
               </div>
             </div>
 
-            <!-- Founder Identity & Bio -->
-            <div class="founder-body">
-              <div class="founder-titles-block">
-                <span class="founder-role-micro">EXECUTIVE OPERATIONS &amp; GROWTH</span>
-                <h3 class="founder-full-name">Krishna</h3>
-                <span class="founder-role-title">Co-Founder &amp; Head of Operations</span>
-              </div>
-
-              <!-- Domain Tags -->
-              <div class="founder-domains">
-                <span class="domain-chip">Algorithmic Distribution</span>
-                <span class="domain-chip">Viral Syndication</span>
-                <span class="domain-chip">Omnichannel Clipping</span>
-                <span class="domain-chip">Operational Velocity</span>
-              </div>
-
-              <p class="founder-bio">
-                The strategic growth engine powering Highverz's exponential delivery velocity. Krishna oversees the multi-platform distribution pipelines, viral syndication infrastructure, and retention analytics loops that systematically compound audience reach across Instagram, YouTube Shorts, and TikTok.
-              </p>
-
-              <blockquote class="founder-quote">
-                “Scale is fundamentally an engineering discipline. When you couple world-class creative with rigorous algorithmic distribution, viral compounding stops being accidental and becomes predictable.”
-              </blockquote>
-            </div>
-
-            <!-- Achievements Footer -->
-            <div class="founder-achieve-footer">
-              <div class="achieve-col">
-                <span class="achieve-val">24–48h</span>
-                <span class="achieve-lbl">Pipeline Velocity</span>
-              </div>
-              <div class="achieve-col">
-                <span class="achieve-val">92%+</span>
-                <span class="achieve-lbl">Avg. Retention Hold</span>
-              </div>
-              <div class="achieve-col">
-                <span class="achieve-val">Omni</span>
-                <span class="achieve-lbl">Platform Syndication</span>
+            <div class="accord-body">
+              <div class="accord-body-inner">
+                <div class="accord-tags">
+                  <span class="domain-chip">Algorithmic Distribution</span>
+                  <span class="domain-chip">Viral Syndication</span>
+                  <span class="domain-chip">Omnichannel Clipping</span>
+                  <span class="domain-chip">Operational Velocity</span>
+                </div>
+                <p class="founder-bio">
+                  The strategic growth engine powering Highverz's exponential delivery velocity. Krishna oversees the multi-platform distribution pipelines, viral syndication infrastructure, and retention analytics loops that systematically compound audience reach across Instagram, YouTube Shorts, and TikTok.
+                </p>
+                <blockquote class="founder-quote">
+                  "Scale is fundamentally an engineering discipline. When you couple world-class creative with rigorous algorithmic distribution, viral compounding stops being accidental and becomes predictable."
+                </blockquote>
+                <div class="accord-stats">
+                  <div class="accord-stat"><span class="accord-stat-val">24–48h</span><span class="accord-stat-lbl">Pipeline Velocity</span></div>
+                  <div class="accord-stat"><span class="accord-stat-val">92%+</span><span class="accord-stat-lbl">Avg. Retention Hold</span></div>
+                  <div class="accord-stat"><span class="accord-stat-val">Omni</span><span class="accord-stat-lbl">Platform Syndication</span></div>
+                </div>
               </div>
             </div>
           </article>

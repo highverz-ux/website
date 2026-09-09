@@ -24,6 +24,9 @@
 
     <!-- Core Style Bundle -->
     <link rel="stylesheet" href="/src/style.css" />
+    <script>
+      document.documentElement.classList.add('js');
+    </script>
   </head>
   <body>
     <!-- Ambient Background Glow -->
@@ -98,262 +101,51 @@
          ================================================================ -->
     <section class="work-hero-section" id="work-hero">
       <div class="work-hero-container">
-        <div class="work-hero-content">
+
+        <!-- Left: Tag + Title + Description -->
+        <div class="work-hero-left">
           <div class="work-hero-tag">OUR WORK &amp; CAPABILITIES</div>
           <h1 class="work-hero-title">
-            End-to-End Creative<br />
-            <span class="highlight-cyan">Solutions.</span>
+            Crafted for<br />
+            <span class="highlight-cyan">Impact.</span>
           </h1>
           <p class="work-hero-desc">
-            Highverz is a full-service creative agency powering high-growth personal brands, global consumer products, and disruptive tech companies with world-class visual content, viral distribution systems, and hyper-realistic 3D experiences.
+            End-to-end creative production for the world's most ambitious creators and brands — from viral short-form systems to cinematic 3D campaigns.
           </p>
+          <a href="/index.html#work" class="work-hero-cta explore-services-btn">
+            <span>View Case Studies</span>
+            <span class="btn-arrow-icon">&#x2197;</span>
+          </a>
+        </div>
 
-          <!-- Key Agency Metrics -->
-          <div class="work-hero-metrics">
+        <!-- Right: 2x2 Glass Metrics Grid -->
+        <div class="work-hero-right">
+          <div class="work-hero-metrics-grid">
             <div class="work-metric-item">
               <span class="work-metric-val" data-metric-target="4.5" data-metric-suffix="B+">4.5B+</span>
               <span class="work-metric-label">Views Generated</span>
             </div>
             <div class="work-metric-item">
               <span class="work-metric-val" data-metric-target="100" data-metric-suffix="+">100+</span>
-              <span class="work-metric-label">High-Impact Campaigns</span>
+              <span class="work-metric-label">Campaigns Delivered</span>
             </div>
             <div class="work-metric-item">
               <span class="work-metric-val" data-metric-target="99.4" data-metric-suffix="%">99.4%</span>
               <span class="work-metric-label">Client Retention</span>
             </div>
             <div class="work-metric-item">
-              <span class="work-metric-val" data-metric-target="48" data-metric-prefix="24-" data-metric-suffix="h">24-48h</span>
+              <span class="work-metric-val" data-metric-target="48" data-metric-prefix="24&ndash;" data-metric-suffix="h">24&ndash;48h</span>
               <span class="work-metric-label">Production Velocity</span>
             </div>
           </div>
         </div>
-      </div>
-    </section>
-
-    <!-- ================================================================
-         03. SERVICES SECTION — "WHAT WE DO" (EXPANDED SUITE)
-         ================================================================ -->
-    <section class="section-services" id="services">
-      <div class="services-container">
-
-        <!-- Header Row -->
-        <div class="services-header-row">
-          <div class="services-label-box">
-            <span class="section-tag">WHAT WE DO</span>
-            <h2 class="services-main-title">End-to-End Creative<br/>Solutions</h2>
-          </div>
-          <div class="services-header-link">
-            <a href="#contact" class="explore-services-btn">
-              <span>Start Your Project</span>
-              <span class="btn-arrow-icon">↗</span>
-            </a>
-          </div>
-        </div>
-
-        <!-- Capability Filter Bar -->
-        <div class="services-filter-bar">
-          <button class="service-filter-btn active" data-filter="all">
-            <span>All Capabilities</span>
-            <span class="filter-count">(9)</span>
-          </button>
-          <button class="service-filter-btn" data-filter="video">
-            <span>Video &amp; Motion</span>
-            <span class="filter-count">(3)</span>
-          </button>
-          <button class="service-filter-btn" data-filter="3d">
-            <span>3D &amp; CGI</span>
-            <span class="filter-count">(1)</span>
-          </button>
-          <button class="service-filter-btn" data-filter="design">
-            <span>Branding &amp; Design</span>
-            <span class="filter-count">(3)</span>
-          </button>
-          <button class="service-filter-btn" data-filter="growth">
-            <span>Growth &amp; Ads</span>
-            <span class="filter-count">(2)</span>
-          </button>
-        </div>
-
-        <!-- 10 Comprehensive Service Cards -->
-        <div class="services-cards-grid expanded-grid" id="services-grid">
-
-          <!-- Card 1: Graphic Design -->
-          <div class="service-card-item" data-category="design" data-cursor="EXPLORE">
-            <div class="service-card-top">
-              <div class="service-card-icon-box">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/>
-                </svg>
-              </div>
-              <span class="service-card-category">Brand Identity</span>
-            </div>
-            <h3 class="service-card-title">Graphic Design</h3>
-            <p class="service-card-desc">Visual identities, color systems, guidelines, and marketing creatives that communicate your brand story with authority.</p>
-            <div class="service-card-tags">
-              <span class="service-tag-pill">Design Systems</span>
-              <span class="service-tag-pill">Key Visuals</span>
-              <span class="service-tag-pill">Collateral</span>
-            </div>
-          </div>
-
-          <!-- Card 2: Video Editing -->
-          <div class="service-card-item" data-category="video" data-cursor="EXPLORE">
-            <div class="service-card-top">
-              <div class="service-card-icon-box">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/>
-                </svg>
-              </div>
-              <span class="service-card-category">Post-Production</span>
-            </div>
-            <h3 class="service-card-title">Video Editing</h3>
-            <p class="service-card-desc">Cinematic pacing, bespoke sound design, precision color grading, and dynamic cuts that engage, entertain, and convert.</p>
-            <div class="service-card-tags">
-              <span class="service-tag-pill">Sound Architecture</span>
-              <span class="service-tag-pill">Color Grading</span>
-              <span class="service-tag-pill">4K Mastering</span>
-            </div>
-          </div>
-
-          <!-- Card 3: Short Form Content -->
-          <div class="service-card-item" data-category="video" data-cursor="EXPLORE">
-            <div class="service-card-top">
-              <div class="service-card-icon-box">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polygon points="5 3 19 12 5 21 5 3"/>
-                </svg>
-              </div>
-              <span class="service-card-category">Viral Systems</span>
-            </div>
-            <h3 class="service-card-title">Short Form Content</h3>
-            <p class="service-card-desc">Scroll-stopping vertical video systems for TikTok, Reels &amp; YouTube Shorts. High-retention hooks and multi-platform distribution.</p>
-            <div class="service-card-tags">
-              <span class="service-tag-pill">Hook Engineering</span>
-              <span class="service-tag-pill">Dynamic Subtitles</span>
-              <span class="service-tag-pill">High Retention</span>
-            </div>
-          </div>
-
-          <!-- Card 4: 3D / CGI -->
-          <div class="service-card-item" data-category="3d" data-cursor="EXPLORE">
-            <div class="service-card-top">
-              <div class="service-card-icon-box">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
-                </svg>
-              </div>
-              <span class="service-card-category">Visual Effects</span>
-            </div>
-            <h3 class="service-card-title">3D / CGI</h3>
-            <p class="service-card-desc">Photorealistic 3D product renders, abstract physical simulations, and surreal motion visuals that bring bold ideas to life with depth.</p>
-            <div class="service-card-tags">
-              <span class="service-tag-pill">Product Renders</span>
-              <span class="service-tag-pill">Blender / Octane</span>
-              <span class="service-tag-pill">Physics Sims</span>
-            </div>
-          </div>
-
-
-          <!-- Card 6: Motion Graphics -->
-          <div class="service-card-item" data-category="video" data-cursor="EXPLORE">
-            <div class="service-card-top">
-              <div class="service-card-icon-box">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                </svg>
-              </div>
-              <span class="service-card-category">Motion Design</span>
-            </div>
-            <h3 class="service-card-title">Motion Graphics</h3>
-            <p class="service-card-desc">Kinetic typography, animated logo reveals, UI motion graphics, and title sequences designed for slick brand prestige and high retention.</p>
-            <div class="service-card-tags">
-              <span class="service-tag-pill">Kinetic Type</span>
-              <span class="service-tag-pill">Logo Reveals</span>
-              <span class="service-tag-pill">UI Motion</span>
-            </div>
-          </div>
-
-          <!-- Card 7: Brand Strategy -->
-          <div class="service-card-item" data-category="design" data-cursor="EXPLORE">
-            <div class="service-card-top">
-              <div class="service-card-icon-box">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
-                </svg>
-              </div>
-              <span class="service-card-category">Strategy</span>
-            </div>
-            <h3 class="service-card-title">Brand Strategy</h3>
-            <p class="service-card-desc">Narrative positioning, core messaging frameworks, market differentiation, and personal brand architecture for founders and executives.</p>
-            <div class="service-card-tags">
-              <span class="service-tag-pill">Positioning</span>
-              <span class="service-tag-pill">Messaging Playbook</span>
-              <span class="service-tag-pill">Executive Branding</span>
-            </div>
-          </div>
-
-          <!-- Card 8: Paid Ad Creatives -->
-          <div class="service-card-item" data-category="growth" data-cursor="EXPLORE">
-            <div class="service-card-top">
-              <div class="service-card-icon-box">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                </svg>
-              </div>
-              <span class="service-card-category">Performance</span>
-            </div>
-            <h3 class="service-card-title">Paid Ad Creatives</h3>
-            <p class="service-card-desc">Direct-response video concepts, high-CTR hook testing variations, and scalable ad creative systems engineered to lower customer acquisition costs.</p>
-            <div class="service-card-tags">
-              <span class="service-tag-pill">Direct Response</span>
-              <span class="service-tag-pill">Meta &amp; TikTok Ads</span>
-              <span class="service-tag-pill">Hook Variations</span>
-            </div>
-          </div>
-
-          <!-- Card 9: Thumbnails & Packaging -->
-          <div class="service-card-item" data-category="design" data-cursor="EXPLORE">
-            <div class="service-card-top">
-              <div class="service-card-icon-box">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
-                </svg>
-              </div>
-              <span class="service-card-category">CTR Design</span>
-            </div>
-            <h3 class="service-card-title">Thumbnails &amp; Packaging</h3>
-            <p class="service-card-desc">Psychology-driven YouTube thumbnails engineered for high click-through rates, bespoke physical box packaging, and 3D unboxing mockups.</p>
-            <div class="service-card-tags">
-              <span class="service-tag-pill">CTR Psychology</span>
-              <span class="service-tag-pill">3D Mockups</span>
-              <span class="service-tag-pill">Print Prepress</span>
-            </div>
-          </div>
-
-          <!-- Card 10: Web & Digital Experiences -->
-          <div class="service-card-item" data-category="growth" data-cursor="EXPLORE">
-            <div class="service-card-top">
-              <div class="service-card-icon-box">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                </svg>
-              </div>
-              <span class="service-card-category">Digital Flagship</span>
-            </div>
-            <h3 class="service-card-title">Web &amp; Digital Experiences</h3>
-            <p class="service-card-desc">Modern interactive web experiences, high-converting landing pages, and WebGL animations designed to captivate visitors and drive conversions.</p>
-            <div class="service-card-tags">
-              <span class="service-tag-pill">Interactive UI</span>
-              <span class="service-tag-pill">GSAP Motion</span>
-              <span class="service-tag-pill">High Conversion</span>
-            </div>
-          </div>
-
-        </div>
 
       </div>
     </section>
+
+
+
+    
 
     <!-- ================================================================
          04. FEATURED PORTFOLIO — CRAFTED FOR IMPACT
@@ -366,17 +158,6 @@
         </div>
 
         <div class="portfolio-header-right">
-          <!-- Clean Toggle Pill (Influencers First) -->
-          <div class="portfolio-toggle-pill" role="tablist" aria-label="Portfolio category filter">
-            <button class="portfolio-toggle-btn active" data-portfolio-tab="influencers" role="tab" aria-selected="true" data-cursor="INFLUENCERS">
-              <span class="toggle-text">Influencers</span>
-              <span class="toggle-count">08</span>
-            </button>
-            <button class="portfolio-toggle-btn" data-portfolio-tab="brands" role="tab" aria-selected="false" data-cursor="BRANDS">
-              <span class="toggle-text">Brands</span>
-              <span class="toggle-count">06</span>
-            </button>
-            <div class="portfolio-toggle-glider" id="portfolio-glider"></div>
           </div>
 
           <a href="#contact" class="explore-services-btn" data-cursor="TALK">
@@ -713,144 +494,7 @@
           </div>
         </div>
 
-        <!-- Showcase 2: Brand Campaigns Grid (Toggled) -->
-        <div class="work-showcase-wrapper hidden" id="portfolio-showcase-brands">
-          <div class="work-brands-grid">
-
-            <a href="#contact" class="portfolio-vertical-card brand-card brand-samsung" data-cursor="VIEW PROJECT ↗">
-              <div class="p-card-media-wrap brand-logo-media">
-                <div class="p-brand-ambient-glow"></div>
-                <div class="p-brand-logo-stage">
-                  <img src="/assets/brands/samsung.svg" alt="Samsung Logo" class="p-brand-hero-logo" loading="lazy" />
-                </div>
-                <div class="p-card-gradient"></div>
-              </div>
-              <div class="p-card-top-row">
-                <span class="p-brand-tag"><span class="tag-pulse-cyan"></span>BRAND</span>
-                <span class="p-case-num">01</span>
-              </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">SAMSUNG</h3>
-                <span class="p-category">Visual Campaign • Galaxy Launch</span>
-                <div class="p-link-cta">
-                  <span>View Project</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </a>
-
-            <a href="#contact" class="portfolio-vertical-card brand-card brand-gillette" data-cursor="VIEW PROJECT ↗">
-              <div class="p-card-media-wrap brand-logo-media">
-                <div class="p-brand-ambient-glow"></div>
-                <div class="p-brand-logo-stage">
-                  <img src="/assets/brands/gillette.svg" alt="Gillette Logo" class="p-brand-hero-logo" loading="lazy" />
-                </div>
-                <div class="p-card-gradient"></div>
-              </div>
-              <div class="p-card-top-row">
-                <span class="p-brand-tag"><span class="tag-pulse-cyan"></span>BRAND</span>
-                <span class="p-case-num">02</span>
-              </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">GILLETTE</h3>
-                <span class="p-category">Global Social Campaign</span>
-                <div class="p-link-cta">
-                  <span>View Project</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </a>
-
-            <a href="#contact" class="portfolio-vertical-card brand-card brand-amd" data-cursor="VIEW PROJECT ↗">
-              <div class="p-card-media-wrap brand-logo-media">
-                <div class="p-brand-ambient-glow"></div>
-                <div class="p-brand-logo-stage">
-                  <img src="/assets/brands/amd.svg" alt="AMD Logo" class="p-brand-hero-logo" loading="lazy" />
-                </div>
-                <div class="p-card-gradient"></div>
-              </div>
-              <div class="p-card-top-row">
-                <span class="p-brand-tag"><span class="tag-pulse-cyan"></span>BRAND</span>
-                <span class="p-case-num">03</span>
-              </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">AMD</h3>
-                <span class="p-category">Gaming Campaign • Hardware Launch</span>
-                <div class="p-link-cta">
-                  <span>View Project</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </a>
-
-            <a href="#contact" class="portfolio-vertical-card brand-card brand-intel" data-cursor="VIEW PROJECT ↗">
-              <div class="p-card-media-wrap brand-logo-media">
-                <div class="p-brand-ambient-glow"></div>
-                <div class="p-brand-logo-stage">
-                  <img src="/assets/brands/intel.svg" alt="Intel Logo" class="p-brand-hero-logo" loading="lazy" />
-                </div>
-                <div class="p-card-gradient"></div>
-              </div>
-              <div class="p-card-top-row">
-                <span class="p-brand-tag"><span class="tag-pulse-cyan"></span>BRAND</span>
-                <span class="p-case-num">04</span>
-              </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">INTEL</h3>
-                <span class="p-category">CGI Architecture • Core Ultra</span>
-                <div class="p-link-cta">
-                  <span>View Project</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </a>
-
-            <a href="#contact" class="portfolio-vertical-card brand-card brand-nivea" data-cursor="VIEW PROJECT ↗">
-              <div class="p-card-media-wrap brand-logo-media">
-                <div class="p-brand-ambient-glow"></div>
-                <div class="p-brand-logo-stage">
-                  <img src="/assets/brands/nivea.svg" alt="Nivea Men Logo" class="p-brand-hero-logo" loading="lazy" />
-                </div>
-                <div class="p-card-gradient"></div>
-              </div>
-              <div class="p-card-top-row">
-                <span class="p-brand-tag"><span class="tag-pulse-cyan"></span>BRAND</span>
-                <span class="p-case-num">05</span>
-              </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">NIVEA MEN</h3>
-                <span class="p-category">Commercial Film Production</span>
-                <div class="p-link-cta">
-                  <span>View Project</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </a>
-
-            <a href="#contact" class="portfolio-vertical-card brand-card brand-zoomlion" data-cursor="VIEW PROJECT ↗">
-              <div class="p-card-media-wrap brand-logo-media">
-                <div class="p-brand-ambient-glow"></div>
-                <div class="p-brand-logo-stage">
-                  <img src="/assets/brands/zoomlion.svg" alt="Zoomlion Logo" class="p-brand-hero-logo" loading="lazy" />
-                </div>
-                <div class="p-card-gradient"></div>
-              </div>
-              <div class="p-card-top-row">
-                <span class="p-brand-tag"><span class="tag-pulse-cyan"></span>BRAND</span>
-                <span class="p-case-num">06</span>
-              </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">ZOOMLION</h3>
-                <span class="p-category">Industrial Visuals &amp; 3D Media</span>
-                <div class="p-link-cta">
-                  <span>View Project</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </a>
-
-          </div>
-        </div>
+        
 
       </div>
     </section>

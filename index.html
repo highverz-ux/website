@@ -25,7 +25,17 @@
 
     <link rel="stylesheet" href="/src/intro/intro.css" />
     <link rel="stylesheet" href="/src/style.css" />
-  </head>
+    <style>
+    /* Prevent FOUC for intro */
+    .hv-intro-hidden { display: none !important; }
+  </style>
+  <script>
+    document.documentElement.classList.add('js');
+    if (window.location.search.includes('no-intro') || sessionStorage.getItem('highverzIntroPlayed')) {
+      document.documentElement.classList.add('skip-intro');
+    }
+  </script>
+</head>
   <body class="dark-theme">
 
     <!-- ================================================================
@@ -161,11 +171,23 @@
               <span class="hero-micro-label" id="hero-label">STRATEGY. CONTENT. DISTRIBUTION. IMPACT.</span>
             </div>
 
-            <!-- Display Headline (Masked Line Reveal matching Reference) -->
+            <!-- Display Headline (Word-by-Word Blur Reveal, ROI Media style) -->
             <h1 class="hero-headline" id="hero-headline">
-              <span class="hl-row"><span class="hl-word">We Create</span></span>
-              <span class="hl-row"><span class="hl-word">Content That</span></span>
-              <span class="hl-row"><span class="hl-word highlight-cyan">Scales.</span></span>
+              <span class="hero-headline-line">
+                <span class="hl-word" data-word>Turn</span>
+                <span class="hl-word" data-word>Your</span>
+                <span class="hl-word" data-word>Content</span>
+                <span class="hl-word" data-word>Into</span>
+                <span class="hl-word highlight-cyan" data-word>Reach.</span>
+              </span>
+              <span class="hero-headline-line">
+                <span class="hl-word" data-word>Turn</span>
+                <span class="hl-word" data-word>Your</span>
+                <span class="hl-word" data-word>Name</span>
+                <span class="hl-word" data-word>Into</span>
+                <span class="hl-word" data-word>a</span>
+                <span class="hl-word highlight-cyan" data-word>Brand.</span>
+              </span>
             </h1>
 
             <p class="hero-description" id="hero-desc">
@@ -249,26 +271,7 @@
       </div>
     </section>
 
-    <!-- ================================================================
-         03. TRUSTED BY AMBITIOUS BRANDS STRIP (EXACT MATCH REFERENCE)
-         ================================================================ -->
-    <section class="section-trusted" id="trusted">
-      <div class="trusted-container">
-        <div class="trusted-label-block">
-          <span class="trusted-text-label">TRUSTED BY AMBITIOUS BRANDS</span>
-        </div>
-        <div class="trusted-logos-strip" id="trusted-logos">
-          <span class="brand-item">SAMSUNG</span>
-          <span class="brand-item">PHILIPS</span>
-          <span class="brand-item italic-brand">Gillette</span>
-          <span class="brand-item">NIVEA</span>
-          <span class="brand-item lowercase-brand">intel.</span>
-          <span class="brand-item">NVIDIA</span>
-          <span class="brand-item">AMD</span>
-          <span class="brand-item">ZOOMLION</span>
-        </div>
-      </div>
-    </section>
+
 
     <!-- ================================================================
          03b. STATS & CREATORS GROWTH SECTION
@@ -583,18 +586,6 @@
         </div>
 
         <div class="portfolio-header-right">
-          <!-- Clean Toggle Pill (Influencers First) -->
-          <div class="portfolio-toggle-pill" role="tablist" aria-label="Portfolio category filter">
-            <button class="portfolio-toggle-btn active" data-portfolio-tab="influencers" role="tab" aria-selected="true" data-cursor="INFLUENCERS">
-              <span class="toggle-text">Influencers</span>
-              <span class="toggle-count">08</span>
-            </button>
-            <button class="portfolio-toggle-btn" data-portfolio-tab="brands" role="tab" aria-selected="false" data-cursor="BRANDS">
-              <span class="toggle-text">Brands</span>
-              <span class="toggle-count">06</span>
-            </button>
-            <div class="portfolio-toggle-glider" id="portfolio-glider"></div>
-          </div>
 
           <a href="/work.html" class="explore-services-btn" data-cursor="EXPLORE">
             <span>View All Work & Services</span>
@@ -611,583 +602,198 @@
           <div class="portfolio-marquee-track">
 
             <!-- Set 1 -->
-            <a href="https://www.instagram.com/niv0ne/" target="_blank" rel="noopener noreferrer" class="portfolio-vertical-card influencer-card" data-cursor="INSTAGRAM ↗">
+            <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
-                <img src="/assets/creators/niv0ne.png" alt="Niv0ne Creator Case Study" class="p-card-img" loading="eager" />
+                <img src="/assets/creators/niv0ne.png" alt="Niv0ne" class="p-card-img" loading="eager" />
                 <div class="p-card-gradient"></div>
+                <h3 class="p-card-title">Niv0ne</h3>
               </div>
-              <div class="p-card-top-row">
-                <span class="p-influencer-tag"><span class="tag-pulse-pink"></span>CREATOR</span>
-                <span class="p-case-num">01</span>
+              <div class="p-card-views-btn">
+                <span>24.5M Views</span>
+                <span class="p-arrow">↗</span>
               </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">NIV0NE</h3>
-                <span class="p-category">Personal Brand • 2K → 100K+</span>
-                <div class="p-link-cta creator-cta">
-                  <span>Visit Instagram</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </a>
+            </div>
 
-            <a href="https://www.instagram.com/umarpnj/" target="_blank" rel="noopener noreferrer" class="portfolio-vertical-card influencer-card" data-cursor="INSTAGRAM ↗">
+            <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
-                <img src="/assets/creators/umarpnj.png" alt="Umarpnj Creator Case Study" class="p-card-img" loading="eager" />
+                <img src="/assets/creators/umarpnj.png" alt="Umarpnj" class="p-card-img" loading="eager" />
                 <div class="p-card-gradient"></div>
+                <h3 class="p-card-title">Umarpnj</h3>
               </div>
-              <div class="p-card-top-row">
-                <span class="p-influencer-tag"><span class="tag-pulse-pink"></span>CREATOR</span>
-                <span class="p-case-num">02</span>
+              <div class="p-card-views-btn">
+                <span>38.2M Views</span>
+                <span class="p-arrow">↗</span>
               </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">UMARPNJ</h3>
-                <span class="p-category">Viral Media • 0 → 400K+</span>
-                <div class="p-link-cta creator-cta">
-                  <span>Visit Instagram</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </a>
+            </div>
 
-            <article class="portfolio-vertical-card influencer-card" data-cursor="VIEW ↗">
+            <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
-                <img src="/assets/creators/alex-gonzalez.jpg" alt="Alex Gonzalez Swing Trading Lab" class="p-card-img" loading="eager" />
+                <img src="/assets/creators/alex-gonzalez.jpg" alt="Alex Gonzalez" class="p-card-img" loading="eager" />
                 <div class="p-card-gradient"></div>
+                <h3 class="p-card-title">Alex Gonzalez</h3>
               </div>
-              <div class="p-card-top-row">
-                <span class="p-influencer-tag"><span class="tag-pulse-pink"></span>CREATOR</span>
-                <span class="p-case-num">03</span>
+              <div class="p-card-views-btn">
+                <span>19.4M Views</span>
+                <span class="p-arrow">↗</span>
               </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">ALEX GONZALEZ</h3>
-                <span class="p-category">Founder, Swing Trading Lab • Trading & Lifestyle</span>
-                <div class="p-link-cta creator-cta">
-                  <span>View Showcase</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </article>
+            </div>
 
-            <article class="portfolio-vertical-card influencer-card" data-cursor="VIEW ↗">
+            <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
-                <img src="/assets/creators/sabri-suby.jpg" alt="Sabri Suby King Kong" class="p-card-img" loading="eager" />
+                <img src="/assets/creators/sabri-suby.jpg" alt="Sabri Suby" class="p-card-img" loading="eager" />
                 <div class="p-card-gradient"></div>
+                <h3 class="p-card-title">Sabri Suby</h3>
               </div>
-              <div class="p-card-top-row">
-                <span class="p-influencer-tag"><span class="tag-pulse-pink"></span>CREATOR</span>
-                <span class="p-case-num">04</span>
+              <div class="p-card-views-btn">
+                <span>45.0M Views</span>
+                <span class="p-arrow">↗</span>
               </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">SABRI SUBY</h3>
-                <span class="p-category">Founder, King Kong • Growth & Direct Response</span>
-                <div class="p-link-cta creator-cta">
-                  <span>View Showcase</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </article>
+            </div>
 
-            <article class="portfolio-vertical-card influencer-card" data-cursor="VIEW ↗">
+            <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
-                <img src="/assets/creators/iman-gadzhi.jpg" alt="Iman Gadzhi Educate" class="p-card-img" loading="eager" />
+                <img src="/assets/creators/iman-gadzhi.jpg" alt="Iman Gadzhi" class="p-card-img" loading="eager" />
                 <div class="p-card-gradient"></div>
+                <h3 class="p-card-title">Iman Gadzhi</h3>
               </div>
-              <div class="p-card-top-row">
-                <span class="p-influencer-tag"><span class="tag-pulse-pink"></span>CREATOR</span>
-                <span class="p-case-num">05</span>
+              <div class="p-card-views-btn">
+                <span>82.6M Views</span>
+                <span class="p-arrow">↗</span>
               </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">IMAN GADZHI</h3>
-                <span class="p-category">Founder, Educate.io • Digital Entrepreneur</span>
-                <div class="p-link-cta creator-cta">
-                  <span>View Showcase</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </article>
+            </div>
 
-            <article class="portfolio-vertical-card influencer-card" data-cursor="VIEW ↗">
+            <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
-                <img src="/assets/creators/jack-neel.jpg" alt="Jack Neel Storyteller" class="p-card-img" loading="eager" />
+                <img src="/assets/creators/jack-neel.jpg" alt="Jack Neel" class="p-card-img" loading="eager" />
                 <div class="p-card-gradient"></div>
+                <h3 class="p-card-title">Jack Neel</h3>
               </div>
-              <div class="p-card-top-row">
-                <span class="p-influencer-tag"><span class="tag-pulse-pink"></span>CREATOR</span>
-                <span class="p-case-num">06</span>
+              <div class="p-card-views-btn">
+                <span>54.1M Views</span>
+                <span class="p-arrow">↗</span>
               </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">JACK NEEL</h3>
-                <span class="p-category">Viral Storyteller • 10M+ Community</span>
-                <div class="p-link-cta creator-cta">
-                  <span>View Showcase</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </article>
+            </div>
 
-            <article class="portfolio-vertical-card influencer-card" data-cursor="VIEW ↗">
+            <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
-                <img src="/assets/creators/ben-azoulay.png" alt="Ben Azoulay Luxury Entrepreneur" class="p-card-img" loading="eager" />
+                <img src="/assets/creators/ben-azoulay.png" alt="Ben Azoulay" class="p-card-img" loading="eager" />
                 <div class="p-card-gradient"></div>
+                <h3 class="p-card-title">Ben Azoulay</h3>
               </div>
-              <div class="p-card-top-row">
-                <span class="p-influencer-tag"><span class="tag-pulse-pink"></span>CREATOR</span>
-                <span class="p-case-num">07</span>
+              <div class="p-card-views-btn">
+                <span>16.8M Views</span>
+                <span class="p-arrow">↗</span>
               </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">BEN AZOULAY</h3>
-                <span class="p-category">Luxury Entrepreneur • Business & Aviation</span>
-                <div class="p-link-cta creator-cta">
-                  <span>View Showcase</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </article>
+            </div>
 
-            <article class="portfolio-vertical-card influencer-card" data-cursor="VIEW ↗">
+            <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
-                <img src="/assets/creators/daniel-bitton.png" alt="Daniel Bitton Digital Entrepreneur" class="p-card-img" loading="eager" />
+                <img src="/assets/creators/daniel-bitton.png" alt="Daniel Bitton" class="p-card-img" loading="eager" />
                 <div class="p-card-gradient"></div>
+                <h3 class="p-card-title">Daniel Bitton</h3>
               </div>
-              <div class="p-card-top-row">
-                <span class="p-influencer-tag"><span class="tag-pulse-pink"></span>CREATOR</span>
-                <span class="p-case-num">08</span>
+              <div class="p-card-views-btn">
+                <span>29.3M Views</span>
+                <span class="p-arrow">↗</span>
               </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">DANIEL BITTON</h3>
-                <span class="p-category">E-Commerce & Scale • Digital Creator</span>
-                <div class="p-link-cta creator-cta">
-                  <span>View Showcase</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </article>
+            </div>
 
             <!-- Set 2 (Seamless loop duplicate) -->
-            <a href="https://www.instagram.com/niv0ne/" target="_blank" rel="noopener noreferrer" class="portfolio-vertical-card influencer-card" data-cursor="INSTAGRAM ↗" aria-hidden="true">
+            <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
                 <img src="/assets/creators/niv0ne.png" alt="" class="p-card-img" loading="lazy" />
                 <div class="p-card-gradient"></div>
+                <h3 class="p-card-title">Niv0ne</h3>
               </div>
-              <div class="p-card-top-row">
-                <span class="p-influencer-tag"><span class="tag-pulse-pink"></span>CREATOR</span>
-                <span class="p-case-num">01</span>
+              <div class="p-card-views-btn">
+                <span>24.5M Views</span>
+                <span class="p-arrow">↗</span>
               </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">NIV0NE</h3>
-                <span class="p-category">Personal Brand • 2K → 100K+</span>
-                <div class="p-link-cta creator-cta">
-                  <span>Visit Instagram</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </a>
+            </div>
 
-            <a href="https://www.instagram.com/umarpnj/" target="_blank" rel="noopener noreferrer" class="portfolio-vertical-card influencer-card" data-cursor="INSTAGRAM ↗" aria-hidden="true">
+            <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
                 <img src="/assets/creators/umarpnj.png" alt="" class="p-card-img" loading="lazy" />
                 <div class="p-card-gradient"></div>
+                <h3 class="p-card-title">Umarpnj</h3>
               </div>
-              <div class="p-card-top-row">
-                <span class="p-influencer-tag"><span class="tag-pulse-pink"></span>CREATOR</span>
-                <span class="p-case-num">02</span>
+              <div class="p-card-views-btn">
+                <span>38.2M Views</span>
+                <span class="p-arrow">↗</span>
               </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">UMARPNJ</h3>
-                <span class="p-category">Viral Media • 0 → 400K+</span>
-                <div class="p-link-cta creator-cta">
-                  <span>Visit Instagram</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </a>
+            </div>
 
-            <article class="portfolio-vertical-card influencer-card" data-cursor="VIEW ↗" aria-hidden="true">
+            <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
                 <img src="/assets/creators/alex-gonzalez.jpg" alt="" class="p-card-img" loading="lazy" />
                 <div class="p-card-gradient"></div>
+                <h3 class="p-card-title">Alex Gonzalez</h3>
               </div>
-              <div class="p-card-top-row">
-                <span class="p-influencer-tag"><span class="tag-pulse-pink"></span>CREATOR</span>
-                <span class="p-case-num">03</span>
+              <div class="p-card-views-btn">
+                <span>19.4M Views</span>
+                <span class="p-arrow">↗</span>
               </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">ALEX GONZALEZ</h3>
-                <span class="p-category">Founder, Swing Trading Lab • Trading & Lifestyle</span>
-                <div class="p-link-cta creator-cta">
-                  <span>View Showcase</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </article>
+            </div>
 
-            <article class="portfolio-vertical-card influencer-card" data-cursor="VIEW ↗" aria-hidden="true">
+            <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
                 <img src="/assets/creators/sabri-suby.jpg" alt="" class="p-card-img" loading="lazy" />
                 <div class="p-card-gradient"></div>
+                <h3 class="p-card-title">Sabri Suby</h3>
               </div>
-              <div class="p-card-top-row">
-                <span class="p-influencer-tag"><span class="tag-pulse-pink"></span>CREATOR</span>
-                <span class="p-case-num">04</span>
+              <div class="p-card-views-btn">
+                <span>45.0M Views</span>
+                <span class="p-arrow">↗</span>
               </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">SABRI SUBY</h3>
-                <span class="p-category">Founder, King Kong • Growth & Direct Response</span>
-                <div class="p-link-cta creator-cta">
-                  <span>View Showcase</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </article>
+            </div>
 
-            <article class="portfolio-vertical-card influencer-card" data-cursor="VIEW ↗" aria-hidden="true">
+            <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
                 <img src="/assets/creators/iman-gadzhi.jpg" alt="" class="p-card-img" loading="lazy" />
                 <div class="p-card-gradient"></div>
+                <h3 class="p-card-title">Iman Gadzhi</h3>
               </div>
-              <div class="p-card-top-row">
-                <span class="p-influencer-tag"><span class="tag-pulse-pink"></span>CREATOR</span>
-                <span class="p-case-num">05</span>
+              <div class="p-card-views-btn">
+                <span>82.6M Views</span>
+                <span class="p-arrow">↗</span>
               </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">IMAN GADZHI</h3>
-                <span class="p-category">Founder, Educate.io • Digital Entrepreneur</span>
-                <div class="p-link-cta creator-cta">
-                  <span>View Showcase</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </article>
+            </div>
 
-            <article class="portfolio-vertical-card influencer-card" data-cursor="VIEW ↗" aria-hidden="true">
+            <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
                 <img src="/assets/creators/jack-neel.jpg" alt="" class="p-card-img" loading="lazy" />
                 <div class="p-card-gradient"></div>
+                <h3 class="p-card-title">Jack Neel</h3>
               </div>
-              <div class="p-card-top-row">
-                <span class="p-influencer-tag"><span class="tag-pulse-pink"></span>CREATOR</span>
-                <span class="p-case-num">06</span>
+              <div class="p-card-views-btn">
+                <span>54.1M Views</span>
+                <span class="p-arrow">↗</span>
               </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">JACK NEEL</h3>
-                <span class="p-category">Viral Storyteller • 10M+ Community</span>
-                <div class="p-link-cta creator-cta">
-                  <span>View Showcase</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </article>
+            </div>
 
-            <article class="portfolio-vertical-card influencer-card" data-cursor="VIEW ↗" aria-hidden="true">
+            <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
                 <img src="/assets/creators/ben-azoulay.png" alt="" class="p-card-img" loading="lazy" />
                 <div class="p-card-gradient"></div>
+                <h3 class="p-card-title">Ben Azoulay</h3>
               </div>
-              <div class="p-card-top-row">
-                <span class="p-influencer-tag"><span class="tag-pulse-pink"></span>CREATOR</span>
-                <span class="p-case-num">07</span>
+              <div class="p-card-views-btn">
+                <span>16.8M Views</span>
+                <span class="p-arrow">↗</span>
               </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">BEN AZOULAY</h3>
-                <span class="p-category">Luxury Entrepreneur • Business & Aviation</span>
-                <div class="p-link-cta creator-cta">
-                  <span>View Showcase</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </article>
+            </div>
 
-            <article class="portfolio-vertical-card influencer-card" data-cursor="VIEW ↗" aria-hidden="true">
+            <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
                 <img src="/assets/creators/daniel-bitton.png" alt="" class="p-card-img" loading="lazy" />
                 <div class="p-card-gradient"></div>
+                <h3 class="p-card-title">Daniel Bitton</h3>
               </div>
-              <div class="p-card-top-row">
-                <span class="p-influencer-tag"><span class="tag-pulse-pink"></span>CREATOR</span>
-                <span class="p-case-num">08</span>
+              <div class="p-card-views-btn">
+                <span>29.3M Views</span>
+                <span class="p-arrow">↗</span>
               </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">DANIEL BITTON</h3>
-                <span class="p-category">E-Commerce & Scale • Digital Creator</span>
-                <div class="p-link-cta creator-cta">
-                  <span>View Showcase</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </article>
-
-          </div>
-        </div>
-
-        <!-- Track 2: Brands -->
-        <div class="portfolio-marquee-wrapper" id="portfolio-marquee-brands">
-          <div class="portfolio-marquee-track">
-
-            <!-- Set 1 -->
-            <a href="/work.html" class="portfolio-vertical-card brand-card brand-samsung" data-cursor="VIEW PROJECT ↗">
-              <div class="p-card-media-wrap brand-logo-media">
-                <div class="p-brand-ambient-glow"></div>
-                <div class="p-brand-logo-stage">
-                  <img src="/assets/brands/samsung.svg" alt="Samsung Logo" class="p-brand-hero-logo" loading="eager" />
-                </div>
-                <div class="p-card-gradient"></div>
-              </div>
-              <div class="p-card-top-row">
-                <span class="p-brand-tag"><span class="tag-pulse-cyan"></span>BRAND</span>
-                <span class="p-case-num">01</span>
-              </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">SAMSUNG</h3>
-                <span class="p-category">Visual Campaign • Galaxy Launch</span>
-                <div class="p-link-cta">
-                  <span>View Project</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </a>
-
-            <a href="/work.html" class="portfolio-vertical-card brand-card brand-gillette" data-cursor="VIEW PROJECT ↗">
-              <div class="p-card-media-wrap brand-logo-media">
-                <div class="p-brand-ambient-glow"></div>
-                <div class="p-brand-logo-stage">
-                  <img src="/assets/brands/gillette.svg" alt="Gillette Logo" class="p-brand-hero-logo" loading="eager" />
-                </div>
-                <div class="p-card-gradient"></div>
-              </div>
-              <div class="p-card-top-row">
-                <span class="p-brand-tag"><span class="tag-pulse-cyan"></span>BRAND</span>
-                <span class="p-case-num">02</span>
-              </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">GILLETTE</h3>
-                <span class="p-category">Global Social Campaign</span>
-                <div class="p-link-cta">
-                  <span>View Project</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </a>
-
-            <a href="/work.html" class="portfolio-vertical-card brand-card brand-amd" data-cursor="VIEW PROJECT ↗">
-              <div class="p-card-media-wrap brand-logo-media">
-                <div class="p-brand-ambient-glow"></div>
-                <div class="p-brand-logo-stage">
-                  <img src="/assets/brands/amd.svg" alt="AMD Logo" class="p-brand-hero-logo" loading="eager" />
-                </div>
-                <div class="p-card-gradient"></div>
-              </div>
-              <div class="p-card-top-row">
-                <span class="p-brand-tag"><span class="tag-pulse-cyan"></span>BRAND</span>
-                <span class="p-case-num">03</span>
-              </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">AMD</h3>
-                <span class="p-category">Gaming Campaign • Hardware Launch</span>
-                <div class="p-link-cta">
-                  <span>View Project</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </a>
-
-            <a href="/work.html" class="portfolio-vertical-card brand-card brand-intel" data-cursor="VIEW PROJECT ↗">
-              <div class="p-card-media-wrap brand-logo-media">
-                <div class="p-brand-ambient-glow"></div>
-                <div class="p-brand-logo-stage">
-                  <img src="/assets/brands/intel.svg" alt="Intel Logo" class="p-brand-hero-logo" loading="eager" />
-                </div>
-                <div class="p-card-gradient"></div>
-              </div>
-              <div class="p-card-top-row">
-                <span class="p-brand-tag"><span class="tag-pulse-cyan"></span>BRAND</span>
-                <span class="p-case-num">04</span>
-              </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">INTEL</h3>
-                <span class="p-category">CGI Architecture • Core Ultra</span>
-                <div class="p-link-cta">
-                  <span>View Project</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </a>
-
-            <a href="/work.html" class="portfolio-vertical-card brand-card brand-nivea" data-cursor="VIEW PROJECT ↗">
-              <div class="p-card-media-wrap brand-logo-media">
-                <div class="p-brand-ambient-glow"></div>
-                <div class="p-brand-logo-stage">
-                  <img src="/assets/brands/nivea.svg" alt="Nivea Men Logo" class="p-brand-hero-logo" loading="eager" />
-                </div>
-                <div class="p-card-gradient"></div>
-              </div>
-              <div class="p-card-top-row">
-                <span class="p-brand-tag"><span class="tag-pulse-cyan"></span>BRAND</span>
-                <span class="p-case-num">05</span>
-              </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">NIVEA MEN</h3>
-                <span class="p-category">Commercial Film Production</span>
-                <div class="p-link-cta">
-                  <span>View Project</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </a>
-
-            <a href="/work.html" class="portfolio-vertical-card brand-card brand-zoomlion" data-cursor="VIEW PROJECT ↗">
-              <div class="p-card-media-wrap brand-logo-media">
-                <div class="p-brand-ambient-glow"></div>
-                <div class="p-brand-logo-stage">
-                  <img src="/assets/brands/zoomlion.svg" alt="Zoomlion Logo" class="p-brand-hero-logo" loading="eager" />
-                </div>
-                <div class="p-card-gradient"></div>
-              </div>
-              <div class="p-card-top-row">
-                <span class="p-brand-tag"><span class="tag-pulse-cyan"></span>BRAND</span>
-                <span class="p-case-num">06</span>
-              </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">ZOOMLION</h3>
-                <span class="p-category">Industrial Visuals & 3D Media</span>
-                <div class="p-link-cta">
-                  <span>View Project</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </a>
-
-            <!-- Set 2 (Seamless loop duplicate) -->
-            <a href="/work.html" class="portfolio-vertical-card brand-card brand-samsung" data-cursor="VIEW PROJECT ↗" aria-hidden="true">
-              <div class="p-card-media-wrap brand-logo-media">
-                <div class="p-brand-ambient-glow"></div>
-                <div class="p-brand-logo-stage">
-                  <img src="/assets/brands/samsung.svg" alt="" class="p-brand-hero-logo" loading="lazy" />
-                </div>
-                <div class="p-card-gradient"></div>
-              </div>
-              <div class="p-card-top-row">
-                <span class="p-brand-tag"><span class="tag-pulse-cyan"></span>BRAND</span>
-                <span class="p-case-num">01</span>
-              </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">SAMSUNG</h3>
-                <span class="p-category">Visual Campaign • Galaxy Launch</span>
-                <div class="p-link-cta">
-                  <span>View Project</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </a>
-
-            <a href="/work.html" class="portfolio-vertical-card brand-card brand-gillette" data-cursor="VIEW PROJECT ↗" aria-hidden="true">
-              <div class="p-card-media-wrap brand-logo-media">
-                <div class="p-brand-ambient-glow"></div>
-                <div class="p-brand-logo-stage">
-                  <img src="/assets/brands/gillette.svg" alt="" class="p-brand-hero-logo" loading="lazy" />
-                </div>
-                <div class="p-card-gradient"></div>
-              </div>
-              <div class="p-card-top-row">
-                <span class="p-brand-tag"><span class="tag-pulse-cyan"></span>BRAND</span>
-                <span class="p-case-num">02</span>
-              </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">GILLETTE</h3>
-                <span class="p-category">Global Social Campaign</span>
-                <div class="p-link-cta">
-                  <span>View Project</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </a>
-
-            <a href="/work.html" class="portfolio-vertical-card brand-card brand-amd" data-cursor="VIEW PROJECT ↗" aria-hidden="true">
-              <div class="p-card-media-wrap brand-logo-media">
-                <div class="p-brand-ambient-glow"></div>
-                <div class="p-brand-logo-stage">
-                  <img src="/assets/brands/amd.svg" alt="" class="p-brand-hero-logo" loading="lazy" />
-                </div>
-                <div class="p-card-gradient"></div>
-              </div>
-              <div class="p-card-top-row">
-                <span class="p-brand-tag"><span class="tag-pulse-cyan"></span>BRAND</span>
-                <span class="p-case-num">03</span>
-              </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">AMD</h3>
-                <span class="p-category">Gaming Campaign • Hardware Launch</span>
-                <div class="p-link-cta">
-                  <span>View Project</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </a>
-
-            <a href="/work.html" class="portfolio-vertical-card brand-card brand-intel" data-cursor="VIEW PROJECT ↗" aria-hidden="true">
-              <div class="p-card-media-wrap brand-logo-media">
-                <div class="p-brand-ambient-glow"></div>
-                <div class="p-brand-logo-stage">
-                  <img src="/assets/brands/intel.svg" alt="" class="p-brand-hero-logo" loading="lazy" />
-                </div>
-                <div class="p-card-gradient"></div>
-              </div>
-              <div class="p-card-top-row">
-                <span class="p-brand-tag"><span class="tag-pulse-cyan"></span>BRAND</span>
-                <span class="p-case-num">04</span>
-              </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">INTEL</h3>
-                <span class="p-category">CGI Architecture • Core Ultra</span>
-                <div class="p-link-cta">
-                  <span>View Project</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </a>
-
-            <a href="/work.html" class="portfolio-vertical-card brand-card brand-nivea" data-cursor="VIEW PROJECT ↗" aria-hidden="true">
-              <div class="p-card-media-wrap brand-logo-media">
-                <div class="p-brand-ambient-glow"></div>
-                <div class="p-brand-logo-stage">
-                  <img src="/assets/brands/nivea.svg" alt="" class="p-brand-hero-logo" loading="lazy" />
-                </div>
-                <div class="p-card-gradient"></div>
-              </div>
-              <div class="p-card-top-row">
-                <span class="p-brand-tag"><span class="tag-pulse-cyan"></span>BRAND</span>
-                <span class="p-case-num">05</span>
-              </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">NIVEA MEN</h3>
-                <span class="p-category">Commercial Film Production</span>
-                <div class="p-link-cta">
-                  <span>View Project</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </a>
-
-            <a href="/work.html" class="portfolio-vertical-card brand-card brand-zoomlion" data-cursor="VIEW PROJECT ↗" aria-hidden="true">
-              <div class="p-card-media-wrap brand-logo-media">
-                <div class="p-brand-ambient-glow"></div>
-                <div class="p-brand-logo-stage">
-                  <img src="/assets/brands/zoomlion.svg" alt="" class="p-brand-hero-logo" loading="lazy" />
-                </div>
-                <div class="p-card-gradient"></div>
-              </div>
-              <div class="p-card-top-row">
-                <span class="p-brand-tag"><span class="tag-pulse-cyan"></span>BRAND</span>
-                <span class="p-case-num">06</span>
-              </div>
-              <div class="p-card-body">
-                <h3 class="p-client-name">ZOOMLION</h3>
-                <span class="p-category">Industrial Visuals & 3D Media</span>
-                <div class="p-link-cta">
-                  <span>View Project</span>
-                  <span class="p-arrow">↗</span>
-                </div>
-              </div>
-            </a>
+            </div>
 
           </div>
         </div>
@@ -1326,12 +932,12 @@
     <!-- ================================================================
          08.5. FAQ SECTION
          ================================================================ -->
-    <section class="section-faq" id="faq" style="padding: 8rem 5%; background-color: var(--bg-dark); border-top: 1px solid rgba(255, 255, 255, 0.05);">
+    <section class="section-faq" id="faq" style="padding: 8rem 5%; background-color: var(--bg-primary); border-top: 1px solid var(--border-subtle);">
       <div class="faq-container" style="max-width: 900px; margin: 0 auto;">
         <h2 style="font-family: var(--font-display); font-size: clamp(2.5rem, 5vw, 4rem); color: var(--text-primary); margin-bottom: 4rem; text-align: center; font-weight: 500;">Frequently Asked <span class="highlight-cyan" style="font-style: italic; font-weight: 700;">Questions</span></h2>
         
         <div class="faq-list" style="display: flex; flex-direction: column; gap: 1.5rem;">
-          <details class="faq-item" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1.5rem; cursor: pointer;">
+          <details class="faq-item" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 1.5rem; cursor: pointer; background: var(--bg-card); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-card);">
             <summary style="font-family: var(--font-body); font-size: 1.25rem; font-weight: 500; color: var(--text-primary); list-style: none; display: flex; justify-content: space-between; align-items: center; padding-right: 1rem;">
               What exactly does Highverz do?
               <span style="color: var(--accent-cyan); font-size: 1.5rem; pointer-events: none;">+</span>
@@ -1339,7 +945,7 @@
             <p style="color: var(--text-secondary); margin-top: 1.5rem; line-height: 1.6; font-family: var(--font-body); font-size: 1.05rem; padding-right: 2rem;">Highverz is a premium creative agency that specializes in brand strategy, high-end 3D motion design, and growth-driven content. We help creators and brands stand out through visually stunning narratives.</p>
           </details>
 
-          <details class="faq-item" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1.5rem; cursor: pointer;">
+          <details class="faq-item" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 1.5rem; cursor: pointer; background: var(--bg-card); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-card);">
             <summary style="font-family: var(--font-body); font-size: 1.25rem; font-weight: 500; color: var(--text-primary); list-style: none; display: flex; justify-content: space-between; align-items: center; padding-right: 1rem;">
               Who do you typically work with?
               <span style="color: var(--accent-cyan); font-size: 1.5rem; pointer-events: none;">+</span>
@@ -1347,7 +953,7 @@
             <p style="color: var(--text-secondary); margin-top: 1.5rem; line-height: 1.6; font-family: var(--font-body); font-size: 1.05rem; padding-right: 2rem;">We partner with visionary creators, innovative startups, and established global brands who are looking to elevate their visual identity and engage their audience on a deeper level.</p>
           </details>
 
-          <details class="faq-item" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1.5rem; cursor: pointer;">
+          <details class="faq-item" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 1.5rem; cursor: pointer; background: var(--bg-card); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-card);">
             <summary style="font-family: var(--font-body); font-size: 1.25rem; font-weight: 500; color: var(--text-primary); list-style: none; display: flex; justify-content: space-between; align-items: center; padding-right: 1rem;">
               What is your typical project timeline?
               <span style="color: var(--accent-cyan); font-size: 1.5rem; pointer-events: none;">+</span>
@@ -1355,7 +961,7 @@
             <p style="color: var(--text-secondary); margin-top: 1.5rem; line-height: 1.6; font-family: var(--font-body); font-size: 1.05rem; padding-right: 2rem;">Timelines vary based on project scope, but a standard brand identity and motion design package typically takes between 4 to 8 weeks from discovery to final delivery.</p>
           </details>
 
-          <details class="faq-item" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1.5rem; cursor: pointer;">
+          <details class="faq-item" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 1.5rem; cursor: pointer; background: var(--bg-card); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-card);">
             <summary style="font-family: var(--font-body); font-size: 1.25rem; font-weight: 500; color: var(--text-primary); list-style: none; display: flex; justify-content: space-between; align-items: center; padding-right: 1rem;">
               Do you offer ongoing content support?
               <span style="color: var(--accent-cyan); font-size: 1.5rem; pointer-events: none;">+</span>

@@ -56,29 +56,32 @@ export async function saveLead(leadData) {
     // 2. Dispatch custom event
     window.dispatchEvent(new CustomEvent('highverz:lead_stored', { detail: newLead }));
 
-    // 3. Forward to Google Sheet if configured
-    const targetSheetUrl = GOOGLE_SHEETS_URL || localStorage.getItem(SHEETS_CONFIG_KEY);
-    if (targetSheetUrl) {
-      try {
-        await fetch(targetSheetUrl, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id: newLead.id,
-            timestamp: newLead.formattedDate,
-            type: 'General Inquiry',
-            name: newLead.name || '',
-            contact: newLead.contact || '',
-            handle: newLead.handle || '',
-            message: newLead.message || '',
-            source: newLead.sourceUrl || ''
-          })
-        });
-        console.log('Lead synced to Google Sheet successfully');
-      } catch (sheetErr) {
-        console.warn('Google Sheet sync attempt:', sheetErr);
+    // 3. Forward to backend API to sync with Google Sheet
+    try {
+      const customSheetUrl = localStorage.getItem(SHEETS_CONFIG_KEY) || '';
+      const response = await fetch('/api/enquiry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: newLead.id,
+          timestamp: newLead.formattedDate,
+          type: 'General Inquiry',
+          name: newLead.name || '',
+          contact: newLead.contact || '',
+          handle: newLead.handle || '',
+          message: newLead.message || '',
+          source: newLead.sourceUrl || '',
+          googleSheetsUrl: customSheetUrl
+        })
+      });
+      
+      if (response.ok) {
+        console.log('Lead synced to backend successfully');
+      } else {
+        console.warn('Backend returned an error. Google Sheet sync might have failed.');
       }
+    } catch (apiErr) {
+      console.warn('Backend sync attempt failed:', apiErr);
     }
 
     return newLead;
@@ -182,8 +185,6 @@ function injectEnquiryModal() {
 function injectAdminLeadsModal() {
   if (document.getElementById('admin-leads-overlay')) return;
 
-  const currentSheetUrl = localStorage.getItem(SHEETS_CONFIG_KEY) || '';
-
   const adminHtml = `
     <div class="admin-leads-overlay" id="admin-leads-overlay" aria-hidden="true" role="dialog">
       <div class="admin-leads-panel">
@@ -212,11 +213,11 @@ function injectAdminLeadsModal() {
             <span>📊 Google Sheet Apps Script URL:</span>
           </div>
           <div class="sheet-config-input-row">
-            <input type="url" id="admin-sheet-url-input" class="admin-sheet-input" placeholder="Paste your Google Apps Script Web App URL here (https://script.google.com/...)" value="${currentSheetUrl}" />
+            <input type="url" id="admin-sheet-url-input" class="admin-sheet-input" placeholder="Paste your Google Apps Script Web App URL here (https://script.google.com/...)" value="" />
             <button type="button" class="btn-admin-save-sheet" id="btn-save-sheet-url">Save URL</button>
           </div>
           <div class="sheet-config-help">
-            ${currentSheetUrl ? '🟢 Google Sheet Connected. Leads are automatically synced upon submission.' : '⚠️ No Google Sheet connected yet. Submissions are saved locally and can be exported as CSV, or paste your Apps Script URL above to sync live.'}
+            Loading configuration...
           </div>
         </div>
 
@@ -248,6 +249,35 @@ function injectAdminLeadsModal() {
 
   document.body.insertAdjacentHTML('beforeend', adminHtml);
   bindAdminEvents();
+  fetchConfigAndUpdateUI();
+}
+
+async function fetchConfigAndUpdateUI() {
+  const urlInput = document.getElementById('admin-sheet-url-input');
+  const helpText = document.querySelector('.sheet-config-help');
+  
+  let currentUrl = localStorage.getItem(SHEETS_CONFIG_KEY) || '';
+
+  try {
+    const res = await fetch('/api/config');
+    if (res.ok) {
+      const config = await res.json();
+      if (!currentUrl && config.googleSheetsUrl) {
+        currentUrl = config.googleSheetsUrl;
+      }
+    }
+  } catch(e) {
+    console.warn('Failed to fetch config from backend, using client preference', e);
+  }
+
+  if (urlInput && !urlInput.value) {
+    urlInput.value = currentUrl;
+  }
+  if (helpText) {
+    helpText.innerHTML = currentUrl 
+      ? '🟢 <strong>Active Sheet Connected:</strong> Leads automatically sync live. You can paste any new Apps Script URL here anytime to change sheets.' 
+      : '⚠️ <strong>No custom sheet URL set:</strong> Inquiries are saved in browser storage and can be downloaded as CSV. Paste an Apps Script URL above to sync live.';
+  }
 }
 
 /**
@@ -400,12 +430,26 @@ function bindAdminEvents() {
 
   // Save Google Sheet Webhook URL
   if (saveSheetBtn && sheetInput) {
-    saveSheetBtn.addEventListener('click', () => {
+    saveSheetBtn.addEventListener('click', async () => {
       const url = sheetInput.value.trim();
-      localStorage.setItem(SHEETS_CONFIG_KEY, url);
-      GOOGLE_SHEETS_URL = url;
-      alert(url ? 'Google Sheet Web App URL saved! Submissions will now sync live.' : 'Google Sheet URL cleared.');
-      renderAdminLeads();
+      if (url) {
+        localStorage.setItem(SHEETS_CONFIG_KEY, url);
+      } else {
+        localStorage.removeItem(SHEETS_CONFIG_KEY);
+      }
+
+      try {
+        await fetch('/api/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ googleSheetsUrl: url })
+        });
+      } catch (err) {
+        console.warn('Backend config update skipped (running static or serverless):', err);
+      }
+
+      alert(url ? '✅ Google Sheet updated successfully! All future inquiries will sync to this sheet.' : 'Google Sheet URL reset.');
+      fetchConfigAndUpdateUI();
     });
   }
 

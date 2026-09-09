@@ -21,6 +21,12 @@
  * All submissions from the website will now appear in your Google Sheet in real-time!
  */
 
+function doGet(e) {
+  return ContentService
+    .createTextOutput(JSON.stringify({ status: "online", service: "Highverz Leads Webhook" }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
 function doPost(e) {
   var lock = LockService.getScriptLock();
   lock.tryLock(10000);

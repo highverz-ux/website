@@ -907,53 +907,127 @@
     </section>
 
     <!-- ================================================================
-         08. PROCESS (SINGLE CONNECTED DRAWING LINE)
+         08. PROCESS (SINGLE CONNECTED DRAWING LINE & BESPOKE ICONS)
          ================================================================ -->
     <section class="section-process" id="process">
       <div class="process-container">
 
         <div class="process-header">
           <span class="section-tag">METHODOLOGY</span>
-          <h2 class="process-headline">How We Move.</h2>
+          <h2 class="process-headline">How We <span class="highlight-cyan">Move.</span></h2>
         </div>
 
-        <!-- Drawing Progress Track -->
+        <!-- Drawing Progress Track with Glowing Comet & Node Anchors -->
         <div class="process-track-container" id="process-track-container">
           <div class="process-line-bg"></div>
           <div class="process-line-active" id="process-line-active"></div>
+          <div class="process-line-head" id="process-line-head"></div>
+          <div class="process-track-nodes" id="process-track-nodes">
+            <div class="process-track-node-cell"><span class="process-track-node active" data-node="0"></span></div>
+            <div class="process-track-node-cell"><span class="process-track-node" data-node="1"></span></div>
+            <div class="process-track-node-cell"><span class="process-track-node" data-node="2"></span></div>
+            <div class="process-track-node-cell"><span class="process-track-node" data-node="3"></span></div>
+            <div class="process-track-node-cell"><span class="process-track-node" data-node="4"></span></div>
+          </div>
         </div>
 
-        <!-- 5 Steps -->
+        <!-- 5 Steps with Bespoke Animated Icon Badges -->
         <div class="process-grid" id="process-grid">
 
-          <div class="process-col active" data-step="1">
-            <span class="process-step-num">01</span>
-            <h3 class="process-step-name">DISCOVER</h3>
-            <p class="process-step-desc">Deep brand immersion, audience analytics, and competitive visual auditing.</p>
+          <!-- 01 DISCOVER -->
+          <div class="process-col active" data-step="0" tabindex="0" role="button" aria-label="Step 1: Discover">
+            <div class="process-col-card">
+              <div class="process-badge-row">
+                <div class="process-icon-box">
+                  <svg class="process-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    <circle cx="11" cy="11" r="3"></circle>
+                  </svg>
+                </div>
+                <span class="process-step-num">01</span>
+              </div>
+              <h3 class="process-step-name">DISCOVER</h3>
+              <p class="process-step-desc">Deep brand immersion, audience analytics, and competitive visual auditing.</p>
+            </div>
           </div>
 
-          <div class="process-col" data-step="2">
-            <span class="process-step-num">02</span>
-            <h3 class="process-step-name">CONCEPT</h3>
-            <p class="process-step-desc">Strategic moodboards, narrative hooks, and art direction frameworks.</p>
+          <!-- 02 CONCEPT -->
+          <div class="process-col" data-step="1" tabindex="0" role="button" aria-label="Step 2: Concept">
+            <div class="process-col-card">
+              <div class="process-badge-row">
+                <div class="process-icon-box">
+                  <svg class="process-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 18h6"></path>
+                    <path d="M10 22h4"></path>
+                    <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path>
+                  </svg>
+                </div>
+                <span class="process-step-num">02</span>
+              </div>
+              <h3 class="process-step-name">CONCEPT</h3>
+              <p class="process-step-desc">Strategic moodboards, narrative hooks, and art direction frameworks.</p>
+            </div>
           </div>
 
-          <div class="process-col" data-step="3">
-            <span class="process-step-num">03</span>
-            <h3 class="process-step-name">CREATE</h3>
-            <p class="process-step-desc">High-fidelity 3D modeling, cinematography, typography, and motion design.</p>
+          <!-- 03 CREATE -->
+          <div class="process-col" data-step="2" tabindex="0" role="button" aria-label="Step 3: Create">
+            <div class="process-col-card">
+              <div class="process-badge-row">
+                <div class="process-icon-box">
+                  <svg class="process-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                  </svg>
+                </div>
+                <span class="process-step-num">03</span>
+              </div>
+              <h3 class="process-step-name">CREATE</h3>
+              <p class="process-step-desc">High-fidelity 3D modeling, cinematography, typography, and motion design.</p>
+            </div>
           </div>
 
-          <div class="process-col" data-step="4">
-            <span class="process-step-num">04</span>
-            <h3 class="process-step-name">REFINE</h3>
-            <p class="process-step-desc">Pixel-precision lighting passes, color grading, sound design, and micro-tuning.</p>
+          <!-- 04 REFINE -->
+          <div class="process-col" data-step="3" tabindex="0" role="button" aria-label="Step 4: Refine">
+            <div class="process-col-card">
+              <div class="process-badge-row">
+                <div class="process-icon-box">
+                  <svg class="process-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="4" y1="21" x2="4" y2="14"></line>
+                    <line x1="4" y1="10" x2="4" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12" y2="3"></line>
+                    <line x1="20" y1="21" x2="20" y2="16"></line>
+                    <line x1="20" y1="12" x2="20" y2="3"></line>
+                    <line x1="1" y1="14" x2="7" y2="14"></line>
+                    <line x1="9" y1="8" x2="15" y2="8"></line>
+                    <line x1="17" y1="16" x2="23" y2="16"></line>
+                  </svg>
+                </div>
+                <span class="process-step-num">04</span>
+              </div>
+              <h3 class="process-step-name">REFINE</h3>
+              <p class="process-step-desc">Pixel-precision lighting passes, color grading, sound design, and micro-tuning.</p>
+            </div>
           </div>
 
-          <div class="process-col" data-step="5">
-            <span class="process-step-num">05</span>
-            <h3 class="process-step-name">DELIVER</h3>
-            <p class="process-step-desc">Global launch asset suites, multi-format delivery, and performance monitoring.</p>
+          <!-- 05 DELIVER -->
+          <div class="process-col" data-step="4" tabindex="0" role="button" aria-label="Step 5: Deliver">
+            <div class="process-col-card">
+              <div class="process-badge-row">
+                <div class="process-icon-box">
+                  <svg class="process-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path>
+                    <path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-2.95 10.95A22 22 0 0 1 15 12z"></path>
+                    <circle cx="15.5" cy="8.5" r="1.5" fill="currentColor"></circle>
+                  </svg>
+                </div>
+                <span class="process-step-num">05</span>
+              </div>
+              <h3 class="process-step-name">DELIVER</h3>
+              <p class="process-step-desc">Global launch asset suites, multi-format delivery, and performance monitoring.</p>
+            </div>
           </div>
 
         </div>
@@ -1045,7 +1119,7 @@
             </div>
 
             <div class="cta-brand-mark-box">
-              <img src="/assets/logo-cyan.svg" alt="Highverz" class="cta-cyan-logo-img" />
+              <div class="cta-cyan-logo-img" role="img" aria-label="Highverz"></div>
             </div>
           </div>
         </div>

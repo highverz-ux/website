@@ -65,6 +65,7 @@ function boot() {
   initScrollVelocityEffects();
   initServiceFilters();
   initEnquirySystem();
+  initSeamlessPageRouter();
 
   const isWorkPage = window.location.pathname.includes('work') || !!document.querySelector('.work-hero-section');
   const isCaseStudyPage = window.location.pathname.includes('creator-') || !!document.querySelector('.case-hero-section') || !!document.querySelector('.ig-profile-shell');
@@ -980,8 +981,8 @@ function initStatsMarquee() {
         statsNumber.textContent = '4,500,000,000+';
         // Subtle glow pulse on completion
         gsap.fromTo(statsNumber,
-          { textShadow: '0 0 50px rgba(0, 229, 255, 0.9), 0 0 25px rgba(0, 229, 255, 0.6)' },
-          { textShadow: '0 0 30px rgba(0, 229, 255, 0.25)', duration: 0.9, ease: 'power2.out' }
+          { filter: 'drop-shadow(0 0 35px rgba(0, 229, 255, 0.85))' },
+          { filter: 'drop-shadow(0 0 20px rgba(0, 229, 255, 0.4))', duration: 0.9, ease: 'power2.out' }
         );
         activeCounterTween = null;
       }
@@ -1410,11 +1411,111 @@ function initTeamPageAnimations() {
     '-=0.7'
   );
 
+  // Dynamic count-up animations for leadership metrics
+  let activeMetricTweens = [];
+  function animateMetrics() {
+    activeMetricTweens.forEach((tw) => {
+      if (tw && tw.kill) tw.kill();
+    });
+    activeMetricTweens = [];
+
+    const metricVals = teamHero.querySelectorAll('.team-metric-val');
+    metricVals.forEach((el) => {
+      const format = el.getAttribute('data-metric-format');
+      if (format === 'billion') {
+        const obj = { val: 0 };
+        el.textContent = '0.0B+';
+        const tw = gsap.to(obj, {
+          val: 4.5,
+          duration: 2.2,
+          ease: 'power2.out',
+          onUpdate: () => {
+            el.textContent = obj.val.toFixed(1) + 'B+';
+          },
+          onComplete: () => {
+            el.textContent = '4.5B+';
+            gsap.fromTo(el,
+              { filter: 'drop-shadow(0 0 28px rgba(0, 229, 255, 0.85))' },
+              { filter: 'drop-shadow(0 0 16px rgba(0, 229, 255, 0.4))', duration: 0.8, ease: 'power2.out' }
+            );
+          }
+        });
+        activeMetricTweens.push(tw);
+      } else if (format === 'days') {
+        const obj = { val: 0 };
+        el.textContent = '0 Days';
+        const tw = gsap.to(obj, {
+          val: 60,
+          duration: 1.9,
+          ease: 'power2.out',
+          onUpdate: () => {
+            el.textContent = Math.round(obj.val) + ' Days';
+          },
+          onComplete: () => {
+            el.textContent = '60 Days';
+          }
+        });
+        activeMetricTweens.push(tw);
+      } else if (format === 'percent') {
+        const obj = { val: 0 };
+        el.textContent = '0.0%';
+        const tw = gsap.to(obj, {
+          val: 99.4,
+          duration: 2.2,
+          ease: 'power2.out',
+          onUpdate: () => {
+            el.textContent = obj.val.toFixed(1) + '%';
+          },
+          onComplete: () => {
+            el.textContent = '99.4%';
+            gsap.fromTo(el,
+              { filter: 'drop-shadow(0 0 28px rgba(0, 229, 255, 0.85))' },
+              { filter: 'drop-shadow(0 0 16px rgba(0, 229, 255, 0.4))', duration: 0.8, ease: 'power2.out' }
+            );
+          }
+        });
+        activeMetricTweens.push(tw);
+      } else if (format === 'top') {
+        const obj = { val: 15 };
+        el.textContent = 'Top 15%';
+        const tw = gsap.to(obj, {
+          val: 1,
+          duration: 1.8,
+          ease: 'power2.out',
+          onUpdate: () => {
+            el.textContent = 'Top ' + Math.round(obj.val) + '%';
+          },
+          onComplete: () => {
+            el.textContent = 'Top 1%';
+          }
+        });
+        activeMetricTweens.push(tw);
+      }
+    });
+  }
+
   tl.fromTo('.team-metric-item',
     { opacity: 0, y: 20 },
-    { opacity: 1, y: 0, duration: 0.7, stagger: 0.08 },
+    {
+      opacity: 1,
+      y: 0,
+      duration: 0.7,
+      stagger: 0.08,
+      onStart: () => {
+        animateMetrics();
+      }
+    },
     '-=0.6'
   );
+
+  // Re-trigger counter when scrolling back into view
+  ScrollTrigger.create({
+    trigger: '.team-metrics-grid',
+    start: 'top 90%',
+    onEnterBack: () => {
+      animateMetrics();
+    }
+  });
 
   // Founder Accordion Cards Entrance & Expand/Collapse Interactivity
   const accordCards = document.querySelectorAll('.founder-accord-card');
@@ -2000,19 +2101,25 @@ function initTestimonialsReveal() {
 // ==========================================================================
 // 10. PROCESS SINGLE-LINE CONNECTED SCROLL DRAW (ENHANCED)
 // ==========================================================================
+// ==========================================================================
+// 10. PROCESS SINGLE-LINE CONNECTED SCROLL DRAW (ENHANCED)
+// ==========================================================================
 function initProcessScrollDraw() {
   const lineActive = document.getElementById('process-line-active');
+  const lineHead = document.getElementById('process-line-head');
+  const nodes = document.querySelectorAll('.process-track-node');
   const steps = document.querySelectorAll('.process-col');
   const processSection = document.querySelector('.section-process');
+  const trackContainer = document.getElementById('process-track-container');
 
-  if (!lineActive || !steps.length || !processSection) return;
+  if (!steps.length || !processSection || !trackContainer) return;
 
-  // Header reveal
+  // Header & section entrance animation
   gsap.fromTo('.process-header',
-    { opacity: 0, y: 40 },
+    { opacity: 0, y: 35 },
     {
       opacity: 1, y: 0,
-      duration: 1.2,
+      duration: 1.1,
       ease: 'expo.out',
       scrollTrigger: {
         trigger: processSection,
@@ -2022,31 +2129,113 @@ function initProcessScrollDraw() {
     }
   );
 
+  // Stagger in the process cards on entrance
+  gsap.fromTo('.process-col',
+    { opacity: 0, y: 30 },
+    {
+      opacity: 1, y: 0,
+      duration: 0.9,
+      stagger: 0.1,
+      ease: 'expo.out',
+      scrollTrigger: {
+        trigger: '.process-grid',
+        start: 'top 85%',
+        once: true,
+      }
+    }
+  );
+
+  // Compute exact horizontal centers of each step card
+  const getStepCenters = () => {
+    const trackWidth = trackContainer.offsetWidth || 1;
+    return Array.from(steps).map(step => {
+      const center = step.offsetLeft + step.offsetWidth / 2;
+      return Math.min(100, Math.max(0, (center / trackWidth) * 100));
+    });
+  };
+
+  // Function to set active state based on width percent
+  const setProcessProgress = (pct, animate = false) => {
+    const clamped = Math.min(100, Math.max(0, pct));
+    if (lineActive) {
+      if (animate) {
+        gsap.to(lineActive, { width: `${clamped}%`, duration: 0.45, ease: 'power2.out' });
+      } else {
+        lineActive.style.width = `${clamped}%`;
+      }
+    }
+    if (lineHead) {
+      if (animate) {
+        gsap.to(lineHead, { left: `${clamped}%`, duration: 0.45, ease: 'power2.out' });
+      } else {
+        lineHead.style.left = `${clamped}%`;
+      }
+    }
+
+    const centers = getStepCenters();
+    steps.forEach((step, idx) => {
+      const targetCenter = centers[idx] || ((idx * 2 + 1) * 10);
+      // Activate when line reaches within 5% of center or passes it
+      if (clamped >= targetCenter - 6) {
+        if (!step.classList.contains('active')) {
+          step.classList.add('active');
+          const iconBox = step.querySelector('.process-icon-box');
+          if (iconBox) {
+            gsap.fromTo(iconBox, { scale: 0.85 }, { scale: 1.06, duration: 0.35, ease: 'back.out(2)' });
+          }
+        }
+      } else {
+        step.classList.remove('active');
+      }
+    });
+
+    nodes.forEach((node, idx) => {
+      const targetCenter = centers[idx] || ((idx * 2 + 1) * 10);
+      if (clamped >= targetCenter - 4) {
+        node.classList.add('active');
+      } else {
+        node.classList.remove('active');
+      }
+    });
+  };
+
+  // Initial state: first step active
+  const initialCenters = getStepCenters();
+  setProcessProgress(initialCenters[0] || 10, false);
+
+  // Scroll scrub across the section
   ScrollTrigger.create({
     trigger: processSection,
-    start: 'top 65%',
-    end: 'bottom 40%',
-    scrub: 0.8,
+    start: 'top 70%',
+    end: 'bottom 50%',
+    scrub: 0.5,
     onUpdate: (self) => {
       const progress = self.progress;
-      const widthPct = Math.min(100, Math.max(0, progress * 100));
-      gsap.to(lineActive, { width: `${widthPct}%`, duration: 0.1, ease: 'none' });
+      const centers = getStepCenters();
+      const firstCenter = centers[0] || 10;
+      const lastCenter = centers[centers.length - 1] || 90;
+      // Interpolate smoothly from first step center to last step center
+      const currentWidth = firstCenter + progress * (lastCenter - firstCenter + 5);
+      setProcessProgress(currentWidth, false);
+    }
+  });
 
-      const activeStepIndex = Math.floor(progress * steps.length);
-      steps.forEach((step, idx) => {
-        if (idx <= activeStepIndex) {
-          if (!step.classList.contains('active')) {
-            step.classList.add('active');
-            // Pop-in animation when step activates
-            gsap.fromTo(step, 
-              { scale: 0.92, opacity: 0.5 },
-              { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.7)' }
-            );
-          }
-        } else {
-          step.classList.remove('active');
-        }
-      });
+  // Interactive click on any step to jump progress to it
+  steps.forEach((step, idx) => {
+    step.addEventListener('click', () => {
+      const centers = getStepCenters();
+      const targetPct = centers[idx] || ((idx * 2 + 1) * 10);
+      setProcessProgress(targetPct, true);
+    });
+  });
+
+  // Recalculate on window resize
+  window.addEventListener('resize', () => {
+    const centers = getStepCenters();
+    const activeSteps = document.querySelectorAll('.process-col.active');
+    const lastActiveIdx = activeSteps.length - 1;
+    if (lastActiveIdx >= 0 && centers[lastActiveIdx]) {
+      setProcessProgress(centers[lastActiveIdx], false);
     }
   });
 }
@@ -2315,3 +2504,255 @@ function initInstagramReelsPlayer() {
     );
   }
 }
+
+// ==========================================================================
+// 19. SEAMLESS CLIENT-SIDE SPA PAGE ROUTER (FRAMER / THE ROI MEDIA STYLE)
+// ==========================================================================
+function initSeamlessPageRouter() {
+  let isTransitioning = false;
+
+  function getPageSections(doc = document) {
+    return Array.from(doc.querySelectorAll('body > section, body > footer, body > main'));
+  }
+
+  function updateActiveNav(targetPath) {
+    const navbar = document.getElementById('navbar');
+    if (!navbar) return;
+    const navList = navbar.querySelector('.nav-list');
+    const navLinks = navbar.querySelectorAll('.nav-link');
+    const indicator = navList ? navList.querySelector('.nav-indicator') : null;
+
+    let matchedLink = null;
+    navLinks.forEach((l) => {
+      const href = l.getAttribute('href') || '';
+      const normHref = href.replace(/\/$/, '') || '/index.html';
+      const isMatch = normHref === targetPath ||
+        (normHref === '/index.html' && (targetPath === '/' || targetPath.endsWith('index.html'))) ||
+        (normHref === '/work.html' && targetPath.includes('work')) ||
+        (normHref === '/team.html' && targetPath.includes('team')) ||
+        (normHref === '/why-us.html' && targetPath.includes('why-us'));
+      if (isMatch) {
+        l.classList.add('active');
+        matchedLink = l;
+      } else {
+        l.classList.remove('active');
+      }
+    });
+
+    if (matchedLink && indicator && navList) {
+      const rect = matchedLink.getBoundingClientRect();
+      const listRect = navList.getBoundingClientRect();
+      const left = rect.left - listRect.left;
+      indicator.style.width = `${Math.round(rect.width)}px`;
+      indicator.style.transform = `translate(${Math.round(left)}px, -50%) translateZ(0)`;
+      indicator.style.opacity = '1';
+    }
+
+    const mobileLinks = document.querySelectorAll('.mobile-nav-link');
+    mobileLinks.forEach((ml) => {
+      const href = ml.getAttribute('href') || '';
+      const normHref = href.replace(/\/$/, '') || '/index.html';
+      const isMatch = normHref === targetPath ||
+        (normHref === '/index.html' && (targetPath === '/' || targetPath.endsWith('index.html'))) ||
+        (normHref === '/work.html' && targetPath.includes('work')) ||
+        (normHref === '/team.html' && targetPath.includes('team')) ||
+        (normHref === '/why-us.html' && targetPath.includes('why-us'));
+      if (isMatch) ml.classList.add('active');
+      else ml.classList.remove('active');
+    });
+  }
+
+  async function navigateTo(targetUrlString, pushState = true) {
+    if (isTransitioning) return;
+    isTransitioning = true;
+
+    let targetUrl;
+    try {
+      targetUrl = new URL(targetUrlString, window.location.href);
+    } catch {
+      window.location.href = targetUrlString;
+      return;
+    }
+
+    const currentSections = getPageSections(document);
+    const targetPath = targetUrl.pathname.replace(/\/$/, '') || '/index.html';
+
+    // Slide navbar active indicator immediately on click
+    updateActiveNav(targetPath);
+
+    // 1. Subtle exit motion: current page content smoothly glides up & fades
+    const exitAnimation = gsap.to(currentSections, {
+      opacity: 0,
+      y: -12,
+      duration: 0.2,
+      ease: 'power2.in',
+      stagger: 0.015
+    });
+
+    // 2. Fetch target page HTML
+    let newDoc = null;
+    try {
+      const res = await fetch(targetUrl.href);
+      if (!res.ok) throw new Error('Failed to load page');
+      const htmlText = await res.text();
+      const parser = new DOMParser();
+      newDoc = parser.parseFromString(htmlText, 'text/html');
+    } catch (err) {
+      console.warn('SPA navigation fallback:', err);
+      window.location.href = targetUrl.href;
+      return;
+    }
+
+    await exitAnimation;
+
+    // 3. Update title & URL
+    if (newDoc.title) document.title = newDoc.title;
+    if (pushState) {
+      history.pushState({ path: targetUrl.pathname }, newDoc.title || '', targetUrl.href);
+    }
+
+    // 4. Reset scroll smoothly to top
+    window.scrollTo(0, 0);
+    if (window.lenis) {
+      window.lenis.scrollTo(0, { immediate: true });
+    }
+
+    // 5. Clean up old ScrollTrigger instances
+    if (window.ScrollTrigger) {
+      ScrollTrigger.getAll().forEach((st) => st.kill());
+    }
+
+    // 6. Swap DOM elements
+    currentSections.forEach((el) => el.remove());
+
+    const newSections = getPageSections(newDoc);
+    const scriptAnchor = document.querySelector('script[src*="main.js"]') || document.querySelector('script');
+
+    newSections.forEach((el) => {
+      // Set initial state for Framer-style rise entrance
+      gsap.set(el, { opacity: 0, y: 16 });
+      if (scriptAnchor) {
+        document.body.insertBefore(el, scriptAnchor);
+      } else {
+        document.body.appendChild(el);
+      }
+    });
+
+    if (newDoc.body.className) {
+      document.body.className = newDoc.body.className;
+    }
+
+    // 7. Re-initialize interactive components for the new page
+    const path = targetPath.toLowerCase();
+    const isWork = path.includes('work') || !!document.querySelector('.work-hero-section');
+    const isTeam = path.includes('team') || !!document.querySelector('.page-team');
+    const isWhyUs = path.includes('why-us') || !!document.querySelector('.page-why-us');
+    const isHome = !isWork && !isTeam && !isWhyUs && !path.includes('creator-');
+
+    if (isHome) {
+      init3DScene();
+      initStatsMarquee();
+      initCreatorsSection();
+      initStatementParallax();
+      initServicesReveal();
+      initPortfolioGrid();
+      initTestimonialsReveal();
+      initProcessScrollDraw();
+      initCTAReveal();
+      initServiceFilters();
+      initHeroIntro(false);
+    } else if (isWork) {
+      initWorkHeroIntro();
+      initPortfolioGrid();
+      initCTAReveal();
+      initServiceFilters();
+    } else if (isTeam) {
+      initTeamPageAnimations();
+    } else if (isWhyUs) {
+      initWhyUsAnimations();
+    }
+
+    if (document.querySelectorAll('.ig-reel-card').length > 0) {
+      initInstagramReelsPlayer();
+    }
+
+    initMagneticElements();
+    initScrollVelocityEffects();
+    initCustomCursor();
+
+    // 8. Framer-style silky-smooth entrance
+    gsap.to(newSections, {
+      opacity: 1,
+      y: 0,
+      duration: 0.38,
+      ease: 'power3.out',
+      stagger: 0.03,
+      clearProps: 'transform,opacity',
+      onComplete: () => {
+        isTransitioning = false;
+        if (window.ScrollTrigger) ScrollTrigger.refresh();
+
+        if (targetUrl.hash) {
+          const targetEl = document.querySelector(targetUrl.hash);
+          if (targetEl) {
+            if (window.lenis) window.lenis.scrollTo(targetEl, { offset: -70 });
+            else targetEl.scrollIntoView({ behavior: 'smooth' });
+          }
+        }
+      }
+    });
+  }
+
+  // Intercept click on internal links
+  document.addEventListener('click', (e) => {
+    const link = e.target.closest('a');
+    if (!link) return;
+
+    if (e.defaultPrevented) return;
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    if (link.target === '_blank' || link.hasAttribute('download')) return;
+
+    const href = link.getAttribute('href');
+    if (!href) return;
+
+    if (href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
+    if (href.startsWith('#')) return;
+
+    let targetUrl;
+    try {
+      targetUrl = new URL(link.href, window.location.href);
+    } catch {
+      return;
+    }
+
+    if (targetUrl.origin !== window.location.origin) return;
+
+    const currentPath = window.location.pathname.replace(/\/$/, '') || '/index.html';
+    const targetPath = targetUrl.pathname.replace(/\/$/, '') || '/index.html';
+
+    // Same page with hash
+    if (currentPath === targetPath && targetUrl.hash) return;
+
+    // Same page without hash: smooth scroll to top
+    if (currentPath === targetPath && !targetUrl.hash) {
+      e.preventDefault();
+      if (window.lenis) window.lenis.scrollTo(0);
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    const isTargetHtml = targetPath.endsWith('.html') || targetPath === '' || targetPath === '/';
+    if (!isTargetHtml) return;
+
+    e.preventDefault();
+    navigateTo(targetUrl.href, true);
+  });
+
+  // Handle browser back / forward buttons
+  window.addEventListener('popstate', () => {
+    navigateTo(window.location.href, false);
+  });
+}
+
+
+

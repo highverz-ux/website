@@ -6268,15 +6268,6 @@ html.js .floating-badge-item {
   position: relative;
 }
 
-/* FOUC prevention — GSAP animates these in */
-.work-hero-tag,
-.work-hero-title,
-.work-hero-desc,
-.work-hero-cta,
-.work-metric-item {
-  opacity: 0;
-}
-
 /* LEFT COLUMN */
 .work-hero-left {
   display: flex;

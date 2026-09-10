@@ -65,7 +65,6 @@ function boot() {
   initScrollVelocityEffects();
   initServiceFilters();
   initEnquirySystem();
-  initSeamlessPageRouter();
 
   const isWorkPage = window.location.pathname.includes('work') || !!document.querySelector('.work-hero-section');
   const isCaseStudyPage = window.location.pathname.includes('creator-') || !!document.querySelector('.case-hero-section') || !!document.querySelector('.ig-profile-shell');
@@ -1303,59 +1302,7 @@ function initWorkHeroIntro() {
   const workHero = document.querySelector('.work-hero-section');
   if (!workHero) return;
 
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    gsap.set('.work-hero-tag, .work-hero-title, .work-hero-desc, .work-hero-cta, .work-metric-item',
-      { opacity: 1, y: 0, filter: 'none', clearProps: 'all' }
-    );
-    return;
-  }
-
-  // Set initial state immediately (CSS opacity:0 already prevents FOUC)
-  gsap.set('.work-hero-tag',    { opacity: 0, y: 14, filter: 'blur(8px)' });
-  gsap.set('.work-hero-title',  { opacity: 0, y: 28, filter: 'blur(10px)' });
-  gsap.set('.work-hero-desc',   { opacity: 0, y: 18, filter: 'blur(6px)' });
-  gsap.set('.work-hero-cta',    { opacity: 0, y: 12 });
-  gsap.set('.work-metric-item', { opacity: 0, y: 20, scale: 0.96 });
-
-  const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-
-  tl.fromTo('.work-hero-tag',
-    { opacity: 0, y: 14, filter: 'blur(8px)' },
-    { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.55 },
-    0.15
-  );
-
-  tl.fromTo('.work-hero-title',
-    { opacity: 0, y: 28, filter: 'blur(10px)' },
-    { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.7 },
-    0.28
-  );
-
-  tl.fromTo('.work-hero-desc',
-    { opacity: 0, y: 18, filter: 'blur(6px)' },
-    { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.6 },
-    0.48
-  );
-
-  tl.fromTo('.work-hero-cta',
-    { opacity: 0, y: 12 },
-    { opacity: 1, y: 0, duration: 0.5 },
-    0.65
-  );
-
-  // Metrics grid — stagger with scale spring for the 2x2 feel
-  tl.fromTo('.work-metric-item',
-    { opacity: 0, y: 20, scale: 0.96 },
-    {
-      opacity: 1, y: 0, scale: 1,
-      duration: 0.55, stagger: 0.1,
-      ease: 'back.out(1.2)',
-      onComplete: () => {
-        animateWorkMetrics();
-      }
-    },
-    0.35
-  );
+  animateWorkMetrics();
 
   function animateWorkMetrics() {
     const metricVals = workHero.querySelectorAll('.work-metric-val');
@@ -1391,25 +1338,6 @@ function initWorkHeroIntro() {
 function initTeamPageAnimations() {
   const teamHero = document.querySelector('.team-hero-section');
   if (!teamHero) return;
-
-  const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
-
-  tl.fromTo('.team-hero-tag',
-    { opacity: 0, y: 15 },
-    { opacity: 1, y: 0, duration: 0.8, delay: 0.15 }
-  );
-
-  tl.fromTo('.team-hero-title',
-    { opacity: 0, y: 35 },
-    { opacity: 1, y: 0, duration: 1.1 },
-    '-=0.5'
-  );
-
-  tl.fromTo('.team-hero-desc',
-    { opacity: 0, y: 25 },
-    { opacity: 1, y: 0, duration: 0.9 },
-    '-=0.7'
-  );
 
   // Dynamic count-up animations for leadership metrics
   let activeMetricTweens = [];
@@ -1494,19 +1422,7 @@ function initTeamPageAnimations() {
     });
   }
 
-  tl.fromTo('.team-metric-item',
-    { opacity: 0, y: 20 },
-    {
-      opacity: 1,
-      y: 0,
-      duration: 0.7,
-      stagger: 0.08,
-      onStart: () => {
-        animateMetrics();
-      }
-    },
-    '-=0.6'
-  );
+  animateMetrics();
 
   // Re-trigger counter when scrolling back into view
   ScrollTrigger.create({
@@ -1637,24 +1553,7 @@ function initTeamPageAnimations() {
 function initWhyUsAnimations() {
   const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // 1. Hero Entrance
-  const whyHero = document.querySelector('.why-hero-section');
-  if (whyHero) {
-    if (isReducedMotion) {
-      gsap.set(['.why-hero-title', '.why-hero-subtitle'], { opacity: 1, y: 0 });
-    } else {
-      const heroTl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-      heroTl.fromTo('.why-hero-title',
-        { opacity: 0, y: 35 },
-        { opacity: 1, y: 0, duration: 1.0, delay: 0.1 }
-      );
-      heroTl.fromTo('.why-hero-subtitle',
-        { opacity: 0, y: 22 },
-        { opacity: 1, y: 0, duration: 0.85 },
-        '-=0.6'
-      );
-    }
-  }
+
 
   // 2. Philosophy Cards Grid Stagger Entrance
   const philGrid = document.querySelector('.section-services .services-cards-grid');
@@ -2505,254 +2404,6 @@ function initInstagramReelsPlayer() {
   }
 }
 
-// ==========================================================================
-// 19. SEAMLESS CLIENT-SIDE SPA PAGE ROUTER (FRAMER / THE ROI MEDIA STYLE)
-// ==========================================================================
-function initSeamlessPageRouter() {
-  let isTransitioning = false;
-
-  function getPageSections(doc = document) {
-    return Array.from(doc.querySelectorAll('body > section, body > footer, body > main'));
-  }
-
-  function updateActiveNav(targetPath) {
-    const navbar = document.getElementById('navbar');
-    if (!navbar) return;
-    const navList = navbar.querySelector('.nav-list');
-    const navLinks = navbar.querySelectorAll('.nav-link');
-    const indicator = navList ? navList.querySelector('.nav-indicator') : null;
-
-    let matchedLink = null;
-    navLinks.forEach((l) => {
-      const href = l.getAttribute('href') || '';
-      const normHref = href.replace(/\/$/, '') || '/index.html';
-      const isMatch = normHref === targetPath ||
-        (normHref === '/index.html' && (targetPath === '/' || targetPath.endsWith('index.html'))) ||
-        (normHref === '/work.html' && targetPath.includes('work')) ||
-        (normHref === '/team.html' && targetPath.includes('team')) ||
-        (normHref === '/why-us.html' && targetPath.includes('why-us'));
-      if (isMatch) {
-        l.classList.add('active');
-        matchedLink = l;
-      } else {
-        l.classList.remove('active');
-      }
-    });
-
-    if (matchedLink && indicator && navList) {
-      const rect = matchedLink.getBoundingClientRect();
-      const listRect = navList.getBoundingClientRect();
-      const left = rect.left - listRect.left;
-      indicator.style.width = `${Math.round(rect.width)}px`;
-      indicator.style.transform = `translate(${Math.round(left)}px, -50%) translateZ(0)`;
-      indicator.style.opacity = '1';
-    }
-
-    const mobileLinks = document.querySelectorAll('.mobile-nav-link');
-    mobileLinks.forEach((ml) => {
-      const href = ml.getAttribute('href') || '';
-      const normHref = href.replace(/\/$/, '') || '/index.html';
-      const isMatch = normHref === targetPath ||
-        (normHref === '/index.html' && (targetPath === '/' || targetPath.endsWith('index.html'))) ||
-        (normHref === '/work.html' && targetPath.includes('work')) ||
-        (normHref === '/team.html' && targetPath.includes('team')) ||
-        (normHref === '/why-us.html' && targetPath.includes('why-us'));
-      if (isMatch) ml.classList.add('active');
-      else ml.classList.remove('active');
-    });
-  }
-
-  async function navigateTo(targetUrlString, pushState = true) {
-    if (isTransitioning) return;
-    isTransitioning = true;
-
-    let targetUrl;
-    try {
-      targetUrl = new URL(targetUrlString, window.location.href);
-    } catch {
-      window.location.href = targetUrlString;
-      return;
-    }
-
-    const currentSections = getPageSections(document);
-    const targetPath = targetUrl.pathname.replace(/\/$/, '') || '/index.html';
-
-    // Slide navbar active indicator immediately on click
-    updateActiveNav(targetPath);
-
-    // 1. Subtle exit motion: current page content smoothly glides up & fades
-    const exitAnimation = gsap.to(currentSections, {
-      opacity: 0,
-      y: -12,
-      duration: 0.2,
-      ease: 'power2.in',
-      stagger: 0.015
-    });
-
-    // 2. Fetch target page HTML
-    let newDoc = null;
-    try {
-      const res = await fetch(targetUrl.href);
-      if (!res.ok) throw new Error('Failed to load page');
-      const htmlText = await res.text();
-      const parser = new DOMParser();
-      newDoc = parser.parseFromString(htmlText, 'text/html');
-    } catch (err) {
-      console.warn('SPA navigation fallback:', err);
-      window.location.href = targetUrl.href;
-      return;
-    }
-
-    await exitAnimation;
-
-    // 3. Update title & URL
-    if (newDoc.title) document.title = newDoc.title;
-    if (pushState) {
-      history.pushState({ path: targetUrl.pathname }, newDoc.title || '', targetUrl.href);
-    }
-
-    // 4. Reset scroll smoothly to top
-    window.scrollTo(0, 0);
-    if (window.lenis) {
-      window.lenis.scrollTo(0, { immediate: true });
-    }
-
-    // 5. Clean up old ScrollTrigger instances
-    if (window.ScrollTrigger) {
-      ScrollTrigger.getAll().forEach((st) => st.kill());
-    }
-
-    // 6. Swap DOM elements
-    currentSections.forEach((el) => el.remove());
-
-    const newSections = getPageSections(newDoc);
-    const scriptAnchor = document.querySelector('script[src*="main.js"]') || document.querySelector('script');
-
-    newSections.forEach((el) => {
-      // Set initial state for Framer-style rise entrance
-      gsap.set(el, { opacity: 0, y: 16 });
-      if (scriptAnchor) {
-        document.body.insertBefore(el, scriptAnchor);
-      } else {
-        document.body.appendChild(el);
-      }
-    });
-
-    if (newDoc.body.className) {
-      document.body.className = newDoc.body.className;
-    }
-
-    // 7. Re-initialize interactive components for the new page
-    const path = targetPath.toLowerCase();
-    const isWork = path.includes('work') || !!document.querySelector('.work-hero-section');
-    const isTeam = path.includes('team') || !!document.querySelector('.page-team');
-    const isWhyUs = path.includes('why-us') || !!document.querySelector('.page-why-us');
-    const isHome = !isWork && !isTeam && !isWhyUs && !path.includes('creator-');
-
-    if (isHome) {
-      init3DScene();
-      initStatsMarquee();
-      initCreatorsSection();
-      initStatementParallax();
-      initServicesReveal();
-      initPortfolioGrid();
-      initTestimonialsReveal();
-      initProcessScrollDraw();
-      initCTAReveal();
-      initServiceFilters();
-      initHeroIntro(false);
-    } else if (isWork) {
-      initWorkHeroIntro();
-      initPortfolioGrid();
-      initCTAReveal();
-      initServiceFilters();
-    } else if (isTeam) {
-      initTeamPageAnimations();
-    } else if (isWhyUs) {
-      initWhyUsAnimations();
-    }
-
-    if (document.querySelectorAll('.ig-reel-card').length > 0) {
-      initInstagramReelsPlayer();
-    }
-
-    initMagneticElements();
-    initScrollVelocityEffects();
-    initCustomCursor();
-
-    // 8. Framer-style silky-smooth entrance
-    gsap.to(newSections, {
-      opacity: 1,
-      y: 0,
-      duration: 0.38,
-      ease: 'power3.out',
-      stagger: 0.03,
-      clearProps: 'transform,opacity',
-      onComplete: () => {
-        isTransitioning = false;
-        if (window.ScrollTrigger) ScrollTrigger.refresh();
-
-        if (targetUrl.hash) {
-          const targetEl = document.querySelector(targetUrl.hash);
-          if (targetEl) {
-            if (window.lenis) window.lenis.scrollTo(targetEl, { offset: -70 });
-            else targetEl.scrollIntoView({ behavior: 'smooth' });
-          }
-        }
-      }
-    });
-  }
-
-  // Intercept click on internal links
-  document.addEventListener('click', (e) => {
-    const link = e.target.closest('a');
-    if (!link) return;
-
-    if (e.defaultPrevented) return;
-    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
-    if (link.target === '_blank' || link.hasAttribute('download')) return;
-
-    const href = link.getAttribute('href');
-    if (!href) return;
-
-    if (href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
-    if (href.startsWith('#')) return;
-
-    let targetUrl;
-    try {
-      targetUrl = new URL(link.href, window.location.href);
-    } catch {
-      return;
-    }
-
-    if (targetUrl.origin !== window.location.origin) return;
-
-    const currentPath = window.location.pathname.replace(/\/$/, '') || '/index.html';
-    const targetPath = targetUrl.pathname.replace(/\/$/, '') || '/index.html';
-
-    // Same page with hash
-    if (currentPath === targetPath && targetUrl.hash) return;
-
-    // Same page without hash: smooth scroll to top
-    if (currentPath === targetPath && !targetUrl.hash) {
-      e.preventDefault();
-      if (window.lenis) window.lenis.scrollTo(0);
-      else window.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
-    }
-
-    const isTargetHtml = targetPath.endsWith('.html') || targetPath === '' || targetPath === '/';
-    if (!isTargetHtml) return;
-
-    e.preventDefault();
-    navigateTo(targetUrl.href, true);
-  });
-
-  // Handle browser back / forward buttons
-  window.addEventListener('popstate', () => {
-    navigateTo(window.location.href, false);
-  });
-}
 
 
 

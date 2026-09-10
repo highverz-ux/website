@@ -8696,34 +8696,62 @@ html.js .floating-badge-item {
 }
 
 /* ==========================================================================
-   PAGE ON-LOAD TRANSITION (CLEAN, SUBTLE, ZERO FLICKER)
+   PAGE TRANSITION (FRAMER-STYLE, ZERO BLANK SCREEN, ZERO FLICKER)
    ========================================================================== */
-@keyframes pageOnLoadFadeIn {
-  from {
+
+/* 1. Fluid On-Load Content Entrance for Hero Sections */
+@keyframes framerContentEntrance {
+  0% {
     opacity: 0;
+    transform: translateY(14px);
   }
-  to {
+  100% {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
-body {
-  animation: pageOnLoadFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+.page-work .work-hero-container,
+.page-team .team-hero-container,
+.page-why-us .why-hero-container,
+.case-hero-container,
+html.skip-intro .hero-container {
+  animation: framerContentEntrance 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* Native CSS View Transitions as progressive enhancement */
+/* 2. Seamless Native Cross-Document View Transitions */
 @view-transition {
   navigation: auto;
 }
 
+/* Old page snapshot stays solid — NEVER flashes blank or black */
 ::view-transition-old(root) {
-  animation: 160ms cubic-bezier(0.4, 0, 0.2, 1) both pageFadeOut;
+  animation: 90ms ease-out both pageFadeOld;
 }
 
+/* Incoming page glides in cleanly on top */
 ::view-transition-new(root) {
-  animation: 200ms cubic-bezier(0, 0, 0.2, 1) both pageFadeIn;
+  animation: 250ms cubic-bezier(0.16, 1, 0.3, 1) both pageFadeNew;
 }
 
+@keyframes pageFadeOld {
+  to {
+    opacity: 0.9;
+  }
+}
+
+@keyframes pageFadeNew {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Navbar stays locked and stationary across all page switches without any re-render */
 #navbar {
   view-transition-name: main-navbar;
 }
@@ -8731,16 +8759,8 @@ body {
 ::view-transition-old(main-navbar),
 ::view-transition-new(main-navbar) {
   animation: none;
+  mix-blend-mode: normal;
 }
 
-@keyframes pageFadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
-
-@keyframes pageFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
 
 

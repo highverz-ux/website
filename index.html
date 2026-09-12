@@ -35,8 +35,17 @@
   </style>
   <script>
     document.documentElement.classList.add('js');
-    if (window.location.search.includes('no-intro') || sessionStorage.getItem('highverzIntroPlayed')) {
+    try { sessionStorage.removeItem('highverzIntroPlayed'); } catch (_) {}
+    var isSkipIntro = window.location.search.includes('no-intro') || window.location.search.includes('intro=false');
+    var isDedicated = window.location.pathname.includes('work') || 
+                      window.location.pathname.includes('creator-') || 
+                      window.location.pathname.includes('team') || 
+                      window.location.pathname.includes('why-us') || 
+                      window.location.pathname.includes('campaigns');
+    if (isSkipIntro || isDedicated) {
       document.documentElement.classList.add('skip-intro');
+    } else {
+      document.documentElement.classList.add('intro-pending');
     }
   </script>
 </head>
@@ -91,7 +100,7 @@
     <div class="ambient-glow" aria-hidden="true"></div>
 
     <!-- Custom Cursor (Fluid Kinetic Magnetic Tracker) -->
-    <div class="custom-cursor" id="custom-cursor" aria-hidden="true">
+    <div class="custom-cursor is-hidden" id="custom-cursor" aria-hidden="true">
       <div class="cursor-glow" id="cursor-glow"></div>
       <div class="cursor-ring" id="cursor-ring">
         <span class="cursor-text" id="cursor-text">VIEW</span>
@@ -120,6 +129,7 @@
           <ul class="nav-list">
             <li><a href="/index.html" class="nav-link active" data-cursor="HOME">Home</a></li>
             <li><a href="/work.html" class="nav-link" data-cursor="WORK">Work</a></li>
+            <li><a href="/campaigns.html" class="nav-link" data-cursor="CAMPAIGNS">Campaigns</a></li>
             <li><a href="/team.html" class="nav-link" data-cursor="TEAM">Team</a></li>
             <li><a href="/why-us.html" class="nav-link" data-cursor="WHY US">Why Us</a></li>
           </ul>

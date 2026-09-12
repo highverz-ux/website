@@ -1,43 +1,10 @@
-import express from 'express';
-import cors from 'cors';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-// Load environment variables from .env if present
-if (typeof process.loadEnvFile === 'function') {
-  try {
-    process.loadEnvFile();
-  } catch (_) {}
-}
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-const CONFIG_FILE = path.join(__dirname, 'config.json');
-
-app.use(cors());
-app.use(express.json());
-
 import https from 'https';
-import crypto from 'crypto';
 
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+const TMDB_DEFAULT_KEY = '4f2cf009f072ced9e20e584803d8400e';
+const TMDB_DEFAULT_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0ZjJjZjAwOWYwNzJjZWQ5ZTIwZTU4NDgwM2Q4NDAwZSIsIm5iZiI6MTc4OTE0NjEyOS42NjYsInN1YiI6IjZhYTQzNDExNTUwMWRmZjhiZjI4OWNmYyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.MDPNXL50yjs5FXCTDFh-PPg_AmPlxkf_8C16mVB8XG8';
 const tmdbCache = new Map();
-const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour memory cache
-const CACHE_DIR = path.join(__dirname, '.cache');
-
-if (!fs.existsSync(CACHE_DIR)) {
-  try { fs.mkdirSync(CACHE_DIR, { recursive: true }); } catch (_) {}
-}
-
-const httpsAgent = new https.Agent({
-  keepAlive: true,
-  maxSockets: 5,
-  timeout: 10000
-});
+const CACHE_TTL_MS = 10 * 60 * 1000;
 
 const FEATURED_CAMPAIGN_IDS = [
   693134, // Dune: Part Two
@@ -61,9 +28,6 @@ const CAMPAIGN_LABELS = {
   533535: 'MARKETING CASE STUDY'
 };
 
-const TMDB_DEFAULT_KEY = '4f2cf009f072ced9e20e584803d8400e';
-const TMDB_DEFAULT_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0ZjJjZjAwOWYwNzJjZWQ5ZTIwZTU4NDgwM2Q4NDAwZSIsIm5iZiI6MTc4OTE0NjEyOS42NjYsInN1YiI6IjZhYTQzNDExNTUwMWRmZjhiZjI4OWNmYyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.MDPNXL50yjs5FXCTDFh-PPg_AmPlxkf_8C16mVB8XG8';
-
 function getTMDBAuth() {
   const token = (typeof process !== 'undefined' && (process.env?.VITE_TMDB_ACCESS_TOKEN || process.env?.TMDB_ACCESS_TOKEN)) || TMDB_DEFAULT_TOKEN;
   const key = (typeof process !== 'undefined' && (process.env?.VITE_TMDB_API_KEY || process.env?.TMDB_API_KEY)) || TMDB_DEFAULT_KEY;
@@ -74,27 +38,7 @@ function getTMDBAuth() {
   return { type: 'key', key };
 }
 
-function getDiskCache(key) {
-  try {
-    const hash = crypto.createHash('md5').update(key).digest('hex');
-    const file = path.join(CACHE_DIR, `${hash}.json`);
-    if (fs.existsSync(file)) {
-      const parsed = JSON.parse(fs.readFileSync(file, 'utf8'));
-      if (Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000) { // 24hr disk TTL
-        return parsed.data;
-      }
-    }
-  } catch (_) {}
-  return null;
-}
-
-function setDiskCache(key, data) {
-  try {
-    const hash = crypto.createHash('md5').update(key).digest('hex');
-    const file = path.join(CACHE_DIR, `${hash}.json`);
-    fs.writeFileSync(file, JSON.stringify({ timestamp: Date.now(), data }));
-  } catch (_) {}
-}
+const httpsAgent = new https.Agent({ keepAlive: true, maxSockets: 5, timeout: 10000 });
 
 function nativeHttpsRequest(urlStr, headers = {}, retries = 3) {
   return new Promise((resolve, reject) => {
@@ -169,40 +113,14 @@ async function fetchFromTMDB(endpoint, params = {}) {
   }
 
   const cacheKey = url.toString();
-  const memoryCached = tmdbCache.get(cacheKey);
-  if (memoryCached && Date.now() - memoryCached.timestamp < CACHE_TTL_MS) {
-    return memoryCached.data;
+  const cached = tmdbCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+    return cached.data;
   }
 
-  const diskCached = getDiskCache(cacheKey);
-  if (diskCached) {
-    tmdbCache.set(cacheKey, { data: diskCached, timestamp: Date.now() });
-    return diskCached;
-  }
-
-  try {
-    const data = await nativeHttpsRequest(url.toString(), headers, 3);
-    tmdbCache.set(cacheKey, { data, timestamp: Date.now() });
-    setDiskCache(cacheKey, data);
-    return data;
-  } catch (err) {
-    // If request fails but disk cache has any previous version, fallback to it
-    if (diskCached) {
-      console.warn(`[TMDB] Serving stale cache for ${endpoint} due to error: ${err.message}`);
-      return diskCached;
-    }
-    throw err;
-  }
-}
-
-async function mapConcurrent(items, fn, concurrency = 2) {
-  const results = [];
-  for (let i = 0; i < items.length; i += concurrency) {
-    const chunk = items.slice(i, i + concurrency);
-    const chunkResults = await Promise.all(chunk.map(fn));
-    results.push(...chunkResults);
-  }
-  return results;
+  const data = await nativeHttpsRequest(url.toString(), headers, 3);
+  tmdbCache.set(cacheKey, { data, timestamp: Date.now() });
+  return data;
 }
 
 function enrichMovie(movie) {
@@ -216,145 +134,26 @@ function enrichMovie(movie) {
   };
 }
 
-// Helper function to read config
-const readConfig = () => {
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   try {
-    if (fs.existsSync(CONFIG_FILE)) {
-      const data = fs.readFileSync(CONFIG_FILE, 'utf8');
-      return JSON.parse(data);
+    const { id } = req.query;
+
+    if (id) {
+      res.setHeader('Cache-Control', 'public, s-maxage=1800, max-age=1800, stale-while-revalidate=3600');
+      const movie = await fetchFromTMDB(`/movie/${id}`, { append_to_response: 'videos,credits' });
+      return res.status(200).json({ success: true, movie: enrichMovie(movie) });
     }
-  } catch (err) {
-    console.error('Error reading config:', err);
-  }
-  return { googleSheetsUrl: '' };
-};
 
-// Helper function to write config
-const writeConfig = (config) => {
-  try {
-    fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
-  } catch (err) {
-    console.error('Error writing config:', err);
-  }
-};
-
-const LEADS_FILE = path.join(__dirname, 'leads.json');
-
-// Helper to read leads
-const readLeads = () => {
-  try {
-    if (fs.existsSync(LEADS_FILE)) {
-      return JSON.parse(fs.readFileSync(LEADS_FILE, 'utf8'));
-    }
-  } catch (err) {
-    console.error('Error reading leads.json:', err);
-  }
-  return [];
-};
-
-// Helper to save leads
-const saveLeadLocally = (lead) => {
-  try {
-    const leads = readLeads();
-    leads.unshift({ ...lead, receivedAt: new Date().toISOString() });
-    fs.writeFileSync(LEADS_FILE, JSON.stringify(leads, null, 2));
-  } catch (err) {
-    console.error('Error saving lead locally:', err);
-  }
-};
-
-// GET /api/config - Retrieve current configuration
-app.get('/api/config', (req, res) => {
-  const config = readConfig();
-  res.json(config);
-});
-
-// POST /api/config - Save configuration (like Google Sheets URL)
-app.post('/api/config', (req, res) => {
-  const { googleSheetsUrl } = req.body;
-  
-  if (googleSheetsUrl !== undefined) {
-    const config = readConfig();
-    config.googleSheetsUrl = googleSheetsUrl.trim();
-    writeConfig(config);
-    console.log(`[Config] Google Sheets Webhook URL updated: ${config.googleSheetsUrl}`);
-    return res.json({ success: true, config });
-  }
-  
-  res.status(400).json({ error: 'googleSheetsUrl is required' });
-});
-
-// GET /api/leads - View all leads stored locally
-app.get('/api/leads', (req, res) => {
-  res.json({ leads: readLeads() });
-});
-
-// POST /api/enquiry - Forward form submission to Google Sheet & backup locally
-app.post('/api/enquiry', async (req, res) => {
-  const payload = req.body || {};
-  console.log(`[Enquiry] New submission received:`, {
-    name: payload.name,
-    contact: payload.contact,
-    handle: payload.handle
-  });
-
-  // 1. Always back up lead locally so data is never lost
-  saveLeadLocally(payload);
-
-  const config = readConfig();
-  const googleSheetsUrl = (payload.googleSheetsUrl && payload.googleSheetsUrl.trim()) ||
-    config.googleSheetsUrl ||
-    process.env.GOOGLE_SHEETS_URL ||
-    'https://script.google.com/macros/s/AKfycbzHkVm1s28Q8dJEaEnTsoHvxl-nZXE4cVURN92x47KJSTHTJfayTKSNvIR3219HLt9tRA/exec';
-
-  if (!googleSheetsUrl || googleSheetsUrl.includes('testing/exec')) {
-    console.warn('[Enquiry] Google Sheets URL is not set or using placeholder.');
-    return res.json({
-      success: true,
-      backedUpLocally: true,
-      sheetSynced: false,
-      message: 'Lead saved locally. Provide real Google Sheets URL to sync automatically.'
-    });
-  }
-
-  try {
-    // Forward payload to Google Sheets Web App
-    const response = await fetch(googleSheetsUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload),
-      redirect: 'follow'
-    });
-
-    const responseText = await response.text();
-    console.log(`[Google Sheets] Status: ${response.status} | Response:`, responseText.substring(0, 150));
-
-    res.json({
-      success: true,
-      backedUpLocally: true,
-      sheetSynced: response.ok,
-      status: response.status
-    });
-  } catch (error) {
-    console.error('[Google Sheets Error] Failed to forward:', error.message);
-    // Still return success: true because lead was saved locally
-    res.json({
-      success: true,
-      backedUpLocally: true,
-      sheetSynced: false,
-      error: error.message
-    });
-  }
-});
-
-// ─── GET /api/movies - Paginated movies and debounced search ───
-app.get('/api/movies', async (req, res) => {
-  try {
-    // Enable browser-level HTTP caching (5 min max-age, 10 min stale-while-revalidate)
-    res.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-
+    res.setHeader('Cache-Control', 'public, s-maxage=300, max-age=300, stale-while-revalidate=600');
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const limit = Math.min(24, Math.max(1, parseInt(req.query.limit, 10) || 12));
     const query = (req.query.query || '').trim();
@@ -401,14 +200,12 @@ app.get('/api/movies', async (req, res) => {
       return filtered;
     };
 
-    // 1. Search Query Mode
     if (query.length > 0) {
       const searchParams = { query };
       if (year !== 'all' && /^\d{4}$/.test(year)) {
         searchParams.primary_release_year = year;
       }
 
-      // Calculate TMDB page offsets
       const startIndex = (page - 1) * limit;
       const endIndex = page * limit;
       const tmdbStartPage = Math.floor(startIndex / 20) + 1;
@@ -427,7 +224,6 @@ app.get('/api/movies', async (req, res) => {
         if (Array.isArray(r.results)) combined.push(...r.results);
       });
 
-      // Apply genre / year range in memory if selected
       if (genre !== 'all' || (year !== 'all' && !/^\d{4}$/.test(year))) {
         combined = applyInMemoryFilters(combined);
         totalResults = combined.length;
@@ -436,7 +232,7 @@ app.get('/api/movies', async (req, res) => {
       const sliceStart = startIndex - (tmdbStartPage - 1) * 20;
       const sliced = combined.slice(sliceStart, sliceStart + limit).map(enrichMovie);
 
-      return res.json({
+      return res.status(200).json({
         success: true,
         page,
         limit,
@@ -446,18 +242,18 @@ app.get('/api/movies', async (req, res) => {
       });
     }
 
-    // 2. Featured Filter
     if (filter === 'campaigns' || sortBy === 'campaigns') {
-      let featuredList = (await mapConcurrent(FEATURED_CAMPAIGN_IDS, id =>
-        fetchFromTMDB(`/movie/${id}`).catch(() => null), 3
-      )).filter(Boolean).map(enrichMovie);
-
+      const featuredPromises = FEATURED_CAMPAIGN_IDS.map(mid =>
+        fetchFromTMDB(`/movie/${mid}`).catch(() => null)
+      );
+      let featuredList = (await Promise.all(featuredPromises)).filter(Boolean).map(enrichMovie);
       featuredList = applyInMemoryFilters(featuredList);
+
       const totalResults = featuredList.length;
       const startIndex = (page - 1) * limit;
       const sliced = featuredList.slice(startIndex, startIndex + limit);
 
-      return res.json({
+      return res.status(200).json({
         success: true,
         page,
         limit,
@@ -467,7 +263,6 @@ app.get('/api/movies', async (req, res) => {
       });
     }
 
-    // 3. Discover Mode with Active Filters (Genre, Year, or custom Sort)
     const hasActiveFilters = (genre !== 'all') || (year !== 'all') || (sortBy !== 'popularity.desc');
 
     if (hasActiveFilters) {
@@ -497,7 +292,6 @@ app.get('/api/movies', async (req, res) => {
         }
       }
 
-      // Calculate TMDB page offsets
       const startIndex = (page - 1) * limit;
       const endIndex = page * limit;
       const tmdbStartPage = Math.floor(startIndex / 20) + 1;
@@ -519,7 +313,7 @@ app.get('/api/movies', async (req, res) => {
       const sliceStart = startIndex - (tmdbStartPage - 1) * 20;
       const sliced = combined.slice(sliceStart, sliceStart + limit).map(enrichMovie);
 
-      return res.json({
+      return res.status(200).json({
         success: true,
         page,
         limit,
@@ -529,21 +323,18 @@ app.get('/api/movies', async (req, res) => {
       });
     }
 
-    // 4. Default Discovery (Featured Campaigns Priority on Page 1 + Trending)
-    const tmdbPage = page;
-    const trendingData = await fetchFromTMDB('/trending/movie/week', { page: tmdbPage }).catch(() => ({ results: [], total_results: 0 }));
+    const trendingData = await fetchFromTMDB('/trending/movie/week', { page }).catch(() => ({ results: [], total_results: 0 }));
     let list = (trendingData.results || []).map(enrichMovie);
 
     if (page === 1) {
-      const featuredMovies = (await mapConcurrent(FEATURED_CAMPAIGN_IDS, id =>
-        fetchFromTMDB(`/movie/${id}`).catch(() => null), 3
-      )).filter(Boolean).map(enrichMovie);
+      const featuredPromises = FEATURED_CAMPAIGN_IDS.map(mid =>
+        fetchFromTMDB(`/movie/${mid}`).catch(() => null)
+      );
+      const featuredMovies = (await Promise.all(featuredPromises)).filter(Boolean).map(enrichMovie);
       const featuredMap = new Map();
       featuredMovies.forEach(m => featuredMap.set(m.id, m));
       list.forEach(m => {
-        if (!featuredMap.has(m.id)) {
-          featuredMap.set(m.id, m);
-        }
+        if (!featuredMap.has(m.id)) featuredMap.set(m.id, m);
       });
       list = Array.from(featuredMap.values());
     }
@@ -551,7 +342,7 @@ app.get('/api/movies', async (req, res) => {
     const totalResults = trendingData.total_results || 100;
     const sliced = list.slice(0, limit);
 
-    return res.json({
+    return res.status(200).json({
       success: true,
       page,
       limit,
@@ -560,45 +351,6 @@ app.get('/api/movies', async (req, res) => {
       results: sliced
     });
   } catch (err) {
-    console.error('[API /api/movies error]:', err.message);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to load movies from backend',
-      details: err.message
-    });
+    res.status(500).json({ success: false, error: err.message });
   }
-});
-
-// ─── GET /api/movies/:id - Full details with trailers & credits ───
-app.get('/api/movies/:id', async (req, res) => {
-  try {
-    // Enable browser-level HTTP caching for dossiers (30 min max-age, 1 hr stale-while-revalidate)
-    res.set('Cache-Control', 'public, max-age=1800, stale-while-revalidate=3600');
-
-    const movieId = parseInt(req.params.id, 10);
-    if (!movieId) {
-      return res.status(400).json({ error: 'Valid movie ID required' });
-    }
-
-    const movie = await fetchFromTMDB(`/movie/${movieId}`, {
-      append_to_response: 'videos,credits'
-    });
-
-    const enriched = enrichMovie(movie);
-    return res.json({
-      success: true,
-      movie: enriched
-    });
-  } catch (err) {
-    console.error(`[API /api/movies/${req.params.id} error]:`, err.message);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to load movie details',
-      details: err.message
-    });
-  }
-});
-
-app.listen(PORT, () => {
-  console.log(`Backend server running on http://localhost:${PORT}`);
-});
+}

@@ -29,6 +29,17 @@ html.skip-intro #highverz-intro {
   display: none !important;
 }
 
+/* Prevent flash of un-animated content before and during loading intro */
+html.intro-pending:not(.skip-intro) .hl-word,
+html.intro-pending:not(.skip-intro) .platform-chip,
+html.intro-pending:not(.skip-intro) #hero-desc,
+html.intro-pending:not(.skip-intro) #hero-actions,
+html.intro-pending:not(.skip-intro) .section-trusted,
+html.intro-pending:not(.skip-intro) #navbar {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
 /* Subtle luxury deep atmospheric lighting */
 .hv-intro-bg {
   position: absolute;

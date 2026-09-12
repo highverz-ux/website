@@ -11,6 +11,7 @@ export default defineConfig({
         creatorUmarpnj: resolve(__dirname, 'creator-umarpnj.html'),
         team: resolve(__dirname, 'team.html'),
         whyUs: resolve(__dirname, 'why-us.html'),
+        campaigns: resolve(__dirname, 'campaigns.html'),
       },
     },
   },

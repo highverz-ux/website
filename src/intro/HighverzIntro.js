@@ -29,6 +29,8 @@ let activeIntroInstance = null;
 export class HighverzIntro {
   constructor(options = {}) {
     this.onComplete = options.onComplete || (() => {});
+    this.onStartReveal = options.onStartReveal || null;
+    this.hasRevealed = false;
     
     this.container = null;
     this.logoWrap = null;
@@ -251,7 +253,22 @@ export class HighverzIntro {
         opacity: 0,
         duration: 0.45,
         ease: 'power2.out',
+        onStart: () => {
+          document.documentElement.classList.remove('intro-pending');
+          document.body.classList.remove('intro-active');
+          this.triggerReveal();
+        }
       }, '-=0.08');
+    }
+  }
+
+  triggerReveal() {
+    if (this.hasRevealed) return;
+    this.hasRevealed = true;
+    if (typeof this.onStartReveal === 'function') {
+      this.onStartReveal();
+    } else if (typeof this.onComplete === 'function') {
+      this.onComplete();
     }
   }
 
@@ -260,16 +277,20 @@ export class HighverzIntro {
     this.isCompleted = true;
     devLog('complete');
 
+    document.documentElement.classList.remove('intro-pending');
     document.body.classList.remove('intro-active');
     
     if (this.container) {
       this.container.classList.add('hv-intro-exit');
     }
 
-    setTimeout(() => {
+    this.triggerReveal();
+
+    if (typeof this.onComplete === 'function' && this.onComplete !== this.onStartReveal) {
       this.onComplete();
-      this.destroy();
-    }, 400);
+    }
+
+    this.destroy();
   }
 
   destroy() {
@@ -329,10 +350,15 @@ function playReducedMotionIntro(options = {}) {
         delay: 0.1,
         ease: 'power2.out',
         onComplete: () => {
+          document.documentElement.classList.remove('intro-pending');
           document.body.classList.remove('intro-active');
           if (container.parentNode) container.parentNode.removeChild(container);
           window.__HIGHVERZ_INTRO_ACTIVE__ = false;
-          if (options.onComplete) options.onComplete();
+          if (typeof options.onStartReveal === 'function') {
+            options.onStartReveal();
+          } else if (typeof options.onComplete === 'function') {
+            options.onComplete();
+          }
           devLog('reduced-motion complete');
         }
       });
@@ -397,9 +423,14 @@ export function initHighverzIntro(options = {}) {
  */
 export function replayHighverzIntro() {
   devLog('replay');
+  if (typeof window.prepareHeroInitialState === 'function') {
+    window.prepareHeroInitialState();
+  }
+  document.documentElement.classList.add('intro-pending');
+  document.body.classList.add('intro-active');
   initHighverzIntro({ 
     force: true,
-    onComplete: () => {
+    onStartReveal: () => {
       if (window.lenis) window.lenis.start();
       if (typeof window.initHeroIntro === 'function') {
         window.initHeroIntro(false);

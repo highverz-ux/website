@@ -189,7 +189,10 @@ html, body,
 .work-hero-section,
 .page-team,
 .team-hero-section,
-.case-study-page {
+.case-study-page,
+.campaign-hero,
+.campaign-grid-section,
+.campaign-modal-backdrop {
   transition:
     background-color 500ms var(--ease-theme),
     color 800ms var(--ease-theme),
@@ -349,13 +352,20 @@ img {
   width: 100vw;
   height: 100vh;
   pointer-events: none;
-  z-index: 99999;
+  z-index: 1000000;
   overflow: visible;
-  transition: opacity 0.3s ease;
+  display: none !important;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+body.cursor-active .custom-cursor {
+  display: block !important;
 }
 
 .custom-cursor.is-hidden {
   opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 /* Ambient Atmospheric Spotlight Glow */
@@ -370,7 +380,7 @@ img {
   border-radius: 50%;
   background: radial-gradient(circle, rgba(0, 229, 255, 0.08) 0%, rgba(0, 229, 255, 0.02) 45%, transparent 70%);
   pointer-events: none;
-  z-index: 99996;
+  z-index: 999996;
   transform: translate3d(-300px, -300px, 0);
   will-change: transform;
   mix-blend-mode: screen;
@@ -390,7 +400,7 @@ img {
   background-color: var(--accent-cyan);
   box-shadow: 0 0 10px rgba(0, 229, 255, 0.9), 0 0 2px #ffffff;
   pointer-events: none;
-  z-index: 99999;
+  z-index: 1000000;
   transform: translate3d(-100px, -100px, 0);
   will-change: transform, opacity;
   transition: opacity 0.2s ease, transform 0.04s ease-out;
@@ -414,7 +424,7 @@ img {
   border: 1.5px solid rgba(0, 229, 255, 0.45);
   background: radial-gradient(circle, rgba(0, 229, 255, 0.05) 0%, rgba(7, 9, 11, 0) 75%);
   pointer-events: none;
-  z-index: 99998;
+  z-index: 999998;
   transform: translate3d(-100px, -100px, 0);
   will-change: transform, width, height, border-color, background-color, box-shadow;
   display: flex;
@@ -6575,6 +6585,195 @@ html.js .floating-badge-item {
   .work-hero-metrics {
     gap: 1.25rem;
     justify-content: space-between;
+  }
+}
+
+/* ==========================================================================
+   14B. WORK PAGE — CAPABILITIES GRID (Createable-Inspired 6-Card Architecture)
+   ========================================================================== */
+.work-capabilities-section {
+  position: relative;
+  padding: 6rem 0 3.5rem;
+  background:
+    radial-gradient(ellipse 65% 45% at 50% 15%, rgba(35, 199, 216, 0.06) 0%, transparent 65%),
+    linear-gradient(180deg, rgba(8, 11, 16, 0.4) 0%, rgba(5, 7, 10, 0.8) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.work-capabilities-container {
+  max-width: var(--container-width);
+  margin: 0 auto;
+  padding: 0 var(--container-pad);
+}
+
+.work-capabilities-header {
+  text-align: center;
+  max-width: 680px;
+  margin: 0 auto 3.5rem;
+}
+
+.work-capabilities-tag {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent-cyan);
+  margin-bottom: 0.75rem;
+}
+
+.work-capabilities-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 4.2vw, 3.6rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  line-height: 1.12;
+}
+
+.work-capabilities-sub {
+  font-family: var(--font-body);
+  font-size: clamp(0.96rem, 1.25vw, 1.1rem);
+  line-height: 1.65;
+  color: var(--text-secondary);
+  margin: 0 auto;
+}
+
+.work-capabilities-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.75rem;
+}
+
+.capability-card {
+  display: flex;
+  flex-direction: column;
+  background: #090d14;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 20px;
+  overflow: hidden;
+  text-decoration: none;
+  transition: transform 0.4s var(--ease-expo), border-color 0.4s ease, box-shadow 0.4s ease;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  position: relative;
+}
+
+.capability-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(35, 199, 216, 0.45);
+  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.65), 0 0 30px rgba(35, 199, 216, 0.15);
+}
+
+.capability-visual-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: #04070c;
+}
+
+.capability-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.capability-card:hover .capability-img {
+  transform: scale(1.05);
+}
+
+.capability-glow-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 55%, rgba(9, 13, 20, 0.95) 100%);
+  transition: background 0.4s ease;
+}
+
+.capability-card:hover .capability-glow-overlay {
+  background: linear-gradient(180deg, rgba(35, 199, 216, 0.05) 0%, transparent 40%, rgba(9, 13, 20, 0.95) 100%);
+}
+
+.capability-content {
+  padding: 1.5rem 1.65rem 1.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  flex-grow: 1;
+}
+
+.capability-name {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+  transition: color 0.3s ease;
+}
+
+.capability-card:hover .capability-name {
+  color: var(--accent-cyan);
+}
+
+.capability-desc {
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+/* Light Mode Overrides */
+[data-theme="light"] .work-capabilities-section {
+  background:
+    radial-gradient(ellipse 65% 45% at 50% 15%, rgba(35, 199, 216, 0.08) 0%, transparent 65%),
+    linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .capability-card {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.09);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .capability-card:hover {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.1), 0 0 25px rgba(35, 199, 216, 0.15);
+}
+
+[data-theme="light"] .capability-glow-overlay {
+  background: linear-gradient(180deg, transparent 60%, rgba(255, 255, 255, 0.95) 100%);
+}
+
+[data-theme="light"] .capability-name {
+  color: #0b0f17;
+}
+
+[data-theme="light"] .capability-desc {
+  color: #555e6d;
+}
+
+@media (max-width: 1080px) {
+  .work-capabilities-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 680px) {
+  .work-capabilities-section {
+    padding: 4.5rem 0 2.5rem;
+  }
+  .work-capabilities-header {
+    margin-bottom: 2.5rem;
+  }
+  .work-capabilities-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
   }
 }
 

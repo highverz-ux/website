@@ -11,6 +11,8 @@ import { initHighverzIntro, replayHighverzIntro } from './intro/HighverzIntro.js
 import './enquiry/enquiry.css';
 import { initEnquirySystem } from './enquiry/enquiry.js';
 import { initThemeSystem } from './theme.js';
+import './campaigns/campaigns.css';
+import { initCampaignsPage } from './campaigns/campaigns.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -70,7 +72,8 @@ function boot() {
   const isCaseStudyPage = window.location.pathname.includes('creator-') || !!document.querySelector('.case-hero-section') || !!document.querySelector('.ig-profile-shell');
   const isTeamPage = window.location.pathname.includes('team') || !!document.querySelector('.page-team');
   const isWhyUs = window.location.pathname.includes('why-us') || !!document.querySelector('.page-why-us') || !!document.querySelector('.comparison-section');
-  const isDedicatedPage = isWorkPage || isCaseStudyPage || isTeamPage || isWhyUs;
+  const isCampaignsPage = window.location.pathname.includes('campaigns') || !!document.querySelector('.page-campaigns');
+  const isDedicatedPage = isWorkPage || isCaseStudyPage || isTeamPage || isWhyUs || isCampaignsPage;
 
   if (isDedicatedPage) {
     // Dedicated pages (Work, Creators, Team, Why Us) enter immediately without intro screen
@@ -78,6 +81,7 @@ function boot() {
     if (isWorkPage) initWorkHeroIntro();
     if (isTeamPage) initTeamPageAnimations();
     if (isWhyUs) initWhyUsAnimations();
+    if (isCampaignsPage) initCampaignsPage();
   }
 
   // Always initialize reels player if reel cards exist on any page
@@ -86,25 +90,25 @@ function boot() {
   }
 
   if (!isDedicatedPage) {
-    const skipIntro = window.location.search.includes('no-intro') || sessionStorage.getItem('highverzIntroPlayed');
+    const skipIntro = window.location.search.includes('no-intro') || window.location.search.includes('intro=false');
     if (skipIntro) {
-      // Intro overlay already played — remove it and run hero animation directly on reload
+      // Intro explicitly disabled via query parameter
       const introEl = document.getElementById('highverz-intro');
       if (introEl) introEl.remove();
+      document.documentElement.classList.remove('intro-pending');
+      document.body.classList.remove('intro-active');
       if (lenis) {
         lenis.start();
         lenis.scrollTo(0, { immediate: true });
       }
-      // Animate the hero lines and text effects directly on reload (buffered to guarantee paint)
-      setTimeout(() => {
-        initHeroIntro(false);
-      }, 70);
+      prepareHeroInitialState();
+      initHeroIntro(false);
     } else {
-      // First visit: play the premium Highverz intro screen, then animate hero
-      sessionStorage.setItem('highverzIntroPlayed', 'true');
+      // Play loading intro screen on every refresh
+      prepareHeroInitialState();
       if (lenis) lenis.stop();
       initHighverzIntro({
-        onComplete: () => {
+        onStartReveal: () => {
           if (lenis) lenis.start();
           initHeroIntro(false);
         }
@@ -154,19 +158,23 @@ function initCustomCursor() {
     return;
   }
 
-  // Pointer coordinates
-  let mouseX = window.innerWidth / 2;
-  let mouseY = window.innerHeight / 2;
-  let prevMouseX = mouseX;
-  let prevMouseY = mouseY;
+  // Start hidden on page load so no ghost/uneven circle appears in the viewport
+  cursorWrap.classList.add('is-hidden');
+  let hasMouseMoved = false;
 
-  // Physics render positions
-  let dotX = mouseX;
-  let dotY = mouseY;
-  let ringX = mouseX;
-  let ringY = mouseY;
-  let glowX = mouseX;
-  let glowY = mouseY;
+  // Pointer coordinates (start off-screen)
+  let mouseX = -100;
+  let mouseY = -100;
+  let prevMouseX = -100;
+  let prevMouseY = -100;
+
+  // Physics render positions (start off-screen)
+  let dotX = -100;
+  let dotY = -100;
+  let ringX = -100;
+  let ringY = -100;
+  let glowX = -100;
+  let glowY = -100;
 
   // Kinetic stretch & orientation parameters
   let smoothSpeed = 0;
@@ -185,7 +193,24 @@ function initCustomCursor() {
   window.addEventListener('mousemove', (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
-    if (cursorWrap.classList.contains('is-hidden')) {
+
+    if (!hasMouseMoved) {
+      hasMouseMoved = true;
+      document.body.classList.add('cursor-active');
+      prevMouseX = mouseX;
+      prevMouseY = mouseY;
+      dotX = mouseX;
+      dotY = mouseY;
+      ringX = mouseX;
+      ringY = mouseY;
+      glowX = mouseX;
+      glowY = mouseY;
+      scaleX = 1;
+      scaleY = 1;
+      smoothSpeed = 0;
+      currentAngle = 0;
+      cursorWrap.classList.remove('is-hidden');
+    } else if (cursorWrap.classList.contains('is-hidden')) {
       cursorWrap.classList.remove('is-hidden');
     }
   }, { passive: true });
@@ -206,7 +231,9 @@ function initCustomCursor() {
     if (cursorWrap) cursorWrap.classList.add('is-hidden');
   });
   document.addEventListener('mouseenter', () => {
-    if (cursorWrap) cursorWrap.classList.remove('is-hidden');
+    if (hasMouseMoved && cursorWrap) {
+      cursorWrap.classList.remove('is-hidden');
+    }
   });
 
   // 60/120fps physics render loop
@@ -329,25 +356,26 @@ function initCustomCursor() {
       });
     });
 
-    // Content Hover targets with custom labels
-    const hoverTargets = document.querySelectorAll('[data-cursor], a, button, .portfolio-vertical-card, .creator-card');
-    hoverTargets.forEach(el => {
-      el.addEventListener('mouseenter', () => {
-        if (el.closest('#navbar') && !el.classList.contains('btn-nav-talk')) return;
-        isHovering = true;
-        const text = el.getAttribute('data-cursor') || (el.tagName === 'BUTTON' || el.tagName === 'A' ? 'CLICK ↗' : 'VIEW ↗');
-        if (cursorText) cursorText.textContent = text;
-        if (cursorRing) cursorRing.classList.add('is-hovering');
-        if (cursorDot) cursorDot.classList.add('is-hidden');
-      });
+    // Content Hover targets with custom labels (delegated on document for dynamic modal elements)
+    document.addEventListener('mouseover', (e) => {
+      const el = e.target.closest('[data-cursor], a, button, input[type="range"], .portfolio-vertical-card, .creator-card');
+      if (!el) return;
+      if (el.closest('#navbar') && !el.classList.contains('btn-nav-talk')) return;
+      isHovering = true;
+      const text = el.getAttribute('data-cursor') || (el.tagName === 'BUTTON' || el.tagName === 'A' ? 'CLICK ↗' : el.type === 'range' ? 'DRAG' : 'VIEW ↗');
+      if (cursorText) cursorText.textContent = text;
+      if (cursorRing) cursorRing.classList.add('is-hovering');
+      if (cursorDot) cursorDot.classList.add('is-hidden');
+    });
 
-      el.addEventListener('mouseleave', () => {
-        if (el.closest('#navbar') && !el.classList.contains('btn-nav-talk')) return;
-        isHovering = false;
-        if (cursorText) cursorText.textContent = '';
-        if (cursorRing) cursorRing.classList.remove('is-hovering');
-        if (cursorDot) cursorDot.classList.remove('is-hidden');
-      });
+    document.addEventListener('mouseout', (e) => {
+      const el = e.target.closest('[data-cursor], a, button, input[type="range"], .portfolio-vertical-card, .creator-card');
+      if (!el) return;
+      if (el.contains(e.relatedTarget)) return;
+      isHovering = false;
+      if (cursorText) cursorText.textContent = '';
+      if (cursorRing) cursorRing.classList.remove('is-hovering');
+      if (cursorDot) cursorDot.classList.remove('is-hidden');
     });
   }
 
@@ -801,6 +829,31 @@ function initMobileNav(navbar) {
 // ==========================================================================
 // 03. HERO CHOREOGRAPHY (WORD BLUR-FADE REVEAL — ROI Media style)
 // ==========================================================================
+
+export function prepareHeroInitialState() {
+  const heroHeadline = document.getElementById('hero-headline');
+  if (!heroHeadline) return;
+
+  const platformChips = heroHeadline.querySelectorAll('.hl-platform-chips .platform-chip');
+  const headlineLines = heroHeadline.querySelectorAll('.hero-headline-line');
+  const navbar = document.getElementById('navbar');
+
+  headlineLines.forEach((line) => { line.style.overflow = 'visible'; });
+
+  gsap.set('.hl-word', { opacity: 0, y: 22 });
+  if (platformChips.length) {
+    gsap.set(platformChips, { opacity: 0, y: 10, scale: 0.9 });
+  }
+  gsap.set('#hero-platform-icons', { opacity: 1 });
+  gsap.set('#hero-desc', { opacity: 0, y: 16 });
+  gsap.set('#hero-actions', { opacity: 0, y: 18 });
+  gsap.set('.section-trusted', { opacity: 0, y: 12 });
+  if (navbar) {
+    gsap.set(navbar, { opacity: 0, y: -10 });
+  }
+}
+window.prepareHeroInitialState = prepareHeroInitialState;
+
 function initHeroIntro(immediate = false) {
   const heroHeadline = document.getElementById('hero-headline');
   if (!heroHeadline) return;
@@ -809,18 +862,20 @@ function initHeroIntro(immediate = false) {
   const line2Words = heroHeadline.querySelectorAll('.hero-headline-line:nth-child(2) .hl-word');
   const platformChips = heroHeadline.querySelectorAll('.hl-platform-chips .platform-chip');
   const headlineLines = heroHeadline.querySelectorAll('.hero-headline-line');
+  const navbar = document.getElementById('navbar');
 
   if (immediate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     gsap.set('.hl-word, #hero-platform-icons, .platform-chip, #hero-desc, #hero-actions, .section-trusted', { 
       opacity: 1, y: 0, x: 0, scale: 1, filter: 'none', clearProps: 'all' 
     });
+    if (navbar) gsap.set(navbar, { opacity: 1, y: 0, clearProps: 'opacity,transform' });
     headlineLines.forEach((line) => { line.style.overflow = 'visible'; });
     return;
   }
 
   headlineLines.forEach((line) => { line.style.overflow = 'visible'; });
 
-  // Normal clean transition — zero blur, crisp fade and gentle upward slide
+  // Ensure initial states are locked at 0 before starting reveal
   gsap.set('.hl-word', { opacity: 0, y: 22 });
   if (platformChips.length) {
     gsap.set(platformChips, { opacity: 0, y: 10, scale: 0.9 });
@@ -828,14 +883,24 @@ function initHeroIntro(immediate = false) {
   gsap.set('#hero-platform-icons', { opacity: 1 });
   gsap.set('#hero-desc', { opacity: 0, y: 16 });
   gsap.set('#hero-actions', { opacity: 0, y: 18 });
+  gsap.set('.section-trusted', { opacity: 0, y: 12 });
+  if (navbar) {
+    gsap.set(navbar, { opacity: 0, y: -10 });
+  }
 
   const tl = gsap.timeline({
     defaults: { ease: 'power3.out' },
     onComplete: () => {
       // Clear inline properties so text is 100% natural, crisp, and responsive
-      gsap.set('.hl-word, #hero-platform-icons, .platform-chip, #hero-desc, #hero-actions', { clearProps: 'opacity,transform,y,scale' });
+      gsap.set('.hl-word, #hero-platform-icons, .platform-chip, #hero-desc, #hero-actions, .section-trusted', { clearProps: 'opacity,transform,y,scale' });
+      if (navbar) gsap.set(navbar, { clearProps: 'opacity,transform' });
     }
   });
+
+  // 0. Floating navbar glides down into position
+  if (navbar) {
+    tl.to(navbar, { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' }, 0);
+  }
 
   // 1. Line 1: Normal clean word reveal
   tl.fromTo(line1Words.length ? line1Words : '.hl-word',

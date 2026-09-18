@@ -259,13 +259,14 @@ function initFilters() {
   const sortOptions = document.getElementById('sort-options-container');
 
   const resetBtn = document.getElementById('campaign-reset-btn');
+  const CHECK_SVG_HTML = '<span class="glass-option-check"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3.5 8.5 6.5 11.5 12.5 5"/></svg></span>';
 
   // Populate Genre Options
   if (genreOptions) {
     genreOptions.innerHTML = GENRES.map(g => `
       <button type="button" class="glass-option-item ${state.genre === g.id ? 'is-selected' : ''}" data-value="${g.id}">
         <span class="glass-option-name">${escapeHtml(g.name)}</span>
-        ${state.genre === g.id ? '<span class="glass-option-check">✓</span>' : ''}
+        ${state.genre === g.id ? CHECK_SVG_HTML : ''}
       </button>
     `).join('');
 
@@ -285,7 +286,7 @@ function initFilters() {
     yearOptions.innerHTML = YEARS.map(y => `
       <button type="button" class="glass-option-item ${state.year === y.id ? 'is-selected' : ''}" data-value="${y.id}">
         <span class="glass-option-name">${escapeHtml(y.name)}</span>
-        ${state.year === y.id ? '<span class="glass-option-check">✓</span>' : ''}
+        ${state.year === y.id ? CHECK_SVG_HTML : ''}
       </button>
     `).join('');
 
@@ -305,7 +306,7 @@ function initFilters() {
     sortOptions.innerHTML = SORT_OPTIONS.map(s => `
       <button type="button" class="glass-option-item ${state.sortBy === s.id ? 'is-selected' : ''}" data-value="${s.id}">
         <span class="glass-option-name">${escapeHtml(s.name)}</span>
-        ${state.sortBy === s.id ? '<span class="glass-option-check">✓</span>' : ''}
+        ${state.sortBy === s.id ? CHECK_SVG_HTML : ''}
       </button>
     `).join('');
 
@@ -320,13 +321,40 @@ function initFilters() {
     });
   }
 
+  // Isolate scroll containers from Lenis and parent scroll hijacking
+  [genrePopover, yearPopover, sortPopover].forEach(p => {
+    if (!p) return;
+    p.setAttribute('data-lenis-prevent', 'true');
+    p.addEventListener('wheel', (e) => {
+      e.stopPropagation();
+    }, { passive: true });
+    p.addEventListener('touchmove', (e) => {
+      e.stopPropagation();
+    }, { passive: true });
+  });
+
+  [genreOptions, yearOptions, sortOptions].forEach(opt => {
+    if (!opt) return;
+    opt.setAttribute('data-lenis-prevent', 'true');
+    opt.addEventListener('wheel', (e) => {
+      e.stopPropagation();
+    }, { passive: true });
+    opt.addEventListener('touchmove', (e) => {
+      e.stopPropagation();
+    }, { passive: true });
+  });
+
   function closeAllDropdowns() {
     [genrePopover, yearPopover, sortPopover].forEach(p => {
       if (p) p.classList.remove('is-open');
     });
     [genreTrigger, yearTrigger, sortTrigger].forEach(t => {
-      if (t) t.setAttribute('aria-expanded', 'false');
+      if (t) {
+        t.setAttribute('aria-expanded', 'false');
+        t.closest('.glass-dropdown')?.classList.remove('is-open');
+      }
     });
+    document.getElementById('campaign-glass-console')?.classList.remove('has-open-dropdown');
   }
 
   function toggleDropdown(trigger, popover) {
@@ -336,6 +364,16 @@ function initFilters() {
     if (!isOpen) {
       popover.classList.add('is-open');
       trigger.setAttribute('aria-expanded', 'true');
+      trigger.closest('.glass-dropdown')?.classList.add('is-open');
+      document.getElementById('campaign-glass-console')?.classList.add('has-open-dropdown');
+
+      // Ensure the currently active item is visible in the scroll container
+      const selected = popover.querySelector('.glass-option-item.is-selected');
+      if (selected) {
+        requestAnimationFrame(() => {
+          selected.scrollIntoView({ block: 'nearest' });
+        });
+      }
     }
   }
 
@@ -374,6 +412,25 @@ function initFilters() {
     }
   });
 
+  // Close open dropdowns on page scroll
+  window.addEventListener('scroll', () => {
+    if (genrePopover?.classList.contains('is-open') || 
+        yearPopover?.classList.contains('is-open') || 
+        sortPopover?.classList.contains('is-open')) {
+      closeAllDropdowns();
+    }
+  }, { passive: true });
+
+  if (window.lenis) {
+    window.lenis.on('scroll', () => {
+      if (genrePopover?.classList.contains('is-open') || 
+          yearPopover?.classList.contains('is-open') || 
+          sortPopover?.classList.contains('is-open')) {
+        closeAllDropdowns();
+      }
+    });
+  }
+
   // Global Reset Button
   if (resetBtn) {
     resetBtn.addEventListener('click', () => {
@@ -397,7 +454,7 @@ function setGenre(genreId) {
   state.genre = genreId;
   const label = document.getElementById('genre-current-label');
   const trigger = document.getElementById('genre-dropdown-trigger');
-  const dot = document.getElementById('genre-active-dot');
+  const dot = document.getElementById('genre-active-indicator') || document.getElementById('genre-active-dot');
   const gObj = GENRES.find(g => g.id === genreId);
 
   if (label) {
@@ -417,7 +474,7 @@ function setGenre(genreId) {
     if (isMatch && !check) {
       const c = document.createElement('span');
       c.className = 'glass-option-check';
-      c.textContent = '✓';
+      c.innerHTML = '<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3.5 8.5 6.5 11.5 12.5 5"/></svg>';
       el.appendChild(c);
     } else if (!isMatch && check) {
       check.remove();
@@ -431,7 +488,7 @@ function setYear(yearId) {
   state.year = yearId;
   const label = document.getElementById('year-current-label');
   const trigger = document.getElementById('year-dropdown-trigger');
-  const dot = document.getElementById('year-active-dot');
+  const dot = document.getElementById('year-active-indicator') || document.getElementById('year-active-dot');
   const yObj = YEARS.find(y => y.id === yearId);
 
   if (label) {
@@ -451,7 +508,7 @@ function setYear(yearId) {
     if (isMatch && !check) {
       const c = document.createElement('span');
       c.className = 'glass-option-check';
-      c.textContent = '✓';
+      c.innerHTML = '<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3.5 8.5 6.5 11.5 12.5 5"/></svg>';
       el.appendChild(c);
     } else if (!isMatch && check) {
       check.remove();
@@ -465,7 +522,7 @@ function setSort(sortId) {
   state.sortBy = sortId;
   const label = document.getElementById('sort-current-label');
   const trigger = document.getElementById('sort-dropdown-trigger');
-  const dot = document.getElementById('sort-active-dot');
+  const dot = document.getElementById('sort-active-indicator') || document.getElementById('sort-active-dot');
   const sObj = SORT_OPTIONS.find(s => s.id === sortId);
 
   if (label) {
@@ -485,7 +542,7 @@ function setSort(sortId) {
     if (isMatch && !check) {
       const c = document.createElement('span');
       c.className = 'glass-option-check';
-      c.textContent = '✓';
+      c.innerHTML = '<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3.5 8.5 6.5 11.5 12.5 5"/></svg>';
       el.appendChild(c);
     } else if (!isMatch && check) {
       check.remove();

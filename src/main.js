@@ -165,8 +165,6 @@ function initCustomCursor() {
   // Pointer coordinates (start off-screen)
   let mouseX = -100;
   let mouseY = -100;
-  let prevMouseX = -100;
-  let prevMouseY = -100;
 
   // Physics render positions (start off-screen)
   let dotX = -100;
@@ -176,15 +174,7 @@ function initCustomCursor() {
   let glowX = -100;
   let glowY = -100;
 
-  // Kinetic stretch & orientation parameters
-  let smoothSpeed = 0;
-  let targetAngle = 0;
-  let currentAngle = 0;
-  let scaleX = 1;
-  let scaleY = 1;
-
   // Interactive states
-  let isHovering = false;
   let isMagnetic = false;
   let clickScale = 1;
   let magneticTarget = null;
@@ -197,32 +187,26 @@ function initCustomCursor() {
     if (!hasMouseMoved) {
       hasMouseMoved = true;
       document.body.classList.add('cursor-active');
-      prevMouseX = mouseX;
-      prevMouseY = mouseY;
       dotX = mouseX;
       dotY = mouseY;
       ringX = mouseX;
       ringY = mouseY;
       glowX = mouseX;
       glowY = mouseY;
-      scaleX = 1;
-      scaleY = 1;
-      smoothSpeed = 0;
-      currentAngle = 0;
       cursorWrap.classList.remove('is-hidden');
     } else if (cursorWrap.classList.contains('is-hidden')) {
       cursorWrap.classList.remove('is-hidden');
     }
   }, { passive: true });
 
-  // Mouse down / up reactions
+  // Mouse down / up tactile compression
   window.addEventListener('mousedown', () => {
-    clickScale = 0.76;
+    clickScale = 0.82;
     if (cursorRing) cursorRing.classList.add('is-clicking');
   });
 
   window.addEventListener('mouseup', () => {
-    clickScale = 1.18; // Elastic overshoot
+    clickScale = 1.08;
     if (cursorRing) cursorRing.classList.remove('is-clicking');
   });
 
@@ -236,18 +220,13 @@ function initCustomCursor() {
     }
   });
 
-  // 60/120fps physics render loop
+  // 60/120fps precision physics render loop
   function renderPhysicsCursor() {
-    // 1. Instant velocity & speed calculation
-    const deltaX = mouseX - prevMouseX;
-    const deltaY = mouseY - prevMouseY;
-    prevMouseX = mouseX;
-    prevMouseY = mouseY;
+    // 1. Instant zero-latency lead pinpoint core
+    dotX = mouseX;
+    dotY = mouseY;
 
-    const instantSpeed = Math.hypot(deltaX, deltaY);
-    smoothSpeed += (instantSpeed - smoothSpeed) * 0.22;
-
-    // 2. Compute target position for trailing ring
+    // 2. Compute target position for trailing optic ring
     let targetRingX = mouseX;
     let targetRingY = mouseY;
 
@@ -256,62 +235,36 @@ function initCustomCursor() {
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
 
-      // Magnetic pull toward element center
-      targetRingX = centerX + (mouseX - centerX) * 0.28;
-      targetRingY = centerY + (mouseY - centerY) * 0.28;
+      // Gentle magnetic pull toward element center
+      targetRingX = centerX + (mouseX - centerX) * 0.25;
+      targetRingY = centerY + (mouseY - centerY) * 0.25;
 
-      // Tactile physical displacement on the hovered button
-      const maxDisplace = 10;
-      const dispX = Math.max(-maxDisplace, Math.min(maxDisplace, (mouseX - centerX) * 0.2));
-      const dispY = Math.max(-maxDisplace, Math.min(maxDisplace, (mouseY - centerY) * 0.2));
+      // Tactile physical displacement on hovered button
+      const maxDisplace = 6;
+      const dispX = Math.max(-maxDisplace, Math.min(maxDisplace, (mouseX - centerX) * 0.15));
+      const dispY = Math.max(-maxDisplace, Math.min(maxDisplace, (mouseY - centerY) * 0.15));
       magneticTarget.style.transform = `translate3d(${dispX}px, ${dispY}px, 0)`;
     }
 
-    // 3. Independent Lerp Calculations
-    // Zero-latency pinpoint lead
-    dotX += (mouseX - dotX) * 0.88;
-    dotY += (mouseY - dotY) * 0.88;
-
-    // Fluid trailing ring with inertia
-    const ringLerp = isMagnetic ? 0.26 : 0.18;
+    // 3. Fluid trailing ring with calibrated spring inertia
+    const ringLerp = isMagnetic ? 0.3 : 0.22;
     ringX += (targetRingX - ringX) * ringLerp;
     ringY += (targetRingY - ringY) * ringLerp;
 
-    // Atmospheric ambient glow drift
-    glowX += (mouseX - glowX) * 0.09;
-    glowY += (mouseY - glowY) * 0.09;
+    // 4. Ambient atmospheric optic glow drift
+    glowX += (mouseX - glowX) * 0.12;
+    glowY += (mouseY - glowY) * 0.12;
 
-    // 4. Click scale spring decay
-    clickScale += (1.0 - clickScale) * 0.18;
+    // 5. Tactile click impulse decay
+    clickScale += (1.0 - clickScale) * 0.22;
 
-    // 5. Kinetic velocity vector stretching (squash & stretch)
-    if (smoothSpeed > 1.2 && !isHovering && !isMagnetic) {
-      targetAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
-      
-      let angleDiff = targetAngle - currentAngle;
-      while (angleDiff < -180) angleDiff += 360;
-      while (angleDiff > 180) angleDiff -= 360;
-      currentAngle += angleDiff * 0.25;
-
-      const stretch = Math.min(smoothSpeed * 0.0034, 0.42);
-      scaleX += (1 + stretch - scaleX) * 0.25;
-      scaleY += (1 - stretch * 0.48 - scaleY) * 0.25;
-    } else {
-      scaleX += (1 - scaleX) * 0.2;
-      scaleY += (1 - scaleY) * 0.2;
-      currentAngle += (0 - currentAngle) * 0.2;
-    }
-
-    const finalScaleX = scaleX * clickScale;
-    const finalScaleY = scaleY * clickScale;
-
-    // 6. Apply GPU Matrix Transforms
+    // 6. Apply GPU accelerated transforms
     if (cursorDot) {
       cursorDot.style.transform = `translate3d(${dotX}px, ${dotY}px, 0)`;
     }
 
     if (cursorRing) {
-      cursorRing.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) rotate(${currentAngle}deg) scale(${finalScaleX}, ${finalScaleY})`;
+      cursorRing.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) scale(${clickScale})`;
     }
 
     if (cursorGlow) {
@@ -324,18 +277,12 @@ function initCustomCursor() {
 
   // 7. Interactive Magnetic & Hover Binding
   function bindMagneticHoverElements() {
-    // Magnetic targets (buttons, links, pills, badges)
+    // Magnetic targets (primary key action buttons)
     const magneticSelectors = [
       '.btn-primary-cyan',
-      '.btn-secondary-dark',
       '.btn-nav-talk',
-      '.nav-link',
-      '.service-badge-item',
-      '.founder-social-btn',
-      '.domain-chip',
-      '.admin-leads-trigger',
-      '.f-social',
-      '.brand-logo'
+      '.btn-primary-cyan-large',
+      '.work-hero-cta'
     ].join(',');
 
     const magneticElements = document.querySelectorAll(magneticSelectors);
@@ -356,26 +303,64 @@ function initCustomCursor() {
       });
     });
 
-    // Content Hover targets with custom labels (delegated on document for dynamic modal elements)
+    // Content Hover targets with smart mode categorization:
     document.addEventListener('mouseover', (e) => {
-      const el = e.target.closest('[data-cursor], a, button, input[type="range"], .portfolio-vertical-card, .creator-card');
-      if (!el) return;
-      if (el.closest('#navbar') && !el.classList.contains('btn-nav-talk')) return;
-      isHovering = true;
-      const text = el.getAttribute('data-cursor') || (el.tagName === 'BUTTON' || el.tagName === 'A' ? 'CLICK ↗' : el.type === 'range' ? 'DRAG' : 'VIEW ↗');
-      if (cursorText) cursorText.textContent = text;
-      if (cursorRing) cursorRing.classList.add('is-hovering');
-      if (cursorDot) cursorDot.classList.add('is-hidden');
+      // Priority 1: Text Inputs (search input, text inputs, textareas)
+      const inputEl = e.target.closest('input[type="text"], input[type="search"], input:not([type]), textarea, #campaign-search-input');
+      if (inputEl) {
+        if (cursorRing) {
+          cursorRing.classList.remove('is-interactive', 'is-badge');
+          cursorRing.classList.add('is-text-input');
+        }
+        if (cursorDot) cursorDot.classList.add('is-hidden');
+        if (cursorText) cursorText.textContent = '';
+        return;
+      }
+
+      // Priority 2: Media & Editorial Showcase Cards (displays refined action badge)
+      const badgeEl = e.target.closest('.campaign-movie-card, .work-creator-card, .portfolio-vertical-card, .creator-card, [data-cursor-badge]');
+      if (badgeEl) {
+        const badgeText = badgeEl.getAttribute('data-cursor-badge') || badgeEl.getAttribute('data-cursor') || 'VIEW ↗';
+        if (cursorText) cursorText.textContent = badgeText;
+        if (cursorRing) {
+          cursorRing.classList.remove('is-interactive', 'is-text-input');
+          cursorRing.classList.add('is-badge');
+        }
+        if (cursorDot) cursorDot.classList.add('is-hidden');
+        return;
+      }
+
+      // Priority 3: Standard Interactive Elements (buttons, links, nav, dropdowns, filters)
+      const interactiveEl = e.target.closest('a, button, select, [role="button"], input[type="range"], .glass-dropdown-trigger, .glass-option-item, .nav-link, .campaign-tag-pill, .theme-switcher, .service-badge-item, .domain-chip, .founder-social-btn, .f-social');
+      if (interactiveEl) {
+        if (cursorRing) {
+          cursorRing.classList.remove('is-text-input', 'is-badge');
+          cursorRing.classList.add('is-interactive');
+        }
+        if (cursorDot) cursorDot.classList.remove('is-hidden');
+        if (cursorText) cursorText.textContent = '';
+        return;
+      }
     });
 
     document.addEventListener('mouseout', (e) => {
-      const el = e.target.closest('[data-cursor], a, button, input[type="range"], .portfolio-vertical-card, .creator-card');
-      if (!el) return;
-      if (el.contains(e.relatedTarget)) return;
-      isHovering = false;
-      if (cursorText) cursorText.textContent = '';
-      if (cursorRing) cursorRing.classList.remove('is-hovering');
-      if (cursorDot) cursorDot.classList.remove('is-hidden');
+      const target = e.target;
+      const related = e.relatedTarget;
+
+      const hoveredEl = target.closest('input, textarea, .campaign-movie-card, .work-creator-card, .portfolio-vertical-card, .creator-card, a, button, select, [role="button"], [data-cursor-badge], .glass-dropdown-trigger, .glass-option-item');
+      if (!hoveredEl) return;
+      if (related && hoveredEl.contains(related)) return;
+
+      // Reset cursor state back to default optic mode
+      if (cursorRing) {
+        cursorRing.classList.remove('is-interactive', 'is-text-input', 'is-badge');
+      }
+      if (cursorDot) {
+        cursorDot.classList.remove('is-hidden');
+      }
+      if (cursorText) {
+        cursorText.textContent = '';
+      }
     });
   }
 

@@ -600,7 +600,7 @@ body.cursor-active .custom-cursor {
   align-items: center;
   justify-content: space-between;
   border-radius: 100px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.015) 100%), rgba(8, 12, 17, 0.48);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.11) 0%, rgba(255, 255, 255, 0.035) 100%), rgba(8, 12, 17, 0.78);
   backdrop-filter: blur(22px) saturate(170%);
   -webkit-backdrop-filter: blur(22px) saturate(170%);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -617,7 +617,7 @@ body.cursor-active .custom-cursor {
 .navbar.scrolled .nav-container {
   width: min(780px, 100%);
   padding: 0.55rem 1rem 0.55rem 1.6rem;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.02) 100%), rgba(6, 10, 15, 0.82);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.13) 0%, rgba(255, 255, 255, 0.045) 100%), rgba(6, 10, 15, 0.93);
   border-color: rgba(255, 255, 255, 0.18);
   backdrop-filter: blur(32px) saturate(190%);
   -webkit-backdrop-filter: blur(32px) saturate(190%);
@@ -3266,7 +3266,7 @@ html.js .floating-badge-item {
 
 .work-creators-filter-bar {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 0.75rem;
   margin-bottom: 2.6rem;
   flex-wrap: wrap;
@@ -3275,8 +3275,11 @@ html.js .floating-badge-item {
 .work-filter-chip {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  padding: 0.55rem 1.25rem;
+  height: 44px;
+  box-sizing: border-box;
+  padding: 0.55rem 1.1rem;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
@@ -3284,7 +3287,9 @@ html.js .floating-badge-item {
   -webkit-backdrop-filter: blur(16px);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.15);
   color: var(--text-secondary);
-  font-size: 0.84rem;
+  font-size: 0.78rem;
+  line-height: 1;
+  white-space: nowrap;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.25s ease;
@@ -3305,7 +3310,8 @@ html.js .floating-badge-item {
 }
 
 .work-filter-chip .chip-count {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
+  line-height: 1;
   opacity: 0.75;
 }
 
@@ -3458,13 +3464,15 @@ html.js .floating-badge-item {
   justify-content: space-between;
   z-index: 5;
   pointer-events: none;
+  height: 36px;
 }
 
 .w-badge-status {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.35rem 0.75rem;
+  min-height: 36px;
+  padding: 0.35rem 0.7rem;
   background: rgba(10, 14, 20, 0.72);
   border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 999px;
@@ -3477,6 +3485,7 @@ html.js .floating-badge-item {
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35);
   transform: translateZ(0);
+  white-space: nowrap;
 }
 
 .w-status-dot {
@@ -3488,17 +3497,26 @@ html.js .floating-badge-item {
 }
 
 .w-badge-metric {
-  padding: 0.35rem 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0.35rem 0.7rem;
   background: rgba(0, 229, 255, 0.16);
   border: 1px solid rgba(0, 229, 255, 0.5);
   border-radius: 999px;
-  font-size: 0.75rem;
+  font-size: 0.68rem;
+  line-height: 1;
   font-weight: 800;
   color: var(--accent-cyan);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   box-shadow: 0 6px 18px rgba(0, 229, 255, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.4);
   transform: translateZ(0);
+  white-space: nowrap;
+  max-width: 52%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Card Content Body */
@@ -3517,6 +3535,7 @@ html.js .floating-badge-item {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  min-height: 122px;
 }
 
 .work-creator-header-row {
@@ -3554,6 +3573,8 @@ html.js .floating-badge-item {
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem 1rem;
+  min-height: 72px;
+  box-sizing: border-box;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.015) 100%), rgba(10, 14, 20, 0.45);
   border: 1px solid rgba(255, 255, 255, 0.11);
   border-radius: 14px;
@@ -3573,6 +3594,7 @@ html.js .floating-badge-item {
   display: flex;
   flex-direction: column;
   gap: 0.1rem;
+  min-width: 0;
 }
 
 .w-stat-num {
@@ -3590,6 +3612,12 @@ html.js .floating-badge-item {
 }
 
 .w-stat-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-height: 36px;
+  max-width: 44%;
   font-size: 0.74rem;
   font-weight: 700;
   color: #05f0a0;
@@ -3598,6 +3626,7 @@ html.js .floating-badge-item {
   border-radius: 8px;
   border: 1px solid rgba(5, 240, 160, 0.3);
   box-shadow: 0 0 12px rgba(5, 240, 160, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  white-space: nowrap;
 }
 
 /* Deliverable tags — Frosted Glass Pills */
@@ -3605,12 +3634,20 @@ html.js .floating-badge-item {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
+  min-height: 60px;
+  align-content: flex-start;
 }
 
 .work-creator-tag-item {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  box-sizing: border-box;
   font-size: 0.68rem;
   font-weight: 600;
-  padding: 0.24rem 0.65rem;
+  padding: 0.24rem 0.62rem;
+  line-height: 1;
+  white-space: nowrap;
   border-radius: 999px;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 100%);
   color: rgba(255, 255, 255, 0.82);
@@ -3684,8 +3721,20 @@ html.js .floating-badge-item {
     grid-template-columns: 1fr;
   }
   .work-filter-chip {
-    padding: 0.4rem 0.9rem;
+    height: 40px;
+    padding: 0.4rem 0.85rem;
     font-size: 0.78rem;
+  }
+
+  .work-creator-top-badges {
+    gap: 0.4rem;
+  }
+
+  .w-badge-status,
+  .w-badge-metric {
+    min-width: 0;
+    padding-inline: 0.55rem;
+    font-size: 0.62rem;
   }
 }
 
@@ -9001,6 +9050,3 @@ html.skip-intro .hero-container {
   animation: none;
   mix-blend-mode: normal;
 }
-
-
-

@@ -118,11 +118,15 @@ export function initCampaignsPage() {
 // HERO ANIMATIONS
 // ==========================================================================
 function animateHero() {
+  const campaignHero = document.querySelector('.campaign-hero');
+  if (campaignHero?.dataset.heroAnimated === 'true') return;
   const heroElements = [
     '.campaign-hero-tag',
     '.campaign-hero-headline',
     '.campaign-hero-sub',
-    '.campaign-hero-pillars',
+    '.campaign-hero-pillars'
+  ];
+  const fixedPositionElements = [
     '.campaign-search-section',
     '.campaign-featured-label'
   ];
@@ -131,25 +135,31 @@ function animateHero() {
   const startAnimation = () => {
     if (animated) return;
     animated = true;
+    if (campaignHero) campaignHero.dataset.heroAnimated = 'true';
 
     gsap.to(heroElements, {
       opacity: 1,
-      y: 0,
       duration: 0.55,
       stagger: 0.07,
       ease: 'power2.out',
       clearProps: 'transform,will-change'
     });
+
+    // The search/filter controls must never translate into place: their
+    // position is part of the page structure and should remain stable after
+    // the hero fonts and content finish loading.
+    gsap.to(fixedPositionElements, {
+      opacity: 1,
+      duration: 0.45,
+      stagger: 0.06,
+      ease: 'power2.out',
+      clearProps: 'transform,will-change'
+    });
   };
 
-  // Wait for font rasterization to guarantee zero layout shift / FOUT reflow
-  if (document.fonts && document.fonts.ready) {
-    Promise.race([
-      document.fonts.ready,
-      new Promise(resolve => setTimeout(resolve, 100))
-    ]).then(() => {
-      requestAnimationFrame(startAnimation);
-    });
+  // Wait for fonts before revealing the hero so late font metrics cannot move it.
+  if (document.fonts?.ready) {
+    document.fonts.ready.then(() => requestAnimationFrame(startAnimation));
   } else {
     requestAnimationFrame(startAnimation);
   }

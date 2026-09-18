@@ -252,8 +252,9 @@ function initCustomCursor() {
     ringY += (targetRingY - ringY) * ringLerp;
 
     // 4. Ambient atmospheric optic glow drift
-    glowX += (mouseX - glowX) * 0.12;
-    glowY += (mouseY - glowY) * 0.12;
+    // Keep the atmospheric shade attached to the ring instead of trailing as a third cursor.
+    glowX += (targetRingX - glowX) * 0.3;
+    glowY += (targetRingY - glowY) * 0.3;
 
     // 5. Tactile click impulse decay
     clickScale += (1.0 - clickScale) * 0.22;
@@ -1289,6 +1290,9 @@ function initStatementParallax() {
 // 07. SERVICES CARDS STAGGER REVEAL
 // ==========================================================================
 function initServicesReveal() {
+  // Why Us owns its philosophy-card choreography; running the homepage
+  // service reveal here as well makes Data-Driven Creativity animate twice.
+  if (document.body.classList.contains('page-why-us')) return;
   const cards = document.querySelectorAll('.service-card-item');
   if (!cards.length) return;
 
@@ -1601,6 +1605,9 @@ function initTeamPageAnimations() {
 // WHY US & COMPARISON SECTION APPEAR ANIMATIONS
 // ==========================================================================
 function initWhyUsAnimations() {
+  const whyPage = document.querySelector('.page-why-us');
+  if (whyPage?.dataset.animationsInitialized === 'true') return;
+  if (whyPage) whyPage.dataset.animationsInitialized = 'true';
   const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 
@@ -2453,7 +2460,5 @@ function initInstagramReelsPlayer() {
     );
   }
 }
-
-
 
 

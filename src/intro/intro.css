@@ -40,6 +40,12 @@ html.intro-pending:not(.skip-intro) #navbar {
   visibility: hidden !important;
 }
 
+/* Keep secondary home panels from flashing above the loading intro while the
+   app bundle is booting. The intro itself remains the only visible layer. */
+html.intro-pending:not(.skip-intro) body > *:not(#highverz-intro) {
+  visibility: hidden !important;
+}
+
 /* Subtle luxury deep atmospheric lighting */
 .hv-intro-bg {
   position: absolute;

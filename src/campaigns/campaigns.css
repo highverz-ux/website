@@ -48,8 +48,8 @@ body.page-campaigns {
   color: var(--accent-cyan);
   margin-bottom: 2rem;
   opacity: 0;
-  transform: translateY(10px);
-  will-change: opacity, transform;
+  transform: none;
+  will-change: opacity;
 }
 
 .campaign-hero-tag::before {
@@ -67,8 +67,8 @@ body.page-campaigns {
   letter-spacing: -0.03em;
   margin-bottom: 1.5rem;
   opacity: 0;
-  transform: translateY(10px);
-  will-change: opacity, transform;
+  transform: none;
+  will-change: opacity;
   overflow: visible;
   word-break: normal;
   overflow-wrap: normal;
@@ -134,8 +134,8 @@ body.page-campaigns {
   max-width: 650px;
   margin: 0 auto 2.5rem;
   opacity: 0;
-  transform: translateY(10px);
-  will-change: opacity, transform;
+  transform: none;
+  will-change: opacity;
 }
 
 .campaign-hero-pillars {
@@ -145,8 +145,8 @@ body.page-campaigns {
   gap: 0.5rem;
   flex-wrap: wrap;
   opacity: 0;
-  transform: translateY(10px);
-  will-change: opacity, transform;
+  transform: none;
+  will-change: opacity;
 }
 
 .campaign-pillar {
@@ -181,8 +181,8 @@ body.page-campaigns {
   max-width: var(--container-width);
   margin: 0 auto;
   opacity: 0;
-  transform: translateY(10px);
-  will-change: opacity, transform;
+  transform: none;
+  will-change: opacity;
 }
 
 .campaign-glass-console {
@@ -336,7 +336,7 @@ body.page-campaigns {
 /* ─── Filter Controls Unit ─── */
 .campaign-filters-unit {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 0.4rem;
   flex-shrink: 0;
   position: relative;
@@ -371,6 +371,8 @@ body.page-campaigns {
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
   user-select: none;
+  height: 40px;
+  box-sizing: border-box;
 }
 
 .glass-dropdown-trigger:hover {
@@ -618,6 +620,8 @@ body.page-campaigns {
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+  height: 40px;
+  box-sizing: border-box;
 }
 
 .glass-reset-btn.is-active {
@@ -659,6 +663,8 @@ body.page-campaigns {
   -webkit-backdrop-filter: blur(10px);
   box-shadow: 0 0 12px rgba(0, 229, 255, 0.1);
   animation: tagPillFade 0.25s ease;
+  min-height: 32px;
+  box-sizing: border-box;
 }
 
 @keyframes tagPillFade {
@@ -832,8 +838,8 @@ body.page-campaigns {
   margin-bottom: 2rem;
   padding: 0 var(--container-pad);
   opacity: 0;
-  transform: translateY(10px);
-  will-change: opacity, transform;
+  transform: none;
+  will-change: opacity;
 }
 
 .campaign-featured-label span {

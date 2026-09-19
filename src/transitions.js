@@ -35,11 +35,12 @@ export function isHomeRoute(pathOrUrl) {
 
 /**
  * Validates whether transition animation should run between two routes.
- * Both current route AND target route must be non-Home.
+ * Transitions to Home are excluded to preserve native Three.js 3D canvas and intro scene.
+ * Transitions from Home to Work and other non-Home pages are fully supported.
  */
 export function canTransition(currentPath, targetUrl) {
-  // Exclude if origin or destination is Home
-  if (isHomeRoute(currentPath) || isHomeRoute(targetUrl)) {
+  // Exclude if destination is Home (Home retains native load & 3D scene)
+  if (isHomeRoute(targetUrl)) {
     return false;
   }
   // Exclude external origins
@@ -358,15 +359,9 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
 }
 
 /**
- * Initializes global click and popstate listeners on non-Home pages
+ * Initializes global click and popstate listeners
  */
 export function initPageTransitions() {
-  // If user is currently on Home, do NOT attach interception
-  // (Home navigation behaves completely natively)
-  if (isHomeRoute(window.location.pathname)) {
-    return;
-  }
-
   // Pre-cache all dedicated non-Home pages in memory so transition starts in 0ms without waiting for fetch
   const targetRoutes = ['/work.html', '/campaigns.html', '/team.html', '/why-us.html'];
   setTimeout(() => {

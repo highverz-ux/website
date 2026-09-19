@@ -13,6 +13,7 @@ import { initEnquirySystem } from './enquiry/enquiry.js';
 import { initThemeSystem } from './theme.js';
 import './campaigns/campaigns.css';
 import { initCampaignsPage } from './campaigns/campaigns.js';
+import { initPageTransitions } from './transitions.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -67,6 +68,7 @@ function boot() {
   initScrollVelocityEffects();
   initServiceFilters();
   initEnquirySystem();
+  initPageTransitions();
 
   const isWorkPage = window.location.pathname.includes('work') || !!document.querySelector('.work-hero-section');
   const isCaseStudyPage = window.location.pathname.includes('creator-') || !!document.querySelector('.case-hero-section') || !!document.querySelector('.ig-profile-shell');
@@ -78,15 +80,7 @@ function boot() {
   if (isDedicatedPage) {
     // Dedicated pages (Work, Creators, Team, Why Us) enter immediately without intro screen
     if (lenis) lenis.start();
-    if (isWorkPage) initWorkHeroIntro();
-    if (isTeamPage) initTeamPageAnimations();
-    if (isWhyUs) initWhyUsAnimations();
-    if (isCampaignsPage) initCampaignsPage();
-  }
-
-  // Always initialize reels player if reel cards exist on any page
-  if (document.querySelectorAll('.ig-reel-card').length > 0) {
-    initInstagramReelsPlayer();
+    initPageScripts(window.location.pathname);
   }
 
   if (!isDedicatedPage) {
@@ -179,23 +173,43 @@ function initCustomCursor() {
   let clickScale = 1;
   let magneticTarget = null;
 
+  // Expose global cursor restoration hook for transitions
+  window.__hvEnsureCursorActive = function() {
+    if (window.innerWidth <= 900 || ('ontouchstart' in window || navigator.maxTouchPoints > 0)) return;
+    document.body.classList.add('cursor-active');
+    if (cursorWrap) cursorWrap.classList.remove('is-hidden');
+    if (cursorDot) cursorDot.classList.remove('is-hidden');
+    if (cursorRing) {
+      cursorRing.classList.remove('is-interactive', 'is-badge', 'is-text-input', 'is-magnetic', 'is-clicking');
+    }
+    if (cursorText) cursorText.textContent = '';
+    isMagnetic = false;
+    if (magneticTarget) {
+      magneticTarget.style.transform = '';
+      magneticTarget = null;
+    }
+  };
+
   // Mouse move tracking
   window.addEventListener('mousemove', (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
 
+    if (!document.body.classList.contains('cursor-active')) {
+      document.body.classList.add('cursor-active');
+    }
+    if (cursorWrap && cursorWrap.classList.contains('is-hidden')) {
+      cursorWrap.classList.remove('is-hidden');
+    }
+
     if (!hasMouseMoved) {
       hasMouseMoved = true;
-      document.body.classList.add('cursor-active');
       dotX = mouseX;
       dotY = mouseY;
       ringX = mouseX;
       ringY = mouseY;
       glowX = mouseX;
       glowY = mouseY;
-      cursorWrap.classList.remove('is-hidden');
-    } else if (cursorWrap.classList.contains('is-hidden')) {
-      cursorWrap.classList.remove('is-hidden');
     }
   }, { passive: true });
 
@@ -215,8 +229,9 @@ function initCustomCursor() {
     if (cursorWrap) cursorWrap.classList.add('is-hidden');
   });
   document.addEventListener('mouseenter', () => {
-    if (hasMouseMoved && cursorWrap) {
+    if (cursorWrap) {
       cursorWrap.classList.remove('is-hidden');
+      document.body.classList.add('cursor-active');
     }
   });
 
@@ -445,6 +460,32 @@ function initNavbar() {
     if (document.fonts) {
       document.fonts.ready.then(handleResize);
     }
+
+    window.__hvPositionIndicator = positionIndicator;
+    window.__hvUpdateNavbar = function(targetPath) {
+      const normTarget = targetPath.split('#')[0].split('?')[0].replace(/\/+$/, '') || '/';
+      let matchedLink = null;
+      navLinks.forEach((link) => {
+        const href = link.getAttribute('href');
+        if (!href) return;
+        const normHref = href.split('#')[0].split('?')[0].replace(/\/+$/, '') || '/';
+        const isMatch = normHref === normTarget ||
+                        (normHref.endsWith('.html') && normTarget.endsWith(normHref)) ||
+                        (normHref !== '/' && normTarget.includes(normHref.replace('.html', '')));
+        if (isMatch) {
+          link.classList.add('active');
+          matchedLink = link;
+          activeLink = link;
+        } else {
+          link.classList.remove('active');
+        }
+      });
+      if (matchedLink) {
+        requestAnimationFrame(() => positionIndicator(matchedLink, false));
+      } else if (indicator) {
+        indicator.style.opacity = '0';
+      }
+    };
   }
 
   // ------------------------------------------------------------------------
@@ -1348,6 +1389,46 @@ function initServicesReveal() {
     );
   }
 }
+
+// ==========================================================================
+// 07a. PAGE SCRIPT DISPATCHER (RE-INITIALIZES DEDICATED PAGES ON ROUTE TRANSITION)
+// ==========================================================================
+export function initPageScripts(pathname) {
+  const normPath = pathname ? pathname.replace(/\/+$/, '') : window.location.pathname.replace(/\/+$/, '');
+  const isWorkPage = normPath.includes('work') || !!document.querySelector('.work-hero-section');
+  const isCaseStudyPage = normPath.includes('creator-') || !!document.querySelector('.case-hero-section') || !!document.querySelector('.ig-profile-shell');
+  const isTeamPage = normPath.includes('team') || !!document.querySelector('.page-team');
+  const isWhyUs = normPath.includes('why-us') || !!document.querySelector('.page-why-us') || !!document.querySelector('.comparison-section');
+  const isCampaignsPage = normPath.includes('campaigns') || !!document.querySelector('.page-campaigns');
+
+  if (isWorkPage) {
+    initWorkHeroIntro();
+    initServicesReveal();
+    initServiceFilters();
+    initProcessScrollDraw();
+    initCTAReveal();
+  } else if (isTeamPage) {
+    initTeamPageAnimations();
+    initCTAReveal();
+  } else if (isWhyUs) {
+    initWhyUsAnimations();
+    initCTAReveal();
+  } else if (isCampaignsPage) {
+    initCampaignsPage();
+  }
+
+  if (isCaseStudyPage || document.querySelectorAll('.ig-reel-card').length > 0) {
+    initInstagramReelsPlayer();
+  }
+
+  initMagneticElements();
+  initEnquirySystem();
+
+  if (window.ScrollTrigger) {
+    ScrollTrigger.refresh();
+  }
+}
+window.__hvInitPageScripts = initPageScripts;
 
 // ==========================================================================
 // 07b. WORK HERO & SERVICE FILTERS (DEDICATED WORK PAGE)

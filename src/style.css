@@ -9035,45 +9035,119 @@ html.skip-intro .hero-container {
   animation: framerContentEntrance 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* 2. Seamless Native Cross-Document View Transitions */
-@view-transition {
-  navigation: auto;
+/* Suppress redundant secondary hero entrance when revealed via diagonal wipe */
+html.page-transitioned .work-hero-container,
+html.page-transitioned .team-hero-container,
+html.page-transitioned .why-hero-container,
+html.page-transitioned .case-hero-container,
+html.page-transitioned .campaign-hero-tag,
+html.page-transitioned .campaign-hero-headline,
+html.page-transitioned .campaign-hero-sub,
+html.page-transitioned .campaign-hero-pillars,
+html.page-transitioned .campaign-search-section,
+html.page-transitioned .campaign-featured-label,
+.page-transition-shell .work-hero-container,
+.page-transition-shell .team-hero-container,
+.page-transition-shell .why-hero-container,
+.page-transition-shell .case-hero-container,
+.page-transition-shell .campaign-hero-tag,
+.page-transition-shell .campaign-hero-headline,
+.page-transition-shell .campaign-hero-sub,
+.page-transition-shell .campaign-hero-pillars,
+.page-transition-shell .campaign-search-section,
+.page-transition-shell .campaign-featured-label {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
 }
 
-/* Old page snapshot stays solid — NEVER flashes blank or black */
-::view-transition-old(root) {
-  animation: 90ms ease-out both pageFadeOld;
+/* ==========================================================================
+   PAGE TRANSITION SYSTEM — Diagonal Wipe (Viewport-Isolated GPU v3)
+   ========================================================================== */
+
+.page-content {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-primary, #07090e);
 }
 
-/* Incoming page glides in cleanly on top */
-::view-transition-new(root) {
-  animation: 250ms cubic-bezier(0.16, 1, 0.3, 1) both pageFadeNew;
+/* Viewport isolation shell for incoming page content during diagonal wipe */
+.page-transition-shell {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+  z-index: 800 !important;
+  contain: strict;
+  transform: translateZ(0);
+  background-color: var(--bg-primary, #07090e);
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  will-change: -webkit-mask-image, mask-image;
 }
 
-@keyframes pageFadeOld {
-  to {
-    opacity: 0.9;
-  }
+/* Radiant neon glow beam traveling along the diagonal wipe wavefront */
+.page-transition-glow {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  pointer-events: none !important;
+  z-index: 995 !important;
+  opacity: 0;
+  mix-blend-mode: screen;
+  transform: translateZ(0);
+  will-change: background, opacity;
 }
 
-@keyframes pageFadeNew {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Outgoing frozen viewport state — fills viewport naturally without clipping bottom */
+.page-outgoing-frozen {
+  position: fixed !important;
+  left: 0 !important;
+  width: 100vw !important;
+  pointer-events: none !important;
+  z-index: 10 !important;
+  transform: translateZ(0);
 }
 
-/* Navbar stays locked and stationary across all page switches without any re-render */
-#navbar {
-  view-transition-name: main-navbar;
+/* Light mode overrides for clean contrast and zero washout */
+[data-theme="light"] .page-transition-shell {
+  background-color: #F8F9FA !important;
 }
 
-::view-transition-old(main-navbar),
-::view-transition-new(main-navbar) {
-  animation: none;
-  mix-blend-mode: normal;
+[data-theme="light"] .page-transition-glow {
+  mix-blend-mode: normal !important;
 }
+
+/* Lock scroll and interactions during transition */
+body.page-is-transitioning {
+  overflow: hidden !important;
+}
+
+body.page-is-transitioning > #page-content {
+  pointer-events: none;
+}
+
+/* Maintain cursor visibility and top stacking order at all times */
+body.page-is-transitioning .custom-cursor,
+body.cursor-active .custom-cursor {
+  display: block !important;
+  z-index: 1000000 !important;
+}
+
+body.page-is-transitioning .cursor-dot,
+body.cursor-active .cursor-dot {
+  z-index: 1000000 !important;
+}
+
+body.page-is-transitioning .cursor-ring,
+body.cursor-active .cursor-ring {
+  z-index: 999998 !important;
+}
+
+

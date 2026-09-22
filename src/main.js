@@ -84,12 +84,53 @@ function boot() {
   }
 
   if (!isDedicatedPage) {
-    const skipIntro = window.location.search.includes('no-intro') || window.location.search.includes('intro=false');
+    const navEntries = (window.performance && window.performance.getEntriesByType)
+      ? window.performance.getEntriesByType('navigation')
+      : [];
+    const navType = navEntries.length > 0
+      ? navEntries[0].type
+      : (window.performance && window.performance.navigation
+          ? (window.performance.navigation.type === 1 ? 'reload' : (window.performance.navigation.type === 2 ? 'back_forward' : 'navigate'))
+          : 'navigate');
+    const isReload = navType === 'reload';
+
+    let isFromInternalSubpage = false;
+    try {
+      if (document.referrer) {
+        const refUrl = new URL(document.referrer);
+        if (refUrl.origin === window.location.origin) {
+          const refPath = refUrl.pathname.replace(/\/+$/, '') || '/';
+          if (refPath !== '/' && refPath !== '/index.html') {
+            isFromInternalSubpage = true;
+          }
+        }
+      }
+    } catch (_) {}
+
+    let internalNavFlag = false;
+    try {
+      internalNavFlag = sessionStorage.getItem('hv_from_subpage') === 'true';
+    } catch (_) {}
+
+    // Intro ONLY plays on reload / hard reload or first clean visit, never on navigation from subpages
+    const isNavigatedToHome = !isReload && (isFromInternalSubpage || internalNavFlag || navType === 'back_forward');
+
+    const skipIntro = window.__HV_SKIP_INTRO__ ||
+      isNavigatedToHome ||
+      window.location.search.includes('no-intro') || 
+      window.location.search.includes('intro=false');
+
+    // Clean up temporary navigation flag
+    try {
+      sessionStorage.removeItem('hv_from_subpage');
+    } catch (_) {}
+
     if (skipIntro) {
-      // Intro explicitly disabled via query parameter
+      // Intro skipped (navigated from another page to home)
       const introEl = document.getElementById('highverz-intro');
       if (introEl) introEl.remove();
       document.documentElement.classList.remove('intro-pending');
+      document.documentElement.classList.add('skip-intro');
       document.body.classList.remove('intro-active');
       if (lenis) {
         lenis.start();
@@ -98,7 +139,7 @@ function boot() {
       prepareHeroInitialState();
       initHeroIntro(false);
     } else {
-      // Play loading intro screen on every refresh
+      // Play loading intro screen on reload and initial visit
       prepareHeroInitialState();
       if (lenis) lenis.stop();
       initHighverzIntro({
@@ -261,15 +302,13 @@ function initCustomCursor() {
       magneticTarget.style.transform = `translate3d(${dispX}px, ${dispY}px, 0)`;
     }
 
-    // 3. Fluid trailing ring with calibrated spring inertia
-    const ringLerp = isMagnetic ? 0.3 : 0.22;
-    ringX += (targetRingX - ringX) * ringLerp;
-    ringY += (targetRingY - ringY) * ringLerp;
+    // 3. Lock ring directly to target – zero trailing lag, unified cursor
+    ringX = targetRingX;
+    ringY = targetRingY;
 
-    // 4. Ambient atmospheric optic glow drift
-    // Keep the atmospheric shade attached to the ring instead of trailing as a third cursor.
-    glowX += (targetRingX - glowX) * 0.3;
-    glowY += (targetRingY - glowY) * 0.3;
+    // 4. Lock glow to same position – no drift, single composite cursor
+    glowX = targetRingX;
+    glowY = targetRingY;
 
     // 5. Tactile click impulse decay
     clickScale += (1.0 - clickScale) * 0.22;
@@ -918,11 +957,22 @@ function initHeroIntro(immediate = false) {
   const tl = gsap.timeline({
     defaults: { ease: 'power3.out' },
     onComplete: () => {
-      // Clear inline properties so text is 100% natural, crisp, and responsive
-      gsap.set('.hl-word, #hero-platform-icons, .platform-chip, #hero-desc, #hero-actions, .section-trusted', { clearProps: 'opacity,transform,y,scale' });
+      // Clear inline properties so text is natural and responsive
+      gsap.set('.hl-word', { clearProps: 'all' });
+      gsap.set('#hero-platform-icons, .platform-chip, #hero-desc, #hero-actions, .section-trusted', { clearProps: 'opacity,transform,y,scale' });
       if (navbar) gsap.set(navbar, { clearProps: 'opacity,transform' });
     }
   });
+
+  // ── Shimmer animation on all highlight-cyan text (works in both themes) ──
+  // GSAP directly animates backgroundPosition — no CSS keyframes needed
+  const highlightEls = document.querySelectorAll('.highlight-cyan, .hl-word.highlight-cyan, .stats-number, .team-metric-val.cyan, .case-hud-val.cyan');
+  if (highlightEls.length) {
+    gsap.fromTo(highlightEls,
+      { backgroundPosition: '0% 50%' },
+      { backgroundPosition: '100% 50%', duration: 2.5, ease: 'sine.inOut', repeat: -1, yoyo: true }
+    );
+  }
 
   // 0. Floating navbar glides down into position
   if (navbar) {
@@ -1013,13 +1063,6 @@ function initHeroIntro(immediate = false) {
     }
   });
 
-  // Replay trigger on headline for testing & interactive polish
-  if (!heroHeadline.hasAttribute('data-replay-attached')) {
-    heroHeadline.setAttribute('data-replay-attached', 'true');
-    heroHeadline.addEventListener('click', () => {
-      initHeroIntro(false);
-    });
-  }
 }
 
 // Expose globally for replay / testing
@@ -1070,7 +1113,6 @@ function initStatsMarquee() {
       },
       onComplete: () => {
         statsNumber.textContent = '4,500,000,000+';
-        // Subtle glow pulse on completion
         gsap.fromTo(statsNumber,
           { filter: 'drop-shadow(0 0 35px rgba(0, 229, 255, 0.85))' },
           { filter: 'drop-shadow(0 0 20px rgba(0, 229, 255, 0.4))', duration: 0.9, ease: 'power2.out' }
@@ -1433,6 +1475,7 @@ window.__hvInitPageScripts = initPageScripts;
 // ==========================================================================
 // 07b. WORK HERO & SERVICE FILTERS (DEDICATED WORK PAGE)
 // ==========================================================================
+let activeWorkMetricTweens = [];
 function initWorkHeroIntro() {
   const workHero = document.querySelector('.work-hero-section');
   if (!workHero) return;
@@ -1440,6 +1483,11 @@ function initWorkHeroIntro() {
   animateWorkMetrics();
 
   function animateWorkMetrics() {
+    activeWorkMetricTweens.forEach((tw) => {
+      if (tw && tw.kill) tw.kill();
+    });
+    activeWorkMetricTweens = [];
+
     const metricVals = workHero.querySelectorAll('.work-metric-val');
     metricVals.forEach((el) => {
       const target = parseFloat(el.getAttribute('data-metric-target'));
@@ -1448,11 +1496,13 @@ function initWorkHeroIntro() {
       if (isNaN(target)) return;
 
       const isFloat = target % 1 !== 0;
+      const startVal = 0;
+      el.textContent = `${prefix}${isFloat ? startVal.toFixed(1) : startVal}${suffix}`;
       const obj = { val: 0 };
 
-      gsap.to(obj, {
+      const tw = gsap.to(obj, {
         val: target,
-        duration: 1.8,
+        duration: 1.6,
         ease: 'power2.out',
         onUpdate: () => {
           const displayVal = isFloat ? obj.val.toFixed(1) : Math.round(obj.val);
@@ -1463,6 +1513,7 @@ function initWorkHeroIntro() {
           el.textContent = `${prefix}${finalVal}${suffix}`;
         }
       });
+      activeWorkMetricTweens.push(tw);
     });
   }
 }

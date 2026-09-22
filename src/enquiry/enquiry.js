@@ -1,6 +1,6 @@
 /**
  * Highverz Simple & Sweet Enquiry Engine + Google Sheet Connector
- * Pure 4-field inquiry form, zero tabs, outside-click closing, native cursor handling, and live Google Sheets sync
+ * Dual-path enquiry form for editors and brands, outside-click closing, native cursor handling, and live Google Sheets sync
  */
 
 const STORAGE_KEY = 'highverz_leads';
@@ -65,7 +65,7 @@ export async function saveLead(leadData) {
         body: JSON.stringify({
           id: newLead.id,
           timestamp: newLead.formattedDate,
-          type: 'General Inquiry',
+          type: newLead.type || 'General Inquiry',
           name: newLead.name || '',
           contact: newLead.contact || '',
           handle: newLead.handle || '',
@@ -99,7 +99,7 @@ function injectEnquiryModal() {
 
   const modalHtml = `
     <div class="enquiry-modal-backdrop" id="enquiry-modal-backdrop" aria-hidden="true" role="dialog" aria-labelledby="enquiry-modal-title">
-      <div class="enquiry-modal-window simple-enquiry-window">
+      <div class="enquiry-modal-window simple-enquiry-window" data-lenis-prevent>
         <button type="button" class="enquiry-modal-close" id="enquiry-modal-close" aria-label="Close Enquiry Modal">✕</button>
 
         <!-- Form Stage -->
@@ -112,12 +112,20 @@ function injectEnquiryModal() {
             <h2 class="enquiry-title" id="enquiry-modal-title">
               Let's Build <span class="highlight-cyan">Together.</span>
             </h2>
-            <p class="enquiry-desc">
-              Drop your details below. The Highverz team will review your project and get back to you within 12–24 hours.
+            <p class="enquiry-desc" id="enquiry-modal-desc">
+              Tell us what you are building. The Highverz team will review your enquiry and get back to you within 12–24 hours.
             </p>
           </div>
 
-          <!-- Pure & Simple Form Without Tabs -->
+          <div class="enquiry-type-switcher" role="tablist" aria-label="Enquiry type">
+            <button type="button" class="enquiry-type-option is-active" data-enquiry-type="brand" role="tab" aria-selected="true">
+              <span class="enquiry-type-icon">✦</span> Apply as a Brand
+            </button>
+            <button type="button" class="enquiry-type-option" data-enquiry-type="editor" role="tab" aria-selected="false">
+              <span class="enquiry-type-icon">✎</span> Apply as an Editor
+            </button>
+          </div>
+
           <form class="enquiry-form simple-form" id="global-enquiry-form">
             <div class="enquiry-field">
               <label class="enquiry-label" for="enquiry-name">Your Name <span class="req">*</span></label>
@@ -129,14 +137,14 @@ function injectEnquiryModal() {
               <input type="text" id="enquiry-contact" name="contact" class="enquiry-input" placeholder="you@domain.com or +1 (555) 000-0000" required />
             </div>
 
-            <div class="enquiry-field">
-              <label class="enquiry-label" for="enquiry-handle">Social Link or Website <span class="req">*</span></label>
-              <input type="text" id="enquiry-handle" name="handle" class="enquiry-input" placeholder="@handle or website link" required />
+            <div class="enquiry-field" id="enquiry-handle-field">
+              <label class="enquiry-label" id="enquiry-handle-label" for="enquiry-handle">Brand / Company Website <span class="req">*</span></label>
+              <input type="text" id="enquiry-handle" name="handle" class="enquiry-input" placeholder="yourbrand.com or @handle" required />
             </div>
 
-            <div class="enquiry-field">
-              <label class="enquiry-label" for="enquiry-message">What are you looking to achieve?</label>
-              <textarea id="enquiry-message" name="message" class="enquiry-textarea simple-textarea" placeholder="Tell us briefly about your project, goals, or timeline..."></textarea>
+            <div class="enquiry-field" id="enquiry-message-field">
+              <label class="enquiry-label" id="enquiry-message-label" for="enquiry-message">What are you looking to achieve?</label>
+              <textarea id="enquiry-message" name="message" class="enquiry-textarea simple-textarea" placeholder="Tell us about your brand, project, goals, or timeline..."></textarea>
             </div>
 
             <button type="submit" class="enquiry-submit-btn" id="btn-submit-enquiry">
@@ -282,6 +290,7 @@ async function fetchConfigAndUpdateUI() {
  */
 function bindModalEvents() {
   const backdrop = document.getElementById('enquiry-modal-backdrop');
+  const modalWindow = backdrop.querySelector('.enquiry-modal-window');
   const closeBtn = document.getElementById('enquiry-modal-close');
   const formStage = document.getElementById('enquiry-form-stage');
   const successStage = document.getElementById('enquiry-success-stage');
@@ -289,6 +298,45 @@ function bindModalEvents() {
   const resetBtn = document.getElementById('btn-enquiry-reset');
   const submitBtn = document.getElementById('btn-submit-enquiry');
   const submitBtnText = document.getElementById('submit-btn-text');
+  const modalTitle = document.getElementById('enquiry-modal-title');
+  const modalDesc = document.getElementById('enquiry-modal-desc');
+  const handleLabel = document.getElementById('enquiry-handle-label');
+  const handleInput = document.getElementById('enquiry-handle');
+  const messageLabel = document.getElementById('enquiry-message-label');
+  const messageInput = document.getElementById('enquiry-message');
+  const typeOptions = document.querySelectorAll('.enquiry-type-option');
+  let enquiryType = 'brand';
+
+  const setEnquiryType = (type) => {
+    enquiryType = type;
+    const isEditor = type === 'editor';
+    typeOptions.forEach((option) => {
+      const active = option.dataset.enquiryType === type;
+      option.classList.toggle('is-active', active);
+      option.setAttribute('aria-selected', String(active));
+    });
+
+    modalTitle.innerHTML = isEditor
+      ? 'Join the Highverz <span class="highlight-cyan">Editor Network.</span>'
+      : "Let's Build <span class=\"highlight-cyan\">Together.</span>";
+    modalDesc.textContent = isEditor
+      ? 'Share your work and experience. We are always looking for sharp editors who know how to make content move.'
+      : 'Tell us what you are building. The Highverz team will review your enquiry and get back to you within 12–24 hours.';
+    handleLabel.innerHTML = isEditor
+      ? 'Portfolio or Social Link <span class="req">*</span>'
+      : 'Brand / Company Website <span class="req">*</span>';
+    handleInput.placeholder = isEditor ? 'portfolio link or @handle' : 'yourbrand.com or @handle';
+    messageLabel.textContent = isEditor ? 'Tell us about your editing experience' : 'What are you looking to achieve?';
+    messageInput.placeholder = isEditor
+      ? 'Share your editing experience, tools, niche, and the kind of work you love...'
+      : 'Tell us about your brand, project, goals, or timeline...';
+    submitBtnText.textContent = isEditor ? 'Apply as Editor' : 'Send Brand Enquiry';
+  };
+
+  typeOptions.forEach((option) => {
+    option.addEventListener('click', () => setEnquiryType(option.dataset.enquiryType));
+  });
+  setEnquiryType('brand');
 
   // Close modal and restore native cursor
   const closeModal = () => {
@@ -299,6 +347,15 @@ function bindModalEvents() {
   };
 
   closeBtn.addEventListener('click', closeModal);
+
+  // Lenis is stopped while the modal is open, so route wheel input directly
+  // to the modal. This keeps the form scrollable across browsers and trackpads.
+  modalWindow.addEventListener('wheel', (event) => {
+    if (formStage.scrollHeight <= formStage.clientHeight) return;
+    event.preventDefault();
+    event.stopPropagation();
+    formStage.scrollTop += event.deltaY;
+  }, { passive: false });
 
   // Reliable click-outside cancellation: any click outside .enquiry-modal-window closes it immediately
   backdrop.addEventListener('mousedown', (e) => {
@@ -320,13 +377,13 @@ function bindModalEvents() {
     submitBtnText.textContent = 'Sending...';
 
     const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
+    const data = { ...Object.fromEntries(formData.entries()), type: enquiryType === 'editor' ? 'Editor Application' : 'Brand Enquiry' };
 
     // Save lead into persistent storage & forward to Google Sheets
     const saved = await saveLead(data);
 
     submitBtn.disabled = false;
-    submitBtnText.textContent = 'Send Inquiry';
+    submitBtnText.textContent = enquiryType === 'editor' ? 'Apply as Editor' : 'Send Brand Enquiry';
 
     // Swap views
     formStage.style.display = 'none';

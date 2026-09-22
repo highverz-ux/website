@@ -28,6 +28,7 @@ const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const tmdbCache = new Map();
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour memory cache
 const CACHE_DIR = path.join(__dirname, '.cache');
+const MAX_TMDB_PAGES = 500;
 
 if (!fs.existsSync(CACHE_DIR)) {
   try { fs.mkdirSync(CACHE_DIR, { recursive: true }); } catch (_) {}
@@ -162,6 +163,9 @@ async function fetchFromTMDB(endpoint, params = {}) {
   }
 
   url.searchParams.set('language', 'en-US');
+  if (!Object.prototype.hasOwnProperty.call(params, 'include_adult')) {
+    url.searchParams.set('include_adult', 'false');
+  }
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== null) {
       url.searchParams.set(k, String(v));
@@ -214,6 +218,19 @@ function enrichMovie(movie) {
     hasCampaign: isFeatured,
     campaignLabel: isFeatured ? (CAMPAIGN_LABELS[id] || 'CAMPAIGN BREAKDOWN') : null
   };
+}
+
+function filterAdultContent(movies) {
+  if (!Array.isArray(movies)) return [];
+  return movies.filter(movie => movie && movie.adult !== true);
+}
+
+function capTotalResults(totalResults, limit) {
+  return Math.min(Math.max(0, totalResults), MAX_TMDB_PAGES * limit);
+}
+
+function capTotalPages(totalResults, limit) {
+  return Math.max(1, Math.ceil(capTotalResults(totalResults, limit) / limit));
 }
 
 // Helper function to read config
@@ -417,7 +434,7 @@ app.get('/api/movies', async (req, res) => {
       const pagesToFetch = tmdbStartPage === tmdbEndPage ? [tmdbStartPage] : [tmdbStartPage, tmdbEndPage];
       const results = await Promise.all(
         pagesToFetch.map(p =>
-          fetchFromTMDB('/search/movie', { ...searchParams, page: p }).catch(() => ({ results: [], total_results: 0 }))
+          fetchFromTMDB('/search/movie', { ...searchParams, page: p, include_adult: false }).catch(() => ({ results: [], total_results: 0 }))
         )
       );
 
@@ -433,6 +450,8 @@ app.get('/api/movies', async (req, res) => {
         totalResults = combined.length;
       }
 
+      combined = filterAdultContent(combined);
+
       const sliceStart = startIndex - (tmdbStartPage - 1) * 20;
       const sliced = combined.slice(sliceStart, sliceStart + limit).map(enrichMovie);
 
@@ -440,9 +459,9 @@ app.get('/api/movies', async (req, res) => {
         success: true,
         page,
         limit,
-        total_results: totalResults,
-        total_pages: Math.max(1, Math.ceil(totalResults / limit)),
-        results: sliced
+        total_results: capTotalResults(totalResults, limit),
+        total_pages: capTotalPages(totalResults, limit),
+        results: page > capTotalPages(totalResults, limit) ? [] : sliced
       });
     }
 
@@ -452,7 +471,7 @@ app.get('/api/movies', async (req, res) => {
         fetchFromTMDB(`/movie/${id}`).catch(() => null), 3
       )).filter(Boolean).map(enrichMovie);
 
-      featuredList = applyInMemoryFilters(featuredList);
+      featuredList = filterAdultContent(applyInMemoryFilters(featuredList));
       const totalResults = featuredList.length;
       const startIndex = (page - 1) * limit;
       const sliced = featuredList.slice(startIndex, startIndex + limit);
@@ -461,9 +480,9 @@ app.get('/api/movies', async (req, res) => {
         success: true,
         page,
         limit,
-        total_results: totalResults,
-        total_pages: Math.max(1, Math.ceil(totalResults / limit)),
-        results: sliced
+        total_results: capTotalResults(totalResults, limit),
+        total_pages: capTotalPages(totalResults, limit),
+        results: page > capTotalPages(totalResults, limit) ? [] : sliced
       });
     }
 
@@ -506,7 +525,7 @@ app.get('/api/movies', async (req, res) => {
       const pagesToFetch = tmdbStartPage === tmdbEndPage ? [tmdbStartPage] : [tmdbStartPage, tmdbEndPage];
       const results = await Promise.all(
         pagesToFetch.map(p =>
-          fetchFromTMDB('/discover/movie', { ...discoverParams, page: p }).catch(() => ({ results: [], total_results: 0 }))
+          fetchFromTMDB('/discover/movie', { ...discoverParams, page: p, include_adult: false }).catch(() => ({ results: [], total_results: 0 }))
         )
       );
 
@@ -515,6 +534,7 @@ app.get('/api/movies', async (req, res) => {
       results.forEach(r => {
         if (Array.isArray(r.results)) combined.push(...r.results);
       });
+      combined = filterAdultContent(combined);
 
       const sliceStart = startIndex - (tmdbStartPage - 1) * 20;
       const sliced = combined.slice(sliceStart, sliceStart + limit).map(enrichMovie);
@@ -523,21 +543,21 @@ app.get('/api/movies', async (req, res) => {
         success: true,
         page,
         limit,
-        total_results: totalResults,
-        total_pages: Math.max(1, Math.ceil(totalResults / limit)),
-        results: sliced
+        total_results: capTotalResults(totalResults, limit),
+        total_pages: capTotalPages(totalResults, limit),
+        results: page > capTotalPages(totalResults, limit) ? [] : sliced
       });
     }
 
     // 4. Default Discovery (Featured Campaigns Priority on Page 1 + Trending)
     const tmdbPage = page;
-    const trendingData = await fetchFromTMDB('/trending/movie/week', { page: tmdbPage }).catch(() => ({ results: [], total_results: 0 }));
-    let list = (trendingData.results || []).map(enrichMovie);
+    const trendingData = await fetchFromTMDB('/trending/movie/week', { page: Math.min(tmdbPage, MAX_TMDB_PAGES), include_adult: false }).catch(() => ({ results: [], total_results: 0 }));
+    let list = filterAdultContent(trendingData.results || []).map(enrichMovie);
 
     if (page === 1) {
-      const featuredMovies = (await mapConcurrent(FEATURED_CAMPAIGN_IDS, id =>
+      const featuredMovies = filterAdultContent((await mapConcurrent(FEATURED_CAMPAIGN_IDS, id =>
         fetchFromTMDB(`/movie/${id}`).catch(() => null), 3
-      )).filter(Boolean).map(enrichMovie);
+      )).filter(Boolean)).map(enrichMovie);
       const featuredMap = new Map();
       featuredMovies.forEach(m => featuredMap.set(m.id, m));
       list.forEach(m => {
@@ -555,9 +575,9 @@ app.get('/api/movies', async (req, res) => {
       success: true,
       page,
       limit,
-      total_results: totalResults,
-      total_pages: Math.max(1, Math.ceil(totalResults / limit)),
-      results: sliced
+      total_results: capTotalResults(totalResults, limit),
+      total_pages: capTotalPages(totalResults, limit),
+      results: page > capTotalPages(totalResults, limit) ? [] : sliced
     });
   } catch (err) {
     console.error('[API /api/movies error]:', err.message);

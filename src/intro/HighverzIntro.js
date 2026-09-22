@@ -399,7 +399,7 @@ export function initHighverzIntro(options = {}) {
     return;
   }
 
-  if (isExplicitlyDisabled) {
+  if (isExplicitlyDisabled || (window.__HV_SKIP_INTRO__ && !isForceIntro)) {
     const existing = document.getElementById('highverz-intro');
     if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
     document.body.classList.remove('intro-active');

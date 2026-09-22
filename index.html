@@ -35,17 +35,57 @@
   </style>
   <script>
     document.documentElement.classList.add('js');
-    try { sessionStorage.removeItem('highverzIntroPlayed'); } catch (_) {}
-    var isSkipIntro = window.location.search.includes('no-intro') || window.location.search.includes('intro=false');
+
+    // Detect navigation type (reload vs link navigation)
+    var navEntries = (window.performance && window.performance.getEntriesByType)
+      ? window.performance.getEntriesByType('navigation')
+      : [];
+    var navType = navEntries.length > 0
+      ? navEntries[0].type
+      : (window.performance && window.performance.navigation
+          ? (window.performance.navigation.type === 1 ? 'reload' : (window.performance.navigation.type === 2 ? 'back_forward' : 'navigate'))
+          : 'navigate');
+
+    var isReload = navType === 'reload';
+
+    // Check if navigated from an internal subpage (e.g. Work, Campaigns, Team, Why Us)
+    var isFromInternalSubpage = false;
+    try {
+      if (document.referrer) {
+        var refUrl = new URL(document.referrer);
+        if (refUrl.origin === window.location.origin) {
+          var refPath = refUrl.pathname.replace(/\/+$/, '') || '/';
+          if (refPath !== '/' && refPath !== '/index.html') {
+            isFromInternalSubpage = true;
+          }
+        }
+      }
+    } catch (_) {}
+
+    var internalNavFlag = false;
+    try {
+      internalNavFlag = sessionStorage.getItem('hv_from_subpage') === 'true';
+      if (isReload) {
+        sessionStorage.removeItem('hv_from_subpage');
+        internalNavFlag = false;
+      }
+    } catch (_) {}
+
+    // Intro ONLY plays on reload / hard reload or first clean visit, never on navigation from subpages
+    var isNavigatedToHome = !isReload && (isFromInternalSubpage || internalNavFlag || navType === 'back_forward');
+    var isSkipIntroParam = window.location.search.includes('no-intro') || window.location.search.includes('intro=false');
     var isDedicated = window.location.pathname.includes('work') || 
                       window.location.pathname.includes('creator-') || 
                       window.location.pathname.includes('team') || 
                       window.location.pathname.includes('why-us') || 
                       window.location.pathname.includes('campaigns');
-    if (isSkipIntro || isDedicated) {
+
+    if (isSkipIntroParam || isDedicated || isNavigatedToHome) {
       document.documentElement.classList.add('skip-intro');
+      window.__HV_SKIP_INTRO__ = true;
     } else {
       document.documentElement.classList.add('intro-pending');
+      window.__HV_SKIP_INTRO__ = false;
     }
   </script>
 </head>

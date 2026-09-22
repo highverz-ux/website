@@ -10,6 +10,15 @@ const BASE_URL = 'https://api.themoviedb.org/3';
 const IMAGE_BASE = 'https://image.tmdb.org/t/p';
 
 const CACHE_TTL = 15 * 60 * 1000; // 15 minutes
+const MAX_TMDB_PAGES = 500;
+
+function capTotalResults(totalResults, limit) {
+  return Math.min(Math.max(0, totalResults), MAX_TMDB_PAGES * limit);
+}
+
+function capTotalPages(totalResults, limit) {
+  return Math.max(1, Math.ceil(capTotalResults(totalResults, limit) / limit));
+}
 
 const TMDB_DEFAULT_KEY = '4f2cf009f072ced9e20e584803d8400e';
 const TMDB_DEFAULT_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0ZjJjZjAwOWYwNzJjZWQ5ZTIwZTU4NDgwM2Q4NDAwZSIsIm5iZiI6MTc4OTE0NjEyOS42NjYsInN1YiI6IjZhYTQzNDExNTUwMWRmZjhiZjI4OWNmYyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.MDPNXL50yjs5FXCTDFh-PPg_AmPlxkf_8C16mVB8XG8';
@@ -122,7 +131,7 @@ export async function getPopularMovies(page = 1) {
  * @returns {Promise<{results: Array}>}
  */
 export async function getTrendingMovies(timeWindow = 'week') {
-  return tmdbFetch(`/trending/movie/${timeWindow}`);
+  return tmdbFetch(`/trending/movie/${timeWindow}`, { include_adult: false });
 }
 
 /**
@@ -186,7 +195,7 @@ export async function searchMovies(query, page = 1) {
   if (!query || query.trim().length === 0) {
     return { results: [], total_pages: 0, total_results: 0 };
   }
-  return tmdbFetch('/search/movie', { query: query.trim(), page });
+  return tmdbFetch('/search/movie', { query: query.trim(), page, include_adult: false });
 }
 
 // ─── Utility ───
@@ -340,13 +349,13 @@ export async function fetchBackendMovies({ page = 1, limit = 12, query = '', fil
     // Fallback directly to client-side TMDB if backend is unavailable
     if (query && query.length > 0) {
       const searchRes = await searchMovies(query, page);
-      const results = (searchRes.results || []).slice(0, limit);
+      const results = (searchRes.results || []).filter(m => m && m.adult !== true).slice(0, limit);
       const data = {
         success: true,
         page,
         limit,
-        total_results: searchRes.total_results || results.length,
-        total_pages: searchRes.total_pages || Math.max(1, Math.ceil((searchRes.total_results || results.length) / limit)),
+        total_results: capTotalResults(searchRes.total_results || results.length, limit),
+        total_pages: capTotalPages(searchRes.total_results || results.length, limit),
         results
       };
       browserCache.set(cacheKey, data, 10 * 60 * 1000);
@@ -354,7 +363,7 @@ export async function fetchBackendMovies({ page = 1, limit = 12, query = '', fil
     }
 
     const trending = await getTrendingMovies('week');
-    const all = trending.results || [];
+    const all = (trending.results || []).filter(m => m && m.adult !== true);
     const startIndex = (page - 1) * limit;
     const results = all.slice(startIndex, startIndex + limit);
     const data = {
@@ -362,11 +371,10 @@ export async function fetchBackendMovies({ page = 1, limit = 12, query = '', fil
       page,
       limit,
       total_results: all.length,
-      total_pages: Math.max(1, Math.ceil(all.length / limit)),
+      total_pages: capTotalPages(all.length, limit),
       results
     };
     browserCache.set(cacheKey, data, 10 * 60 * 1000);
     return data;
   }
 }
-

@@ -206,13 +206,30 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       incCampaignHero.dataset.heroAnimated = 'true';
     }
 
+    // Pre-set metric counters in incoming content to 0 so they never flash target values before animating
+    incomingContent.querySelectorAll('.work-metric-val').forEach((el) => {
+      const target = parseFloat(el.getAttribute('data-metric-target'));
+      const prefix = el.getAttribute('data-metric-prefix') || '';
+      const suffix = el.getAttribute('data-metric-suffix') || '';
+      if (!isNaN(target)) {
+        const isFloat = target % 1 !== 0;
+        el.textContent = `${prefix}${isFloat ? (0).toFixed(1) : 0}${suffix}`;
+      }
+    });
+    incomingContent.querySelectorAll('.team-metric-val').forEach((el) => {
+      const format = el.getAttribute('data-metric-format');
+      if (format === 'billion') el.textContent = '0.0B+';
+      else if (format === 'days') el.textContent = '0 Days';
+      else if (format === 'percent') el.textContent = '0.0%';
+    });
+
     incomingContent.style.position = 'relative';
     incomingContent.style.width = '100%';
     incomingContent.style.minHeight = '100vh';
     incomingContent.style.pointerEvents = 'none';
     shell.appendChild(incomingContent);
 
-    // Decorative radiant neon glow wavefront tracing the transition
+    // Smooth black shadow band tracing the diagonal transition wavefront (no blue color)
     const glow = document.createElement('div');
     glow.className = 'page-transition-glow';
     glow.id = 'page-transition-glow';
@@ -221,7 +238,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
     const isLightMode = document.documentElement.getAttribute('data-theme') === 'light';
 
     // Set initial 0% mask (incoming content hidden until wipe begins)
-    const initialMask = 'linear-gradient(135deg, #000 -12%, transparent -4%)';
+    const initialMask = 'linear-gradient(135deg, #000 -18%, transparent -6%)';
     shell.style.webkitMaskImage = initialMask;
     shell.style.maskImage = initialMask;
 
@@ -229,9 +246,9 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
     document.body.appendChild(glow);
     document.body.classList.add('page-is-transitioning');
 
-    // 7. Execute diagonal wipe transition with radiant leading-edge glow
+    // 7. Execute diagonal wipe transition with smooth pure black shading
     // Angle: 135° (top-left to bottom-right diagonal sweep)
-    // Duration: 0.52s (Fast, fluid, responsive Framer speed)
+    // Duration: 0.56s (fluid, responsive, and smooth)
     // Easing: cubic-bezier(0.27, 0, 0.51, 1)
     function cubicBezierEase(t) {
       const cx = 3 * 0.27, bx = 3 * (0.51 - 0.27) - cx, ax = 1 - cx - bx;
@@ -250,7 +267,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
     }
 
     const animObj = { progress: 0 };
-    const duration = 0.52;
+    const duration = 0.56;
 
     gsap.to(animObj, {
       progress: 1,
@@ -259,49 +276,32 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       onUpdate: () => {
         const p = animObj.progress;
         const eased = cubicBezierEase(p);
-        // glowPos travels from -8% (immediate start, zero dead time) to 108% (crisp exit)
-        const glowPos = -8 + 116 * eased;
+        // glowPos travels from -12% to 112% for seamless edge-to-edge coverage
+        const glowPos = -12 + 124 * eased;
         const c = glowPos.toFixed(2);
 
-        // Viewport mask revealing incoming page directly behind the glow wavefront with zero gap
-        const maskVal = `linear-gradient(135deg, #000 ${(glowPos - 3).toFixed(2)}%, transparent ${(glowPos + 3).toFixed(2)}%)`;
+        // Viewport mask revealing incoming page with soft feather along wavefront
+        const maskVal = `linear-gradient(135deg, #000 ${(glowPos - 7).toFixed(2)}%, transparent ${(glowPos + 7).toFixed(2)}%)`;
         shell.style.webkitMaskImage = maskVal;
         shell.style.maskImage = maskVal;
 
-        // Dynamic theme-aware glow styling (contrast-optimized for both light and dark themes)
-        if (isLightMode) {
-          // Light Mode: Bold electric cyan & obsidian precision laser beam with high contrast
-          glow.style.background = `linear-gradient(135deg,
-            transparent ${(glowPos - 18).toFixed(2)}%,
-            rgba(0, 184, 212, 0.10) ${(glowPos - 10).toFixed(2)}%,
-            rgba(0, 184, 212, 0.40) ${(glowPos - 4).toFixed(2)}%,
-            rgba(0, 151, 178, 0.85) ${(glowPos - 1.2).toFixed(2)}%,
-            rgba(10, 13, 18, 0.95) ${c}%,
-            rgba(0, 151, 178, 0.85) ${(glowPos + 1.2).toFixed(2)}%,
-            rgba(0, 184, 212, 0.40) ${(glowPos + 4).toFixed(2)}%,
-            rgba(0, 184, 212, 0.10) ${(glowPos + 10).toFixed(2)}%,
-            transparent ${(glowPos + 18).toFixed(2)}%
-          )`;
-          glow.style.filter = 'drop-shadow(0 0 10px rgba(0, 184, 212, 0.70))';
-        } else {
-          // Dark Mode: Vivid multi-layered neon beam (brilliant white core, electric cyan flare, deep violet fringe)
-          glow.style.background = `linear-gradient(135deg,
-            transparent ${(glowPos - 22).toFixed(2)}%,
-            rgba(121, 40, 202, 0.15) ${(glowPos - 14).toFixed(2)}%,
-            rgba(0, 232, 232, 0.35) ${(glowPos - 7).toFixed(2)}%,
-            rgba(0, 232, 232, 0.75) ${(glowPos - 2.5).toFixed(2)}%,
-            rgba(0, 245, 255, 0.95) ${(glowPos - 0.8).toFixed(2)}%,
-            rgba(255, 255, 255, 1.00) ${c}%,
-            rgba(0, 245, 255, 0.95) ${(glowPos + 0.8).toFixed(2)}%,
-            rgba(0, 232, 232, 0.75) ${(glowPos + 2.5).toFixed(2)}%,
-            rgba(0, 232, 232, 0.35) ${(glowPos + 7).toFixed(2)}%,
-            rgba(121, 40, 202, 0.15) ${(glowPos + 14).toFixed(2)}%,
-            transparent ${(glowPos + 22).toFixed(2)}%
-          )`;
-          glow.style.filter = '';
-        }
+        // Smooth pure black gradient shading (no blue/cyan tints)
+        const peakAlpha = isLightMode ? 0.60 : 0.95;
+        const midAlpha = isLightMode ? 0.35 : 0.65;
+        const lowAlpha = isLightMode ? 0.12 : 0.22;
 
-        const glowAlpha = Math.sin(p * Math.PI) ** 0.55;
+        glow.style.background = `linear-gradient(135deg,
+          transparent ${(glowPos - 18).toFixed(2)}%,
+          rgba(0, 0, 0, ${lowAlpha}) ${(glowPos - 9).toFixed(2)}%,
+          rgba(0, 0, 0, ${midAlpha}) ${(glowPos - 3).toFixed(2)}%,
+          rgba(0, 0, 0, ${peakAlpha}) ${c}%,
+          rgba(0, 0, 0, ${midAlpha}) ${(glowPos + 3).toFixed(2)}%,
+          rgba(0, 0, 0, ${lowAlpha}) ${(glowPos + 9).toFixed(2)}%,
+          transparent ${(glowPos + 18).toFixed(2)}%
+        )`;
+        glow.style.filter = 'none';
+
+        const glowAlpha = Math.sin(p * Math.PI) ** 0.5;
         glow.style.opacity = (glowAlpha * 1.0).toFixed(3);
       },
       onComplete: () => {
@@ -414,10 +414,26 @@ export function initPageTransitions() {
       return;
     }
 
+    // If navigating to Home from any subpage, flag it in sessionStorage to skip intro screen
+    if (isHomeRoute(url) && !isHomeRoute(window.location.pathname)) {
+      try {
+        sessionStorage.setItem('hv_from_subpage', 'true');
+      } catch (_) {}
+    }
+
     // Check if this navigation is between non-Home pages
     if (canTransition(window.location.pathname, url)) {
       e.preventDefault();
       navigateWithTransition(url.href, false);
+    }
+  });
+
+  // Track subpage exit
+  window.addEventListener('beforeunload', () => {
+    if (!isHomeRoute(window.location.pathname)) {
+      try {
+        sessionStorage.setItem('hv_from_subpage', 'true');
+      } catch (_) {}
     }
   });
 

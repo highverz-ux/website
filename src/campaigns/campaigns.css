@@ -2774,20 +2774,7 @@ body.page-campaigns {
 /* ==========================================================================
    LIGHT MODE OVERRIDES — MOVIE DETAIL MODAL & CAMPAIGN DOSSIER
    ========================================================================== */
-[data-theme="light"] .campaign-hero-headline .hl-cyan,
-[data-theme="light"] .campaign-hero-headline .highlight-cyan {
-  background: linear-gradient(90deg, #00B8D4 0%, #00E5FF 25%, #FFFFFF 50%, #00D5FF 75%, #0097B2 100%);
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-  filter: drop-shadow(0 0 14px rgba(0, 229, 255, 0.45));
-  padding-right: 0.3em;
-  padding-left: 0.04em;
-  padding-bottom: 0.06em;
-  animation: cyanTextSheen 5s ease-in-out infinite;
-}
+
 
 
 [data-theme="light"] .campaign-search-input {

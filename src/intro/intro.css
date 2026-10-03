@@ -1,7 +1,6 @@
 /* ==========================================================================
-   HIGHVERZ — REACHIFY-STYLE CINEMATIC LOADER
-   Seamless Mark-to-Wordmark Expansion & Parallax Curtain Wipe
-   Dual-Theme Engine (Obsidian Dark / Studio Light)
+   HIGHVERZ — REVEAL PRELOADER
+   Port of framer.com/m/Reveal-Preloader-6PIyjJ.js
    ========================================================================== */
 
 body.intro-active {
@@ -10,324 +9,210 @@ body.intro-active {
   touch-action: none;
 }
 
-.hv-reachify-container {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 999999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  pointer-events: auto;
-  opacity: 1;
-  visibility: visible;
-  background: transparent;
-  user-select: none;
-  will-change: transform;
-}
-
-[data-theme="light"] .hv-reachify-container {
-  background: transparent;
-}
-
 html.skip-intro #highverz-intro {
   display: none !important;
-}
-
-/* ==========================================================================
-   Split-Shutter Middle Curtain Mechanism
-   ========================================================================== */
-.hv-curtain {
-  position: absolute;
-  left: 0;
-  right: 0;
-  width: 100vw;
-  height: 50.5vh;
-  z-index: 5;
-  background: #05080b;
-  pointer-events: none;
-  will-change: transform;
-  border: none !important;
-  box-shadow: none !important;
-  outline: none !important;
-}
-
-.hv-curtain-top {
-  top: 0;
-  transform-origin: top center;
-}
-
-.hv-curtain-bottom {
-  bottom: 0;
-  transform-origin: bottom center;
-}
-
-[data-theme="light"] .hv-curtain {
-  background: #f5f6f8;
-}
-
-/* Prevent flash of un-animated homepage content before and during loading intro */
-html.intro-pending:not(.skip-intro) .hl-word,
-html.intro-pending:not(.skip-intro) .hero-headline-connector,
-html.intro-pending:not(.skip-intro) .platform-chip,
-html.intro-pending:not(.skip-intro) #hero-desc,
-html.intro-pending:not(.skip-intro) #hero-actions,
-html.intro-pending:not(.skip-intro) .section-trusted,
-html.intro-pending:not(.skip-intro) #navbar {
-  opacity: 0 !important;
-  visibility: hidden !important;
 }
 
 html.intro-pending:not(.skip-intro) body > *:not(#highverz-intro) {
   visibility: hidden !important;
 }
 
-/* FOUC Prevention: initial states match GSAP entry points */
-html.intro-pending:not(.skip-intro) #hv-reachify-mark {
-  opacity: 0;
-  transform: scale(0.82);
+/* ==========================================================================
+   ROOT CONTAINER
+   ========================================================================== */
+#highverz-intro {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  pointer-events: auto;
+  user-select: none;
+  overflow: hidden;
+  will-change: transform;
+  background: #050b10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-html.intro-pending:not(.skip-intro) #hv-reachify-wordmark-mask {
-  opacity: 0;
-  clip-path: inset(0 100% 0 0);
-  -webkit-clip-path: inset(0 100% 0 0);
+/* Brand surface behind the logo, matching the site's dark hero foundation. */
+#highverz-intro::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 960px 620px at 50% 50%, rgba(0, 186, 214, 0.14) 0%, rgba(5, 48, 71, 0.10) 45%, transparent 78%),
+    radial-gradient(ellipse 700px 520px at 82% 30%, rgba(26, 77, 118, 0.13) 0%, transparent 72%);
 }
 
-html.intro-pending:not(.skip-intro) #hv-reachify-wordmark {
-  opacity: 0;
-  transform: translateX(-24px);
+[data-theme="light"] #highverz-intro {
+  background: #F8F9FA;
 }
 
-html.intro-pending:not(.skip-intro) #hv-reachify-skip {
-  opacity: 0;
+[data-theme="light"] #highverz-intro::before {
+  background: radial-gradient(ellipse 800px 500px at 50% 50%, rgba(0, 151, 167, 0.05) 0%, transparent 70%);
 }
 
 /* ==========================================================================
-   Background Atmosphere & Subtle Cyan Ambient Lighting
+   CENTER LOCKUP
    ========================================================================== */
-.hv-reachify-bg {
-  display: none !important;
-}
-
-.hv-reachify-ambient-glow {
-  position: absolute;
-  inset: 0;
-  z-index: 6;
-  pointer-events: none;
-  background: radial-gradient(circle 650px at 50% 50%, rgba(0, 240, 255, 0.08) 0%, rgba(5, 8, 11, 0) 70%);
-}
-
-[data-theme="light"] .hv-reachify-ambient-glow {
-  background: radial-gradient(circle 650px at 50% 50%, rgba(8, 122, 135, 0.06) 0%, rgba(245, 246, 248, 0) 70%);
-}
-
-.hv-reachify-grid-pattern {
-  position: absolute;
-  inset: 0;
-  z-index: 7;
-  pointer-events: none;
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
-  background-size: 52px 52px;
-  mask-image: radial-gradient(ellipse 65% 65% at 50% 50%, #000 30%, transparent 80%);
-  -webkit-mask-image: radial-gradient(ellipse 65% 65% at 50% 50%, #000 30%, transparent 80%);
-}
-
-/* ==========================================================================
-   Center Stage & Reachify Lockup Architecture
-   ========================================================================== */
-.hv-reachify-stage {
+.hv-reveal-center {
   position: relative;
   z-index: 10;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 0;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  overflow: visible;
+}
+
+/* ==========================================================================
+   LOGO — standalone HV mark in a glass frame
+   ========================================================================== */
+.hv-reveal-logo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  will-change: opacity, transform;
+  width: clamp(220px, 30vw, 360px);
+  aspect-ratio: 893 / 436;
+  overflow: visible;
+}
+
+.hv-reveal-mark {
+  position: relative;
+  z-index: 4;
+  top: auto;
+  left: auto;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  line-height: 0;
+  will-change: opacity, transform, filter;
+}
+
+.hv-reveal-glass {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 893 / 436;
+  isolation: isolate;
+  overflow: visible;
+  --hv-logo-mask: url('/assets/highverz-hv-logo.svg');
+  -webkit-mask-image: var(--hv-logo-mask);
+  mask-image: var(--hv-logo-mask);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.hv-reveal-glass-base,
+.hv-reveal-edge,
+.hv-reveal-dispersion,
+.hv-reveal-sheen {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
   pointer-events: none;
 }
 
-.hv-reachify-lockup {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  will-change: transform, opacity;
-}
-
-/* Logo Mark Badge (Squircle - Increased Premium Dimensions) */
-.hv-reachify-mark {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  will-change: transform, opacity;
-}
-
-.hv-reachify-mark-squircle {
-  width: clamp(84px, 9.2vw, 108px);
-  height: clamp(84px, 9.2vw, 108px);
-  border-radius: clamp(22px, 2.4vw, 28px);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(0, 240, 255, 0.05) 100%);
-  border: 1px solid rgba(0, 240, 255, 0.36);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 
-    0 16px 44px rgba(0, 240, 255, 0.24),
-    inset 0 1px 0 rgba(255, 255, 255, 0.28);
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-[data-theme="light"] .hv-reachify-mark-squircle {
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.04) 0%, rgba(8, 122, 135, 0.06) 100%);
-  border: 1px solid rgba(8, 122, 135, 0.35);
-  box-shadow: 
-    0 12px 34px rgba(8, 122, 135, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.85);
-}
-
-.hv-mark-icon {
-  width: clamp(48px, 5.2vw, 62px);
-  height: auto;
-  color: #00f0ff;
+.hv-reveal-glass-base {
+  z-index: 1;
   display: block;
-  filter: drop-shadow(0 0 14px rgba(0, 240, 255, 0.75));
+  opacity: 0.72;
+  filter: brightness(0) invert(1) drop-shadow(0 0 9px rgba(155, 246, 255, 0.16));
+  -webkit-mask-image: none;
+  mask-image: none;
 }
 
-[data-theme="light"] .hv-mark-icon {
-  color: #087a87;
-  filter: drop-shadow(0 0 10px rgba(8, 122, 135, 0.5));
-}
-
-/* Wordmark Mask & Typography (Hardware Accelerated Clip & Blur) */
-.hv-reachify-wordmark-mask {
-  display: inline-flex;
-  align-items: center;
-  white-space: nowrap;
-  clip-path: inset(0 100% 0 0);
-  -webkit-clip-path: inset(0 100% 0 0);
-  will-change: clip-path, opacity;
-}
-
-.hv-reachify-wordmark {
-  display: inline-flex;
-  align-items: center;
-  flex-shrink: 0;
-  white-space: nowrap;
-  padding-left: clamp(22px, 2.6vw, 34px);
-  will-change: transform, opacity, filter;
-  filter: none;
-}
-
-.hv-reachify-wordmark svg.highverz-logo-svg {
-  height: clamp(74px, 8.2vw, 98px);
-  width: auto;
-  overflow: visible !important;
-  color: #ffffff;
-  display: block;
-}
-
-[data-theme="light"] .hv-reachify-wordmark svg.highverz-logo-svg {
-  color: #0e1318;
-}
-
-/* Authentic Segmented Letter Styles */
-.hv-letter {
-  will-change: opacity;
-}
-
-/* Rocket Launch Elements */
-#highverz-rocket {
-  transform-origin: 489px 200px;
-  will-change: transform, filter;
-}
-
-#rocket-outer-flame {
-  will-change: fill, filter;
-}
-
-#rocket-inner-flame {
-  will-change: fill, transform;
-}
-
-#highverz-rocket-trail {
-  will-change: transform, opacity, stroke;
-}
-
-#highverz-i-dot {
-  will-change: transform, opacity, filter;
-}
-
-/* ==========================================================================
-   Subtle Skip Hint
-   ========================================================================== */
-.hv-reachify-skip {
+/* A restrained optical body: the background is allowed to show through the logo. */
+.hv-reveal-glass::before {
+  content: '';
   position: absolute;
-  bottom: clamp(24px, 4vw, 44px);
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 20;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.35);
-  pointer-events: auto;
-  cursor: pointer;
-  transition: color 0.25s ease, opacity 0.3s ease;
-  white-space: nowrap;
-  padding: 6px 14px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  inset: 0;
+  z-index: 0;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.58), rgba(142, 245, 255, 0.12) 42%, rgba(0, 154, 184, 0.22) 100%);
+  opacity: 0.78;
+  backdrop-filter: blur(1.5px) saturate(145%);
+  -webkit-backdrop-filter: blur(1.5px) saturate(145%);
 }
 
-[data-theme="light"] .hv-reachify-skip {
-  color: rgba(0, 0, 0, 0.4);
-  background: rgba(0, 0, 0, 0.02);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+.hv-reveal-edge {
+  z-index: 2;
+  background: linear-gradient(115deg, rgba(255, 255, 255, 0.95), rgba(74, 234, 255, 0.18) 38%, rgba(0, 92, 126, 0.76) 72%, rgba(255, 255, 255, 0.72));
+  opacity: 0.72;
+  filter: drop-shadow(0 0 2px rgba(154, 250, 255, 0.72)) drop-shadow(0 0 13px rgba(0, 202, 230, 0.16));
+  transform: translateZ(0);
 }
 
-.hv-reachify-skip:hover {
-  color: #00f0ff;
-  border-color: rgba(0, 240, 255, 0.3);
+.hv-reveal-dispersion {
+  z-index: 3;
+  background: linear-gradient(90deg, rgba(255, 111, 191, 0.38), transparent 18%, transparent 78%, rgba(117, 221, 255, 0.4));
+  opacity: 0.26;
+  mix-blend-mode: screen;
+  transform: translate3d(0.7px, 0, 0);
+  filter: blur(0.45px);
 }
 
-[data-theme="light"] .hv-reachify-skip:hover {
-  color: #087a87;
-  border-color: rgba(8, 122, 135, 0.3);
+.hv-reveal-sheen {
+  z-index: 4;
+  background: linear-gradient(112deg, transparent 28%, rgba(255, 255, 255, 0.76) 48%, rgba(137, 247, 255, 0.18) 54%, transparent 72%);
+  background-size: 220% 100%;
+  opacity: 0;
+  mix-blend-mode: screen;
+  animation: hv-logo-glass-sheen 5.8s cubic-bezier(0.22, 1, 0.36, 1) 0.65s infinite;
+}
+
+@keyframes hv-logo-glass-sheen {
+  0%, 52% { opacity: 0; background-position: 140% 0; }
+  60% { opacity: 0.56; }
+  76%, 100% { opacity: 0; background-position: -80% 0; }
+}
+
+[data-theme="light"] .hv-reveal-glass-base {
+  opacity: 0.58;
+  filter: brightness(0) saturate(100%) invert(29%) sepia(18%) saturate(1000%) hue-rotate(145deg) brightness(0.86) contrast(1.12);
+}
+
+[data-theme="light"] .hv-reveal-glass::before {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.86), rgba(71, 217, 229, 0.18) 52%, rgba(0, 108, 128, 0.32));
+}
+
+[data-theme="light"] .hv-reveal-edge {
+  opacity: 0.62;
+  filter: drop-shadow(0 0 2px rgba(0, 132, 154, 0.45));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hv-reveal-sheen {
+    animation: none;
+    opacity: 0.16;
+  }
 }
 
 /* ==========================================================================
-   Responsive Adaptations
+   RESPONSIVE
    ========================================================================== */
-@media (max-width: 640px) {
-  .hv-reachify-mark-squircle {
-    width: 68px;
-    height: 68px;
-    border-radius: 18px;
-  }
-  
-  .hv-mark-icon {
-    width: 38px;
-  }
-  
-  .hv-reachify-wordmark svg.highverz-logo-svg {
-    height: 58px;
+@media (max-width: 480px) {
+  .hv-reveal-logo {
+    width: min(74vw, 300px);
   }
 
-  .hv-reachify-wordmark {
-    padding-left: 16px;
-  }
-  
-  .hv-reachify-skip {
-    font-size: 10px;
-    bottom: 20px;
+  .hv-reveal-sheen {
+    animation-duration: 7.5s;
+    opacity: 0.7;
   }
 }

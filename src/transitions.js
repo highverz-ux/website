@@ -8,10 +8,7 @@
  * - Duration: 0.8s
  * - Easing: cubic-bezier(0.27, 0, 0.51, 1)
  *
- * EXCLUSION POLICY:
- * - Strictly excludes Home route ('/' and '/index.html').
- * - Navigating to or from Home performs native direct browser navigation without transition.
- * - Navigating between any non-Home pages triggers the diagonal wipe transition.
+ * Internal HTML routes use the same fade transition, including Home.
  */
 
 import gsap from 'gsap';
@@ -35,14 +32,8 @@ export function isHomeRoute(pathOrUrl) {
 
 /**
  * Validates whether transition animation should run between two routes.
- * Transitions to Home are excluded to preserve native Three.js 3D canvas and intro scene.
- * Transitions from Home to Work and other non-Home pages are fully supported.
  */
 export function canTransition(currentPath, targetUrl) {
-  // Exclude if destination is Home (Home retains native load & 3D scene)
-  if (isHomeRoute(targetUrl)) {
-    return false;
-  }
   // Exclude external origins
   if (targetUrl.origin !== window.location.origin) {
     return false;
@@ -59,6 +50,96 @@ export function canTransition(currentPath, targetUrl) {
 }
 
 const htmlCache = new Map();
+
+// Start only the incoming hero counters underneath the route fade. The rest
+// of the hero remains static so the page reveal and number animation stay in
+// sync without introducing a second entrance sequence.
+function startIncomingMetricCounters(content) {
+  // The home-page counter is below the hero and is not re-initialized by the
+  // dedicated-page dispatcher during an internal route swap. Hydrate it with
+  // its stable value immediately so returning home can never expose the
+  // source placeholder (0+) during the blur handoff.
+  const incomingHomeStats = content.querySelector('#stats-counter');
+  if (incomingHomeStats) {
+    incomingHomeStats.textContent = '4,500,000,000+';
+    incomingHomeStats.dataset.transitionHydrated = 'true';
+
+    // The home initializer owns its ScrollTriggers after promotion. Keeping
+    // this value final during the handoff avoids a competing trigger resetting
+    // it back to 0 after the old page's triggers are destroyed.
+  }
+
+  const incomingCreators = content.querySelector('.section-creators');
+  if (incomingCreators) {
+    incomingCreators.dataset.transitionHydrated = 'true';
+    incomingCreators.querySelectorAll('.stat-number').forEach((el) => {
+      const target = parseInt(el.dataset.count || '', 10);
+      el.textContent = Number.isNaN(target) ? '0' : target.toLocaleString('en-US');
+    });
+    incomingCreators.querySelectorAll('.stat-dyn-num').forEach((el) => {
+      const target = parseInt(el.dataset.count || '', 10);
+      el.textContent = Number.isNaN(target) ? '0' : String(target);
+    });
+  }
+
+  const workHero = content.querySelector('.work-hero-section');
+  if (workHero) {
+    workHero.dataset.transitionMetricsStarted = 'true';
+    const items = [];
+    workHero.querySelectorAll('.work-metric-val').forEach((el) => {
+      const target = parseFloat(el.getAttribute('data-metric-target'));
+      if (Number.isNaN(target)) return;
+      const prefix = el.getAttribute('data-metric-prefix') || '';
+      const suffix = el.getAttribute('data-metric-suffix') || '';
+      const isFloat = target % 1 !== 0;
+      const value = { current: 0 };
+      el.textContent = `${prefix}${isFloat ? '0.0' : '0'}${suffix}`;
+      items.push({ el, target, prefix, suffix, isFloat, value });
+    });
+    const timeline = gsap.timeline({ defaults: { duration: 1.6, ease: 'power2.out' } });
+    items.forEach((item) => {
+      timeline.to(item.value, {
+        current: item.target,
+        onUpdate: () => {
+          const display = item.isFloat ? item.value.current.toFixed(1) : Math.round(item.value.current);
+          item.el.textContent = `${item.prefix}${display}${item.suffix}`;
+        },
+        onComplete: () => {
+          const display = item.isFloat ? item.target.toFixed(1) : item.target;
+          item.el.textContent = `${item.prefix}${display}${item.suffix}`;
+        },
+      }, 0);
+    });
+  }
+
+  const teamHero = content.querySelector('.team-hero-section');
+  if (teamHero) {
+    teamHero.dataset.transitionMetricsStarted = 'true';
+    const timeline = gsap.timeline({ defaults: { duration: 2, ease: 'power2.out' } });
+    teamHero.querySelectorAll('.team-metric-val').forEach((el) => {
+      const format = el.getAttribute('data-metric-format');
+      const value = { current: format === 'top' ? 15 : 0 };
+      let target;
+      let render;
+      if (format === 'billion') {
+        target = 4.5; el.textContent = '0.0B+';
+        render = () => { el.textContent = `${value.current.toFixed(1)}B+`; };
+      } else if (format === 'days') {
+        target = 60; el.textContent = '0 Days';
+        render = () => { el.textContent = `${Math.round(value.current)} Days`; };
+      } else if (format === 'percent') {
+        target = 99.4; el.textContent = '0.0%';
+        render = () => { el.textContent = `${value.current.toFixed(1)}%`; };
+      } else if (format === 'top') {
+        target = 1; el.textContent = 'Top 15%';
+        render = () => { el.textContent = `Top ${Math.round(value.current)}%`; };
+      } else {
+        return;
+      }
+      timeline.to(value, { current: target, onUpdate: render, onComplete: render }, 0);
+    });
+  }
+}
 
 /**
  * Prefetches target HTML for instantaneous transition response
@@ -94,7 +175,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
     return;
   }
 
-  // Double-check: if either current or target route is Home, do not animate
+  // Double-check route eligibility before taking over browser navigation.
   if (!canTransition(currentPath, targetUrl)) {
     if (!isPopState) {
       window.location.href = targetHref;
@@ -229,87 +310,69 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
     incomingContent.style.pointerEvents = 'none';
     shell.appendChild(incomingContent);
 
-    // Smooth black shadow band tracing the diagonal transition wavefront (no blue color)
+    // Hold the current page background underneath both fades. This prevents
+    // the body/ambient layer from flashing through while content crossfades.
+    const backdrop = document.createElement('div');
+    backdrop.className = 'page-transition-backdrop';
+    backdrop.id = 'page-transition-backdrop';
+    backdrop.style.backgroundColor = getComputedStyle(document.body).backgroundColor || '#050809';
+
+    // Keep the old glow node for compatibility with the existing transition
+    // shell, while the route handoff itself uses a clean synchronized fade.
     const glow = document.createElement('div');
     glow.className = 'page-transition-glow';
     glow.id = 'page-transition-glow';
 
-    // Detect light mode vs dark mode
-    const isLightMode = document.documentElement.getAttribute('data-theme') === 'light';
-
-    // Set initial 0% mask (incoming content hidden until wipe begins)
-    const initialMask = 'linear-gradient(135deg, #000 -18%, transparent -6%)';
-    shell.style.webkitMaskImage = initialMask;
-    shell.style.maskImage = initialMask;
-
+    document.body.appendChild(backdrop);
     document.body.appendChild(shell);
     document.body.appendChild(glow);
     document.body.classList.add('page-is-transitioning');
 
-    // 7. Execute diagonal wipe transition with smooth pure black shading
-    // Angle: 135° (top-left to bottom-right diagonal sweep)
-    // Duration: 0.56s (fluid, responsive, and smooth)
-    // Easing: cubic-bezier(0.27, 0, 0.51, 1)
-    function cubicBezierEase(t) {
-      const cx = 3 * 0.27, bx = 3 * (0.51 - 0.27) - cx, ax = 1 - cx - bx;
-      const cy = 3 * 0,    by = 3 * (1 - 0) - cy,    ay = 1 - cy - by;
-      function sampleX(tt) { return ((ax * tt + bx) * tt + cx) * tt; }
-      function sampleY(tt) { return ((ay * tt + by) * tt + cy) * tt; }
-      let guess = t;
-      for (let i = 0; i < 8; i++) {
-        const err = sampleX(guess) - t;
-        if (Math.abs(err) < 1e-6) break;
-        const dx = (3 * ax * guess + 2 * bx) * guess + cx;
-        if (Math.abs(dx) < 1e-6) break;
-        guess -= err / dx;
-      }
-      return sampleY(guess);
+    // Stop observers, RAF loops, media, and counter tweens bound to the old
+    // page before removing it. ScrollTrigger alone cannot clean those up.
+    if (window.__hvDisposePageRuntime) {
+      window.__hvDisposePageRuntime();
     }
 
-    const animObj = { progress: 0 };
-    const duration = 0.56;
+    // Move the incoming page's choreography into the transition window. Old
+    // triggers are removed first so only the incoming document is animated.
+    ScrollTrigger.getAll().forEach((t) => t.kill());
+    startIncomingMetricCounters(incomingContent);
+    const navbar = document.getElementById('navbar');
+    if (navbar) navbar.classList.add('page-nav-outgoing');
 
-    gsap.to(animObj, {
-      progress: 1,
-      duration: duration,
-      ease: 'none',
-      onUpdate: () => {
-        const p = animObj.progress;
-        const eased = cubicBezierEase(p);
-        // glowPos travels from -12% to 112% for seamless edge-to-edge coverage
-        const glowPos = -12 + 124 * eased;
-        const c = glowPos.toFixed(2);
+    // Lightweight, high-performance blur transition (60fps optimized, clearProps on finish)
+    gsap.set(currentContent, {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      filter: 'blur(0px)',
+      willChange: 'opacity, transform, filter',
+    });
+    if (navbar) {
+      gsap.set(navbar, {
+        opacity: 1,
+        y: 0,
+        filter: 'blur(0px)',
+        willChange: 'opacity, transform, filter',
+      });
+    }
+    gsap.set(shell, {
+      opacity: 0,
+      y: 10,
+      scale: 0.995,
+      filter: 'blur(10px)',
+      willChange: 'opacity, transform, filter',
+    });
+    gsap.set(glow, { opacity: 0 });
 
-        // Viewport mask revealing incoming page with soft feather along wavefront
-        const maskVal = `linear-gradient(135deg, #000 ${(glowPos - 7).toFixed(2)}%, transparent ${(glowPos + 7).toFixed(2)}%)`;
-        shell.style.webkitMaskImage = maskVal;
-        shell.style.maskImage = maskVal;
-
-        // Smooth pure black gradient shading (no blue/cyan tints)
-        const peakAlpha = isLightMode ? 0.60 : 0.95;
-        const midAlpha = isLightMode ? 0.35 : 0.65;
-        const lowAlpha = isLightMode ? 0.12 : 0.22;
-
-        glow.style.background = `linear-gradient(135deg,
-          transparent ${(glowPos - 18).toFixed(2)}%,
-          rgba(0, 0, 0, ${lowAlpha}) ${(glowPos - 9).toFixed(2)}%,
-          rgba(0, 0, 0, ${midAlpha}) ${(glowPos - 3).toFixed(2)}%,
-          rgba(0, 0, 0, ${peakAlpha}) ${c}%,
-          rgba(0, 0, 0, ${midAlpha}) ${(glowPos + 3).toFixed(2)}%,
-          rgba(0, 0, 0, ${lowAlpha}) ${(glowPos + 9).toFixed(2)}%,
-          transparent ${(glowPos + 18).toFixed(2)}%
-        )`;
-        glow.style.filter = 'none';
-
-        const glowAlpha = Math.sin(p * Math.PI) ** 0.5;
-        glow.style.opacity = (glowAlpha * 1.0).toFixed(3);
-      },
+    // 7. Execute the ultra-smooth, lightweight Framer blur handoff (300-380ms total)
+    const transitionTimeline = gsap.timeline({
+      defaults: { overwrite: 'auto' },
       onComplete: () => {
-        // Clean up glow element
+        // Clean up glow & backdrop elements
         glow.remove();
-
-        // Kill previous page ScrollTriggers
-        ScrollTrigger.getAll().forEach((t) => t.kill());
+        backdrop.remove();
 
         // Remove old frozen content from DOM
         currentContent.remove();
@@ -318,6 +381,9 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
         incomingContent.removeAttribute('style');
         shell.insertAdjacentElement('beforebegin', incomingContent);
         shell.remove();
+        if (navbar) {
+          gsap.set(navbar, { clearProps: 'all' });
+        }
 
         // Update body class while preserving essential runtime flags (cursor, theme)
         const wasCursorActive = document.body.classList.contains('cursor-active');
@@ -325,6 +391,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
           document.body.className = targetBodyClass;
         }
         document.body.classList.remove('page-is-transitioning');
+        if (navbar) navbar.classList.remove('page-nav-outgoing');
         if (wasCursorActive || window.innerWidth > 900) {
           document.body.classList.add('cursor-active');
         }
@@ -332,24 +399,72 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
           window.__hvEnsureCursorActive();
         }
 
-        // Restart and refresh Lenis scroll calculations
+        // Reset scroll position to top
+        window.scrollTo(0, 0);
         if (window.lenis) {
+          window.lenis.scrollTo(0, { immediate: true });
           window.lenis.start();
           window.lenis.resize();
         }
 
-        // Re-initialize page scripts for the new route
-        if (window.__hvInitPageScripts) {
-          window.__hvInitPageScripts(window.location.pathname);
-        }
+        // Initialize page scripts in next animation frame once DOM is rendered
+        requestAnimationFrame(() => {
+          if (window.__hvInitPageScripts) {
+            window.__hvInitPageScripts(window.location.pathname);
+          }
 
-        if (window.ScrollTrigger) {
-          ScrollTrigger.refresh();
-        }
+          window.__hvResetNavbar?.(window.location.pathname);
 
-        isTransitioning = false;
+          // Repeated frame passes ensure the carousel never gets stuck on 1 reel
+          let passes = 0;
+          const refreshPass = () => {
+            window.__hvHeroReelRefresh?.();
+            passes++;
+            if (passes < 4) {
+              requestAnimationFrame(refreshPass);
+            } else {
+              if (window.ScrollTrigger) {
+                ScrollTrigger.refresh();
+              }
+              isTransitioning = false;
+            }
+          };
+          requestAnimationFrame(refreshPass);
+        });
       }
-    });
+    })
+      .to([currentContent, navbar].filter(Boolean), {
+        opacity: 0,
+        filter: 'blur(10px)',
+        y: -10,
+        scale: 0.995,
+        duration: 0.28,
+        ease: 'power2.in',
+      }, 0)
+      .to(shell, {
+        opacity: 1,
+        filter: 'blur(0px)',
+        y: 0,
+        scale: 1,
+        duration: 0.36,
+        ease: 'power2.out',
+        clearProps: 'filter,willChange',
+      }, 0.10);
+
+    if (navbar) {
+      transitionTimeline.fromTo(navbar,
+        { opacity: 0, y: -8, filter: 'blur(6px)' },
+        {
+          opacity: 1,
+          y: 0,
+          filter: 'blur(0px)',
+          duration: 0.34,
+          ease: 'power2.out',
+          clearProps: 'all',
+        },
+        0.12
+      );
+    }
 
   } catch (err) {
     console.error('Page transition encountered an error:', err);
@@ -363,7 +478,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
  */
 export function initPageTransitions() {
   // Pre-cache all dedicated non-Home pages in memory so transition starts in 0ms without waiting for fetch
-  const targetRoutes = ['/work.html', '/campaigns.html', '/team.html', '/why-us.html'];
+  const targetRoutes = ['/index.html', '/work.html', '/campaigns.html', '/team.html', '/why-us.html'];
   setTimeout(() => {
     targetRoutes.forEach(r => {
       if (r !== window.location.pathname) {
@@ -462,4 +577,3 @@ export function initPageTransitions() {
     navigateWithTransition(window.location.href, true);
   });
 }
-

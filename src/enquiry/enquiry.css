@@ -20,6 +20,7 @@ body.enquiry-modal-open #custom-cursor {
 }
 
 body.enquiry-modal-open input,
+body.enquiry-modal-open select,
 body.enquiry-modal-open textarea {
   cursor: text !important;
 }
@@ -330,6 +331,10 @@ body.enquiry-modal-open .admin-leads-close {
   gap: 0.45rem;
 }
 
+.enquiry-field[hidden] {
+  display: none;
+}
+
 .enquiry-label {
   font-size: 0.8rem;
   font-weight: 700;
@@ -373,6 +378,21 @@ body.enquiry-modal-open .admin-leads-close {
 .enquiry-select option {
   background: var(--bg-primary, #0a0e14);
   color: var(--text-primary, #ffffff);
+}
+
+.enquiry-select {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  padding-right: 3rem;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--accent-cyan, #00e5ff) 50%),
+    linear-gradient(135deg, var(--accent-cyan, #00e5ff) 50%, transparent 50%);
+  background-position:
+    calc(100% - 1.25rem) calc(50% - 0.15rem),
+    calc(100% - 0.9rem) calc(50% - 0.15rem);
+  background-size: 0.38rem 0.38rem, 0.38rem 0.38rem;
+  background-repeat: no-repeat;
 }
 
 .enquiry-textarea {
@@ -436,14 +456,48 @@ body.enquiry-modal-open .admin-leads-close {
   justify-content: center;
   gap: 0.6rem;
   cursor: pointer;
+  overflow: hidden;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 8px 30px rgba(0, 229, 255, 0.35);
   margin-top: 0.5rem;
 }
 
+/* Match the hero CTA's two-layer text rollover. */
+.enquiry-submit-label {
+  display: inline-grid;
+  overflow: hidden;
+  line-height: 1.2;
+}
+
+.enquiry-submit-label > span {
+  grid-area: 1 / 1;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.enquiry-submit-label > span:last-child {
+  transform: translateY(125%);
+}
+
+.enquiry-submit-btn .btn-arrow-icon {
+  display: inline-block;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 .enquiry-submit-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 12px 35px rgba(0, 229, 255, 0.55);
+}
+
+.enquiry-submit-btn:hover .enquiry-submit-label > span:first-child {
+  transform: translateY(-125%);
+}
+
+.enquiry-submit-btn:hover .enquiry-submit-label > span:last-child {
+  transform: translateY(0);
+}
+
+.enquiry-submit-btn:hover .btn-arrow-icon {
+  transform: translate(3px, -3px);
 }
 
 .enquiry-submit-btn:active {

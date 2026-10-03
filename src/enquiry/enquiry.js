@@ -70,6 +70,8 @@ export async function saveLead(leadData) {
           contact: newLead.contact || '',
           handle: newLead.handle || '',
           message: newLead.message || '',
+          position: newLead.position || '',
+          otherPosition: newLead.otherPosition || '',
           source: newLead.sourceUrl || '',
           googleSheetsUrl: customSheetUrl
         })
@@ -122,7 +124,7 @@ function injectEnquiryModal() {
               <span class="enquiry-type-icon">✦</span> Apply as a Brand
             </button>
             <button type="button" class="enquiry-type-option" data-enquiry-type="editor" role="tab" aria-selected="false">
-              <span class="enquiry-type-icon">✎</span> Apply as an Editor
+              <span class="enquiry-type-icon">✎</span> Join Us
             </button>
           </div>
 
@@ -137,6 +139,23 @@ function injectEnquiryModal() {
               <input type="text" id="enquiry-contact" name="contact" class="enquiry-input" placeholder="you@domain.com or +1 (555) 000-0000" required />
             </div>
 
+            <div class="enquiry-field" id="enquiry-position-field" hidden>
+              <label class="enquiry-label" for="enquiry-position">Position you are applying for <span class="req">*</span></label>
+              <select id="enquiry-position" name="position" class="enquiry-select" disabled>
+                <option value="">Select a position</option>
+                <option value="Short-Form Video Editor">Short-Form Video Editor</option>
+                <option value="Motion Designer">Motion Designer</option>
+                <option value="Content Strategist">Content Strategist</option>
+                <option value="Creator Partnerships">Creator Partnerships</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div class="enquiry-field" id="enquiry-other-position-field" hidden>
+              <label class="enquiry-label" for="enquiry-other-position">Tell us the role <span class="req">*</span></label>
+              <input type="text" id="enquiry-other-position" name="otherPosition" class="enquiry-input" placeholder="e.g. Graphic Designer" disabled />
+            </div>
+
             <div class="enquiry-field" id="enquiry-handle-field">
               <label class="enquiry-label" id="enquiry-handle-label" for="enquiry-handle">Brand / Company Website <span class="req">*</span></label>
               <input type="text" id="enquiry-handle" name="handle" class="enquiry-input" placeholder="yourbrand.com or @handle" required />
@@ -148,7 +167,7 @@ function injectEnquiryModal() {
             </div>
 
             <button type="submit" class="enquiry-submit-btn" id="btn-submit-enquiry">
-              <span id="submit-btn-text">Send Inquiry</span>
+              <span class="enquiry-submit-label" id="submit-btn-text"><span>Send Inquiry</span><span aria-hidden="true">Send Inquiry</span></span>
               <span class="btn-arrow-icon">↗</span>
             </button>
 
@@ -234,6 +253,7 @@ function injectAdminLeadsModal() {
                 <th>Date &amp; Time</th>
                 <th>Name</th>
                 <th>Email / WhatsApp</th>
+                <th>Position</th>
                 <th>Social / Website</th>
                 <th>Message</th>
                 <th>Actions</th>
@@ -304,8 +324,30 @@ function bindModalEvents() {
   const handleInput = document.getElementById('enquiry-handle');
   const messageLabel = document.getElementById('enquiry-message-label');
   const messageInput = document.getElementById('enquiry-message');
+  const positionField = document.getElementById('enquiry-position-field');
+  const positionInput = document.getElementById('enquiry-position');
+  const otherPositionField = document.getElementById('enquiry-other-position-field');
+  const otherPositionInput = document.getElementById('enquiry-other-position');
   const typeOptions = document.querySelectorAll('.enquiry-type-option');
   let enquiryType = 'brand';
+
+  const setSubmitLabel = (label) => {
+    submitBtnText.innerHTML = `<span>${label}</span><span aria-hidden="true">${label}</span>`;
+  };
+
+  const updatePositionFields = () => {
+    const isJoinUs = enquiryType === 'editor';
+    const isOtherPosition = isJoinUs && positionInput.value === 'Other';
+
+    positionField.hidden = !isJoinUs;
+    positionInput.disabled = !isJoinUs;
+    positionInput.required = isJoinUs;
+    otherPositionField.hidden = !isOtherPosition;
+    otherPositionInput.disabled = !isOtherPosition;
+    otherPositionInput.required = isOtherPosition;
+
+    if (!isOtherPosition) otherPositionInput.value = '';
+  };
 
   const setEnquiryType = (type) => {
     enquiryType = type;
@@ -317,25 +359,27 @@ function bindModalEvents() {
     });
 
     modalTitle.innerHTML = isEditor
-      ? 'Join the Highverz <span class="highlight-cyan">Editor Network.</span>'
+      ? 'Join the <span class="highlight-cyan">Highverz Team.</span>'
       : "Let's Build <span class=\"highlight-cyan\">Together.</span>";
     modalDesc.textContent = isEditor
-      ? 'Share your work and experience. We are always looking for sharp editors who know how to make content move.'
+      ? 'Tell us where you can make the biggest impact. We are always looking for sharp people who know how to make content move.'
       : 'Tell us what you are building. The Highverz team will review your enquiry and get back to you within 12–24 hours.';
     handleLabel.innerHTML = isEditor
       ? 'Portfolio or Social Link <span class="req">*</span>'
       : 'Brand / Company Website <span class="req">*</span>';
     handleInput.placeholder = isEditor ? 'portfolio link or @handle' : 'yourbrand.com or @handle';
-    messageLabel.textContent = isEditor ? 'Tell us about your editing experience' : 'What are you looking to achieve?';
+    messageLabel.textContent = isEditor ? 'Tell us about your experience' : 'What are you looking to achieve?';
     messageInput.placeholder = isEditor
-      ? 'Share your editing experience, tools, niche, and the kind of work you love...'
+      ? 'Share your experience, tools, niche, and the kind of work you love...'
       : 'Tell us about your brand, project, goals, or timeline...';
-    submitBtnText.textContent = isEditor ? 'Apply as Editor' : 'Send Brand Enquiry';
+    setSubmitLabel(isEditor ? 'Apply to Join Us' : 'Send Brand Enquiry');
+    updatePositionFields();
   };
 
   typeOptions.forEach((option) => {
     option.addEventListener('click', () => setEnquiryType(option.dataset.enquiryType));
   });
+  positionInput.addEventListener('change', updatePositionFields);
   setEnquiryType('brand');
 
   // Close modal and restore native cursor
@@ -374,16 +418,19 @@ function bindModalEvents() {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     submitBtn.disabled = true;
-    submitBtnText.textContent = 'Sending...';
+    setSubmitLabel('Sending...');
 
     const formData = new FormData(form);
-    const data = { ...Object.fromEntries(formData.entries()), type: enquiryType === 'editor' ? 'Editor Application' : 'Brand Enquiry' };
+    const data = {
+      ...Object.fromEntries(formData.entries()),
+      type: enquiryType === 'editor' ? 'Join Us Application' : 'Brand Enquiry'
+    };
 
     // Save lead into persistent storage & forward to Google Sheets
     const saved = await saveLead(data);
 
     submitBtn.disabled = false;
-    submitBtnText.textContent = enquiryType === 'editor' ? 'Apply as Editor' : 'Send Brand Enquiry';
+    setSubmitLabel(enquiryType === 'editor' ? 'Apply to Join Us' : 'Send Brand Enquiry');
 
     // Swap views
     formStage.style.display = 'none';
@@ -401,6 +448,7 @@ function bindModalEvents() {
   // Reset form to submit another
   resetBtn.addEventListener('click', () => {
     form.reset();
+    setEnquiryType(enquiryType);
     successStage.classList.remove('is-visible');
     formStage.style.display = 'block';
   });
@@ -557,6 +605,7 @@ export function renderAdminLeads() {
         <td>
           <div style="font-size: 0.82rem; color: #38bdf8;">${escapeHtml(lead.contact || '')}</div>
         </td>
+        <td style="font-size: 0.8rem; color: #cbd5e1;">${escapeHtml(lead.position === 'Other' ? lead.otherPosition || 'Other' : lead.position || '—')}</td>
         <td><span style="color: #00e5ff;">${escapeHtml(lead.handle || '')}</span></td>
         <td style="font-size: 0.8rem; color: #cbd5e1; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(lead.message || '—')}</td>
         <td>
@@ -574,7 +623,8 @@ export function renderAdminLeads() {
       const id = btn.getAttribute('data-id');
       const lead = leads.find((l) => l.id === id);
       if (lead) {
-        const text = `Highverz Lead [${lead.id}]\nName: ${lead.name}\nContact: ${lead.contact}\nLink: ${lead.handle}\nMessage: ${lead.message || 'None'}`;
+        const role = lead.position === 'Other' ? lead.otherPosition || 'Other' : lead.position || '—';
+        const text = `Highverz Lead [${lead.id}]\nName: ${lead.name}\nContact: ${lead.contact}\nPosition: ${role}\nLink: ${lead.handle}\nMessage: ${lead.message || 'None'}`;
         navigator.clipboard.writeText(text).then(() => {
           btn.textContent = 'Copied!';
           setTimeout(() => btn.textContent = 'Copy', 1500);
@@ -619,11 +669,14 @@ function exportLeadsToCSV() {
     return;
   }
 
-  const headers = ['Lead ID', 'Date Submitted', 'Client Name', 'Email or WhatsApp', 'Social or Website Link', 'Message', 'Source Page'];
+  const headers = ['Lead ID', 'Date Submitted', 'Type', 'Position', 'Other Position', 'Client Name', 'Email or WhatsApp', 'Social or Website Link', 'Message', 'Source Page'];
 
   const rows = leads.map((l) => [
     `"${l.id}"`,
     `"${l.formattedDate || ''}"`,
+    `"${(l.type || '').replace(/"/g, '""')}"`,
+    `"${(l.position || '').replace(/"/g, '""')}"`,
+    `"${(l.otherPosition || '').replace(/"/g, '""')}"`,
     `"${(l.name || '').replace(/"/g, '""')}"`,
     `"${(l.contact || '').replace(/"/g, '""')}"`,
     `"${(l.handle || '').replace(/"/g, '""')}"`,

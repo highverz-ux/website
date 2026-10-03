@@ -780,7 +780,6 @@ function renderMovieCards(container, movies) {
     }
 
     const hasAnalysis = movie.hasCampaign !== undefined ? movie.hasCampaign : hasCampaignData(movie.id);
-    const label = movie.campaignLabel || (hasAnalysis ? getCampaignLabel(movie.id) : '');
 
     return `
       <article class="campaign-movie-card" data-movie-id="${movie.id}" data-cursor="EXPLORE">
@@ -790,7 +789,6 @@ function renderMovieCards(container, movies) {
             : `<div class="campaign-card-image" style="background:var(--bg-secondary);display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:2rem;">🎬</div>`
           }
           <div class="campaign-card-overlay"></div>
-          ${hasAnalysis ? `<span class="campaign-card-badge">${label}</span>` : ''}
           <div class="campaign-card-info">
             <h3 class="campaign-card-title">${escapeHtml(movie.title)}</h3>
             <div class="campaign-card-meta">
@@ -1513,21 +1511,21 @@ function renderModalContent(container, movie, credits, videos, campaign) {
           ${trailer ? `
             <button class="modal-hero-btn-primary btn-play-trailer" data-trailer-key="${trailer.key}" data-cursor="PLAY">
               <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M8 5v14l11-7z"/></svg>
-              <span>Watch Official Trailer</span>
+              <span class="modal-btn-label"><span>Watch Official Trailer</span><span aria-hidden="true">Watch Official Trailer</span></span>
             </button>
           ` : ''}
 
           <button class="modal-hero-btn-secondary" onclick="document.getElementById('modal-calculator-section').scrollIntoView({behavior:'smooth'})" data-cursor="SCROLL">
-            <span>Budget Calculator ↓</span>
+            <span class="modal-btn-label"><span>Budget Calculator</span><span aria-hidden="true">Budget Calculator</span></span><span class="modal-btn-arrow" aria-hidden="true">↓</span>
           </button>
 
           ${campaign ? `
             <button class="modal-hero-btn-secondary" onclick="document.getElementById('modal-campaign-analysis').scrollIntoView({behavior:'smooth'})" data-cursor="SCROLL">
-              <span>Marketing Strategy ↓</span>
+              <span class="modal-btn-label"><span>Marketing Strategy</span><span aria-hidden="true">Marketing Strategy</span></span><span class="modal-btn-arrow" aria-hidden="true">↓</span>
             </button>
           ` : `
             <button class="modal-hero-btn-secondary" onclick="document.getElementById('modal-intelligence-section').scrollIntoView({behavior:'smooth'})" data-cursor="SCROLL">
-              <span>Distribution Intelligence ↓</span>
+              <span class="modal-btn-label"><span>Distribution Intelligence</span><span aria-hidden="true">Distribution Intelligence</span></span><span class="modal-btn-arrow" aria-hidden="true">↓</span>
             </button>
           `}
         </div>

@@ -3779,16 +3779,16 @@ function initFaqAccordion() {
     }
   };
 
-  // Bind click directly to each item
+  // Bind the disclosure behavior to the button only. This keeps answer text
+  // selectable and prevents nested card clicks from toggling unexpectedly.
   items.forEach((item) => {
     if (item.dataset.faqItemBound === 'true') return;
     item.dataset.faqItemBound = 'true';
 
-    item.addEventListener('click', (e) => {
-      // Don't close if user is selecting/clicking inside the answer paragraph
-      if (e.target.closest('.faq-answer') && item.classList.contains('is-open')) {
-        return;
-      }
+    const summary = item.querySelector('.faq-summary');
+    if (!summary) return;
+
+    summary.addEventListener('click', (e) => {
       e.preventDefault();
       toggleItem(item);
     });

@@ -1026,7 +1026,7 @@ body.mobile-menu-active {
   font-size: 0.82rem;
   font-weight: 700;
   color: var(--accent-cyan);
-  opacity: 0.7;
+  opacity: 0.58;
   letter-spacing: 0.05em;
 }
 
@@ -1747,8 +1747,8 @@ html.js .floating-badge-item {
   justify-content: center;
 }
 
-/* Unified Highverz hero scene — the canvas is the only visual source for
-   the central sculpture in both themes. */
+/* Unified Highverz dark-theme fluid environment. The shader is mounted once
+   at document level so the atmosphere continues behind every section. */
 .hv-webgl-scene {
   position: relative;
   overflow: hidden;
@@ -3580,7 +3580,7 @@ html.js .floating-badge-item {
   padding: 5.5rem 0 clamp(1.5rem, 2.5vh, 2.25rem);
   justify-content: flex-start;
   overflow: hidden;
-  background: #050b10;
+  background: rgba(5, 11, 16, 0.58);
 }
 
 #hero.hero-section::before {
@@ -3618,9 +3618,9 @@ html.js .floating-badge-item {
   z-index: 2;
 }
 
-/* Home hero fluid field — the WebGL canvas is clipped to this section only. */
-#hero.hero-section {
-  background: #000000;
+/* Persistent dark-theme fluid environment. */
+[data-theme="dark"] #hero.hero-section {
+  background: transparent;
 }
 
 #hero.hero-section::before,
@@ -3630,34 +3630,53 @@ html.js .floating-badge-item {
   display: none;
 }
 
-#hero .hero-fluid-canvas {
-  position: absolute;
+.global-fluid-canvas {
+  position: fixed;
   inset: 0;
   z-index: 0;
   display: block;
   width: 100%;
   height: 100%;
   pointer-events: none;
-  opacity: 0.72;
+  opacity: 0.7;
+  background: #000000;
+  mix-blend-mode: normal;
+  transition: opacity 700ms var(--ease-theme);
 }
 
-[data-theme="light"] #hero.hero-section {
-  background: #f5fbfc;
+[data-theme="dark"] body {
+  background: #000000;
 }
 
-[data-theme="light"] #hero .hero-fluid-canvas {
-  opacity: 0.42;
+[data-theme="dark"] .page-content,
+[data-theme="dark"] .hero-section,
+[data-theme="dark"] .section-trusted,
+[data-theme="dark"] .section-stats-marquee,
+[data-theme="dark"] .section-creators,
+[data-theme="dark"] .section-statement,
+[data-theme="dark"] .section-services,
+[data-theme="dark"] .section-portfolio,
+[data-theme="dark"] .section-testimonials,
+[data-theme="dark"] .section-process,
+[data-theme="dark"] .section-faq,
+[data-theme="dark"] .section-cta,
+[data-theme="dark"] .footer {
+  background-color: transparent;
+}
+
+[data-theme="light"] .global-fluid-canvas {
+  opacity: 0;
 }
 
 @media (max-width: 720px) {
-  #hero .hero-fluid-canvas {
-    opacity: 0.54;
+  .global-fluid-canvas {
+    opacity: 0.52;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  #hero .hero-fluid-canvas {
-    opacity: 0.62;
+  .global-fluid-canvas {
+    opacity: 0.48;
   }
 }
 
@@ -13473,4 +13492,16 @@ body::after {
 /* Keep the lower viewport lens from washing out copy sitting near the fold. */
 [data-theme="light"] body::after {
   display: none !important;
+}
+
+/* The CTA card stays calm on hover; only its buttons may react. */
+.section-cta .cta-inner-layout:hover {
+  border-color: rgba(255, 255, 255, 0.09);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.045) 0%, rgba(255, 255, 255, 0.012) 100%);
+  box-shadow:
+    0 32px 84px -10px rgba(0, 0, 0, 0.7),
+    0 12px 36px -6px rgba(0, 0, 0, 0.4),
+    inset 0 1.5px 0 0 rgba(255, 255, 255, 0.16),
+    inset 0 0 24px 0 rgba(255, 255, 255, 0.015),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.35);
 }

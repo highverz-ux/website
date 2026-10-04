@@ -114,9 +114,11 @@ export class HighverzIntro {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // SKIP — accelerated exit
+  // Safety fallback — only used if the animation runtime stalls.
+  // There is intentionally no click, keyboard, or touch shortcut for leaving
+  // the loading screen.
   // ─────────────────────────────────────────────────────────────────────────
-  skipToExit() {
+  finishSafely() {
     if (this.isCompleted) return;
     this.isCompleted = true;
 
@@ -186,7 +188,7 @@ export class HighverzIntro {
     document.documentElement.classList.add('intro-pending');
 
     this.safetyTimer = setTimeout(() => {
-      if (!this.isCompleted) this.skipToExit();
+      if (!this.isCompleted) this.finishSafely();
     }, 7000);
 
     requestAnimationFrame(() => {

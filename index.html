@@ -73,6 +73,7 @@
 
     // Intro ONLY plays on reload / hard reload or first clean visit, never on navigation from subpages
     var isNavigatedToHome = !isReload && (isFromInternalSubpage || internalNavFlag || navType === 'back_forward');
+    var isForceIntro = window.location.search.includes('intro=true') || window.location.search.includes('intro=force');
     var isSkipIntroParam = window.location.search.includes('no-intro') || window.location.search.includes('intro=false');
     var isDedicated = window.location.pathname.includes('work') || 
                       window.location.pathname.includes('creator-') || 
@@ -80,10 +81,11 @@
                       window.location.pathname.includes('why-us') || 
                       window.location.pathname.includes('campaigns');
 
-    if (isSkipIntroParam || isDedicated || isNavigatedToHome) {
+    if (!isForceIntro && (isSkipIntroParam || isDedicated || isNavigatedToHome)) {
       document.documentElement.classList.add('skip-intro');
       window.__HV_SKIP_INTRO__ = true;
     } else {
+      document.documentElement.classList.remove('skip-intro');
       document.documentElement.classList.add('intro-pending');
       window.__HV_SKIP_INTRO__ = false;
     }
@@ -92,41 +94,10 @@
   <body class="dark-theme">
 
     <!-- ================================================================
-         00. HIGHVERZ MINIMAL PREMIUM LOADING INTRO
+         00. HIGHVERZ MINIMAL LOADING INTRO (rebuilt with GSAP)
+         JS creates DOM dynamically; this is just the mount point.
          ================================================================ -->
-    <div id="highverz-intro" class="hv-reachify-container" aria-label="Highverz Loading Intro">
-      <!-- Split-Shutter Curtains -->
-      <div class="hv-curtain hv-curtain-top" id="hv-curtain-top"></div>
-      <div class="hv-curtain hv-curtain-bottom" id="hv-curtain-bottom"></div>
-
-      <!-- Atmosphere Glow & Grid Pattern -->
-      <div class="hv-reachify-ambient-glow"></div>
-      <div class="hv-reachify-grid-pattern"></div>
-
-      <!-- Center Stage: Logo Lockup -->
-      <div class="hv-reachify-stage" id="hv-reachify-stage">
-        <div class="hv-reachify-lockup" id="hv-reachify-lockup">
-          <!-- Logo Mark (Starts Centered) -->
-          <div class="hv-reachify-mark" id="hv-reachify-mark" aria-label="Highverz Mark">
-            <div class="hv-reachify-mark-squircle">
-              <svg viewBox="0 0 893 436" fill="currentColor" class="hv-mark-icon" aria-hidden="true">
-                <path d="M 0 13 L 0 20 L 3 28 L 101 186 L 101 188 L 242 417 L 252 429 L 266 435 L 441 435 L 445 433 L 450 427 L 450 418 L 337 231 L 337 217 L 343 211 L 350 209 L 407 210 L 422 215 L 440 229 L 458 255 L 558 425 L 566 431 L 576 434 L 713 434 L 722 431 L 733 422 L 745 404 L 745 402 L 777 353 L 777 351 L 892 167 L 892 159 L 889 153 L 885 149 L 878 147 L 663 147 L 658 148 L 650 156 L 649 162 L 652 172 L 737 304 L 737 311 L 706 357 L 695 376 L 692 379 L 689 379 L 685 375 L 647 311 L 602 240 L 598 231 L 579 202 L 562 172 L 551 159 L 537 150 L 526 147 L 302 147 L 295 144 L 287 136 L 218 22 L 207 10 L 193 2 L 185 0 L 17 0 L 7 4 Z"/>
-              </svg>
-            </div>
-          </div>
-
-          <!-- Wordmark Mask (Expands smoothly out from the mark) -->
-          <div class="hv-reachify-wordmark-mask" id="hv-reachify-wordmark-mask">
-            <div class="hv-reachify-wordmark" id="hv-reachify-wordmark"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Subtle Minimal Skip Hint -->
-      <div class="hv-reachify-skip" id="hv-reachify-skip">
-        <span>CLICK OR SPACE TO SKIP ↗</span>
-      </div>
-    </div>
+    <div id="highverz-intro" aria-label="Highverz Loading Intro"></div>
 
     <!-- Atmospheric Grain & Lighting Overlays -->
     <div class="grain-overlay" aria-hidden="true"></div>

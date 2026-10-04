@@ -26,7 +26,8 @@ html.intro-pending:not(.skip-intro) body > *:not(#highverz-intro) {
   width: 100vw;
   height: 100vh;
   z-index: 9999;
-  pointer-events: auto;
+  /* The loader is time-driven; it has no click/space-to-skip interaction. */
+  pointer-events: none;
   user-select: none;
   overflow: hidden;
   will-change: transform;

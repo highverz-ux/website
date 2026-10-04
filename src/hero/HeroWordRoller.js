@@ -11,7 +11,7 @@ export class HeroWordRoller {
     this.container = document.getElementById('hero-word-roller');
     this.words = ['Reach', 'Boost', 'Trend', 'Clicks'];
     this.currentIndex = 0;
-    this.interval = options.interval || 2500; // ms to pause on each word
+    this.interval = options.interval || 2800; // ms to pause on each word
     this.timer = null;
     this.isAnimating = false;
     this.isPaused = false;
@@ -37,10 +37,10 @@ export class HeroWordRoller {
       if (index === 0) {
         item.classList.add('is-active');
         item.classList.remove('is-animating');
-        gsap.set(item, { y: 0, scale: 1, opacity: 1, filter: 'none', visibility: 'visible', clearProps: 'filter,transform' });
+        gsap.set(item, { yPercent: 0, opacity: 1, visibility: 'visible', clearProps: 'filter,transform' });
       } else {
         item.classList.remove('is-active', 'is-animating');
-        gsap.set(item, { y: 8, scale: 0.98, opacity: 0, filter: 'blur(5px)', visibility: 'hidden' });
+        gsap.set(item, { yPercent: 105, opacity: 0, filter: 'none', visibility: 'hidden' });
       }
     });
 
@@ -79,12 +79,11 @@ export class HeroWordRoller {
     currentItem.classList.add('is-animating');
     nextItem.classList.add('is-animating');
 
-    // Prepare incoming item: softly blurred, gentle scale and micro-drift, ready to blend in
+    // Prepare the next word below the clipped line, matching the button-label roll.
     gsap.set(nextItem, {
-      y: 8,
-      scale: 0.98,
+      yPercent: 105,
       opacity: 0,
-      filter: 'blur(5px) drop-shadow(0 0 14px rgba(24, 199, 216, 0.45))',
+      filter: 'none',
       visibility: 'visible'
     });
 
@@ -92,23 +91,21 @@ export class HeroWordRoller {
       onComplete: () => {
         // Reset currentItem cleanly for next cycle
         gsap.set(currentItem, {
-          y: 8,
-          scale: 0.98,
+          yPercent: 105,
           opacity: 0,
-          filter: 'blur(5px)',
+          filter: 'none',
           visibility: 'hidden'
         });
         currentItem.classList.remove('is-active', 'is-animating');
         nextItem.classList.remove('is-animating');
         nextItem.classList.add('is-active');
 
-        // Clear inline filters on settled word for pristine 120fps hardware rendering
+        // Keep the settled word pinned to the baseline to prevent a visible hop.
         gsap.set(nextItem, {
-          y: 0,
-          scale: 1,
+          yPercent: 0,
           opacity: 1,
           filter: 'none',
-          clearProps: 'filter,transform'
+          clearProps: 'filter'
         });
 
         this.currentIndex = toIndex;
@@ -119,25 +116,21 @@ export class HeroWordRoller {
       }
     });
 
-    // 1. Current word softly lifts by only 8px, blooms with cyan glow, and dissolves away
+    // Both words travel through the same clipped lane for a continuous roll.
     tl.to(currentItem, {
-      y: -8,
-      scale: 1.02,
+      yPercent: -105,
       opacity: 0,
-      filter: 'blur(5px) drop-shadow(0 0 14px rgba(24, 199, 216, 0.45))',
-      duration: 0.72,
-      ease: 'power2.inOut'
+      duration: 0.58,
+      ease: 'power3.inOut'
     }, 0);
 
-    // 2. Next word emerges from the luminous blend and smoothly settles into crystal baseline
+    // The next word follows immediately from below; no blur/scale snap is applied.
     tl.to(nextItem, {
-      y: 0,
-      scale: 1,
+      yPercent: 0,
       opacity: 1,
-      filter: 'blur(0px) drop-shadow(0 0 0px rgba(24, 199, 216, 0))',
-      duration: 0.78,
-      ease: 'power2.out'
-    }, 0.08);
+      duration: 0.58,
+      ease: 'power3.inOut'
+    }, 0);
   }
 
   transitionReduced(fromIndex, toIndex) {
@@ -146,11 +139,11 @@ export class HeroWordRoller {
     const nextItem = this.items[toIndex];
 
     currentItem.classList.remove('is-active', 'is-animating');
-    gsap.set(currentItem, { y: 0, scale: 1, opacity: 0, filter: 'none', visibility: 'hidden' });
+    gsap.set(currentItem, { yPercent: 105, opacity: 0, filter: 'none', visibility: 'hidden' });
 
     nextItem.classList.remove('is-animating');
     nextItem.classList.add('is-active');
-    gsap.set(nextItem, { y: 0, scale: 1, opacity: 1, filter: 'none', visibility: 'visible', clearProps: 'filter,transform' });
+    gsap.set(nextItem, { yPercent: 0, opacity: 1, filter: 'none', visibility: 'visible', clearProps: 'filter' });
 
     this.currentIndex = toIndex;
     this.isAnimating = false;
@@ -212,10 +205,10 @@ export function prepareHeroWordRoller() {
     if (index === 0) {
       item.classList.add('is-active');
       item.classList.remove('is-animating');
-      gsap.set(item, { y: 0, scale: 1, opacity: 1, filter: 'none', visibility: 'visible', clearProps: 'filter,transform' });
+      gsap.set(item, { yPercent: 0, opacity: 1, filter: 'none', visibility: 'visible', clearProps: 'filter,transform' });
     } else {
       item.classList.remove('is-active', 'is-animating');
-      gsap.set(item, { y: 8, scale: 0.98, opacity: 0, filter: 'blur(5px)', visibility: 'hidden' });
+      gsap.set(item, { yPercent: 105, opacity: 0, filter: 'none', visibility: 'hidden' });
     }
   });
 }

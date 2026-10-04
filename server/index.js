@@ -1,8 +1,13 @@
-import express from 'express';
-import cors from 'cors';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { createRequire } from 'node:module';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import https from 'node:https';
+import crypto from 'node:crypto';
+
+const require = createRequire(import.meta.url);
+const express = require('express');
+const cors = require('cors');
 
 // Load environment variables from .env if present
 if (typeof process.loadEnvFile === 'function') {
@@ -18,11 +23,10 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const CONFIG_FILE = path.join(__dirname, 'config.json');
 
+console.log(`[API] Initializing server on port ${PORT}...`);
+
 app.use(cors());
 app.use(express.json());
-
-import https from 'https';
-import crypto from 'crypto';
 
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const tmdbCache = new Map();
@@ -308,11 +312,26 @@ app.get('/api/leads', (req, res) => {
 
 // POST /api/enquiry - Forward form submission to Google Sheet & backup locally
 app.post('/api/enquiry', async (req, res) => {
-  const payload = req.body || {};
+  const incomingPayload = req.body || {};
+  const payload = {
+    ...incomingPayload,
+    position: String(incomingPayload.position || '').trim(),
+    otherPosition: String(incomingPayload.otherPosition || '').trim()
+  };
+  const isJoinUsApplication = ['Join Us Application', 'Editor Application'].includes(payload.type);
+
+  if (isJoinUsApplication && !payload.position) {
+    return res.status(400).json({ error: 'A position is required for Join Us applications.' });
+  }
+  if (isJoinUsApplication && payload.position === 'Other' && !payload.otherPosition) {
+    return res.status(400).json({ error: 'Please specify the role when selecting Other.' });
+  }
+
   console.log(`[Enquiry] New submission received:`, {
     name: payload.name,
     contact: payload.contact,
-    handle: payload.handle
+    handle: payload.handle,
+    position: payload.position || '—'
   });
 
   // 1. Always back up lead locally so data is never lost
@@ -619,6 +638,14 @@ app.get('/api/movies/:id', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Backend server running on http://localhost:${PORT}`);
+});
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.warn(`[Backend Server] Port ${PORT} already in use. Continuing gracefully.`);
+  } else {
+    console.error('[Backend Server error]:', err);
+  }
 });

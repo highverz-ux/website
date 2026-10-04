@@ -29,42 +29,36 @@ function doGet(e) {
 
 function doPost(e) {
   var lock = LockService.getScriptLock();
-  lock.tryLock(10000);
+  if (!lock.tryLock(10000)) {
+    throw new Error("Could not acquire the submission lock. Please retry.");
+  }
 
   try {
     var doc = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = doc.getActiveSheet();
 
-    // Create header row if empty
-    if (sheet.getLastRow() === 0) {
-      sheet.appendRow([
-        "Lead Reference ID",
-        "Submission Date & Time",
-        "Enquiry Category",
-        "Client Name",
-        "Email or WhatsApp",
-        "Instagram / YouTube / Company",
-        "Project Message / Goals",
-        "Source Page"
-      ]);
-      sheet.getRange(1, 1, 1, 8).setFontWeight("bold").setBackground("#00e5ff").setFontColor("#000000");
-    }
+    var headers = ensureHeaders_(sheet);
 
     // Parse incoming JSON data
     var raw = e.postData.contents;
     var data = JSON.parse(raw);
 
-    // Append new lead
-    sheet.appendRow([
-      data.id || "HV-" + Math.floor(100000 + Math.random() * 900000),
-      data.timestamp || new Date().toLocaleString(),
-      data.type || "Creator / Personal Brand",
-      data.name || "",
-      data.contact || "",
-      data.handle || "",
-      data.message || "",
-      data.source || ""
-    ]);
+    var valuesByHeader = {
+      "Lead Reference ID": data.id || "HV-" + Math.floor(100000 + Math.random() * 900000),
+      "Submission Date & Time": data.timestamp || new Date().toLocaleString(),
+      "Enquiry Category": data.type || "Creator / Personal Brand",
+      "Client Name": data.name || "",
+      "Email or WhatsApp": data.contact || "",
+      "Instagram / YouTube / Company": data.handle || "",
+      "Project Message / Goals": data.message || "",
+      "Source Page": data.source || "",
+      "Position Applied For": data.position || "",
+      "Other Position": data.otherPosition || ""
+    };
+
+    sheet.appendRow(headers.map(function(header) {
+      return valuesByHeader[header] || "";
+    }));
 
     return ContentService
       .createTextOutput(JSON.stringify({ result: "success" }))
@@ -78,4 +72,46 @@ function doPost(e) {
   } finally {
     lock.releaseLock();
   }
+}
+
+function ensureHeaders_(sheet) {
+  var requiredHeaders = [
+    "Lead Reference ID",
+    "Submission Date & Time",
+    "Enquiry Category",
+    "Client Name",
+    "Email or WhatsApp",
+    "Instagram / YouTube / Company",
+    "Project Message / Goals",
+    "Source Page",
+    "Position Applied For",
+    "Other Position"
+  ];
+
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(requiredHeaders);
+    sheet.getRange(1, 1, 1, requiredHeaders.length)
+      .setFontWeight("bold")
+      .setBackground("#00e5ff")
+      .setFontColor("#000000");
+    return requiredHeaders;
+  }
+
+  var lastColumn = Math.max(sheet.getLastColumn(), 1);
+  var existingHeaders = sheet.getRange(1, 1, 1, lastColumn).getValues()[0];
+  var missingHeaders = requiredHeaders.filter(function(header) {
+    return existingHeaders.indexOf(header) === -1;
+  });
+
+  if (missingHeaders.length) {
+    var startColumn = existingHeaders.length + 1;
+    sheet.getRange(1, startColumn, 1, missingHeaders.length)
+      .setValues([missingHeaders])
+      .setFontWeight("bold")
+      .setBackground("#00e5ff")
+      .setFontColor("#000000");
+    existingHeaders = existingHeaders.concat(missingHeaders);
+  }
+
+  return existingHeaders;
 }

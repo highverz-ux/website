@@ -16,7 +16,20 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const payload = req.body || {};
+  const incomingPayload = req.body || {};
+  const payload = {
+    ...incomingPayload,
+    position: String(incomingPayload.position || '').trim(),
+    otherPosition: String(incomingPayload.otherPosition || '').trim()
+  };
+  const isJoinUsApplication = ['Join Us Application', 'Editor Application'].includes(payload.type);
+
+  if (isJoinUsApplication && !payload.position) {
+    return res.status(400).json({ error: 'A position is required for Join Us applications.' });
+  }
+  if (isJoinUsApplication && payload.position === 'Other' && !payload.otherPosition) {
+    return res.status(400).json({ error: 'Please specify the role when selecting Other.' });
+  }
   const googleSheetsUrl = (payload.googleSheetsUrl && payload.googleSheetsUrl.trim()) ||
     process.env.GOOGLE_SHEETS_URL ||
     'https://script.google.com/macros/s/AKfycbzHkVm1s28Q8dJEaEnTsoHvxl-nZXE4cVURN92x47KJSTHTJfayTKSNvIR3219HLt9tRA/exec';

@@ -10952,6 +10952,7 @@ html.page-transitioned .campaign-featured-label,
 body.page-is-transitioning {
   overflow: hidden !important;
   scrollbar-gutter: stable;
+  padding-right: var(--transition-scrollbar-width, 0px);
 }
 
 body.page-is-transitioning > #page-content {
@@ -11020,6 +11021,31 @@ body.page-is-transitioning .hero-bg-accent {
 body.page-is-transitioning > #page-content {
   filter: blur(0);
   transform-origin: 50% 35%;
+}
+
+/* Make the route handoff feel like a soft focus shift instead of a plain fade. */
+body.page-is-transitioning > #page-content,
+#page-transition-shell {
+  will-change: opacity, transform, filter;
+  backface-visibility: hidden;
+}
+
+/* Clear, low-contrast section rhythm. These lines sit behind the content and
+   stay visible while the shared fluid background moves underneath. */
+main > section + section,
+main > .section-faq,
+main > .section-cta,
+main + footer {
+  border-top: 1px solid rgba(35, 199, 216, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+[data-theme="light"] main > section + section,
+[data-theme="light"] main > .section-faq,
+[data-theme="light"] main > .section-cta,
+[data-theme="light"] main + footer {
+  border-top-color: rgba(8, 124, 138, 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82);
 }
 
 /* Work hero metrics — premium editorial HUD cards */

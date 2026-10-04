@@ -326,6 +326,17 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
     document.body.appendChild(backdrop);
     document.body.appendChild(shell);
     document.body.appendChild(glow);
+    // Lock the space occupied by the native scrollbar before hiding overflow.
+    // Without this, centered sections briefly gain the scrollbar width and
+    // appear to jump right, then left, during the route handoff.
+    const transitionScrollbarWidth = Math.max(
+      0,
+      window.innerWidth - document.documentElement.clientWidth
+    );
+    document.body.style.setProperty(
+      '--transition-scrollbar-width',
+      `${transitionScrollbarWidth}px`
+    );
     document.body.classList.add('page-is-transitioning');
 
     // Stop observers, RAF loops, media, and counter tweens bound to the old
@@ -361,7 +372,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       opacity: 0,
       y: 10,
       scale: 0.995,
-      filter: 'blur(10px)',
+      filter: 'blur(16px)',
       willChange: 'opacity, transform, filter',
     });
     gsap.set(glow, { opacity: 0 });
@@ -391,6 +402,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
           document.body.className = targetBodyClass;
         }
         document.body.classList.remove('page-is-transitioning');
+        document.body.style.removeProperty('--transition-scrollbar-width');
         if (navbar) navbar.classList.remove('page-nav-outgoing');
         if (wasCursorActive || window.innerWidth > 900) {
           document.body.classList.add('cursor-active');
@@ -435,21 +447,21 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
     })
       .to([currentContent, navbar].filter(Boolean), {
         opacity: 0,
-        filter: 'blur(10px)',
+        filter: 'blur(16px)',
         y: -10,
-        scale: 0.995,
-        duration: 0.28,
-        ease: 'power2.in',
+        scale: 0.99,
+        duration: 0.34,
+        ease: 'power2.inOut',
       }, 0)
       .to(shell, {
         opacity: 1,
         filter: 'blur(0px)',
         y: 0,
         scale: 1,
-        duration: 0.36,
-        ease: 'power2.out',
+        duration: 0.48,
+        ease: 'power3.out',
         clearProps: 'filter,willChange',
-      }, 0.10);
+      }, 0.08);
 
     if (navbar) {
       transitionTimeline.fromTo(navbar,

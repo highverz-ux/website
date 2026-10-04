@@ -233,6 +233,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
     if (!isPopState) {
       window.history.pushState({ path: targetHref }, '', targetHref);
     }
+    window.__hvSetSpeedInsightsRoute?.(targetUrl.pathname);
     if (targetTitle) {
       document.title = targetTitle;
     }

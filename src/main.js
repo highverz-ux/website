@@ -16,6 +16,8 @@ import { initCampaignsPage } from './campaigns/campaigns.js';
 import { initPageTransitions } from './transitions.js';
 import { initHeroWordRoller, prepareHeroWordRoller } from './hero/HeroWordRoller.js';
 import { initHeroFluidBackground } from './hero/HeroFluidBackground.js';
+import { inject as injectAnalytics } from '@vercel/analytics';
+import { injectSpeedInsights } from '@vercel/speed-insights';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -23,6 +25,16 @@ gsap.registerPlugin(ScrollTrigger);
 // LENIS SMOOTH SCROLL SETUP
 // ==========================================================================
 let lenis;
+
+function initVercelTelemetry() {
+  // These helpers are the framework-agnostic APIs for this Vite site. The
+  // /next imports are only valid in a Next.js app and would break this build.
+  injectAnalytics({ framework: 'vite' });
+  const speedInsights = injectSpeedInsights({ framework: 'vite' });
+  window.__hvSetSpeedInsightsRoute = (route) => {
+    speedInsights?.setRoute?.(route || window.location.pathname);
+  };
+}
 
 function initLenis() {
   lenis = new Lenis({
@@ -53,6 +65,7 @@ let hasBooted = false;
 function boot() {
   if (hasBooted) return;
   hasBooted = true;
+  initVercelTelemetry();
   initLenis();
   initThemeSystem();
   initCustomCursor();

@@ -47,8 +47,8 @@ for (const token of [
   }
 }
 
-if (!fluid.includes('alpha *= 1.0 - uTheme')) {
-  throw new Error('Fluid shader is not disabled in light theme');
+if (!fluid.includes('alpha *= mix(1.0, 0.58, uTheme)')) {
+  throw new Error('Fluid shader does not support a restrained light theme');
 }
 
 if (fluid.includes('vec3 warm') || fluid.includes('float amber') || fluid.includes('heroSPath')) {

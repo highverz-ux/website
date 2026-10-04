@@ -3664,13 +3664,37 @@ html.js .floating-badge-item {
   background-color: transparent;
 }
 
+/* Every page uses the same atmospheric layer. Keep page sections transparent
+   so the WebGL environment can show through, while cards retain their own
+   surfaces and remain readable above it. */
+[data-theme="dark"] main,
+[data-theme="dark"] main > section,
+[data-theme="dark"] footer {
+  background: transparent !important;
+}
+
 [data-theme="light"] .global-fluid-canvas {
-  opacity: 0;
+  z-index: 1;
+  opacity: 0.72;
+  background: transparent;
+  mix-blend-mode: multiply;
+}
+
+[data-theme="light"] main,
+[data-theme="light"] main > section,
+[data-theme="light"] footer {
+  position: relative;
+  z-index: 2;
+  background: transparent !important;
 }
 
 @media (max-width: 720px) {
   .global-fluid-canvas {
     opacity: 0.52;
+  }
+
+  [data-theme="light"] .global-fluid-canvas {
+    opacity: 0.58;
   }
 }
 

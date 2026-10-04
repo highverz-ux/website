@@ -47,7 +47,7 @@ const fragmentShader = `
     float aspect = uResolution.x / max(uResolution.y, 1.0);
     vec2 p = (uv - 0.5) * vec2(aspect, 1.0);
     // Slow, continuous advection gives the masses a calm liquid flow.
-    float t = uTime * 0.11;
+    float t = uTime * 0.22;
 
     // The pointer creates a soft local displacement, never becoming the
     // source of the motion itself.
@@ -59,26 +59,29 @@ const fragmentShader = `
     // Two slow domain-warp passes create broad liquid formations rather than
     // ribbons, clouds, or a tiled gradient.
     vec2 drift = vec2(
-      t * 0.34 + sin(t * 0.42) * 0.28,
-      -t * 0.20 + cos(t * 0.31) * 0.22
+      t * 0.48 + sin(t * 0.42) * 0.42,
+      -t * 0.31 + cos(t * 0.31) * 0.34
     );
     vec2 warp = vec2(
       fbm(p * 1.25 + drift + vec2(3.1, 8.2)),
       fbm(p * 1.25 - drift + vec2(8.7, 1.9))
     ) - 0.5;
-    vec2 liquidPoint = p + warp * 1.55;
+    vec2 liquidPoint = p + warp * 1.8;
     float largeField = fbm(liquidPoint * 1.18 + drift * 0.55);
     float foldedField = fbm(liquidPoint * 2.15 - drift * 0.75 + warp * 0.8);
     float flowingField = fbm(
-      (liquidPoint + vec2(sin(t * 0.27) * 0.24, cos(t * 0.36) * 0.18)) * 0.9
-      + drift * 0.35
+      (liquidPoint + vec2(sin(t * 0.27) * 0.34, cos(t * 0.36) * 0.28)) * 0.9
+      + drift * 0.48
     );
+    // A low-frequency field lets the liquid slowly spread into new areas
+    // instead of remaining locked to two fixed masses.
+    float ambientFlow = fbm(p * 0.72 + drift * 0.24 + vec2(2.8, 6.1));
     // A second broad mass keeps the composition alive on the right side too.
     // It shares the same warp field, so both sides feel like one flowing body.
     vec2 rightPoint = p - vec2(0.92, -0.06) + warp * 0.9;
     float rightMass = fbm(rightPoint * 1.12 - drift * 0.42 + vec2(5.4, 1.7));
     float density = max(
-      largeField * 0.58 + foldedField * 0.18 + flowingField * 0.24,
+      largeField * 0.50 + foldedField * 0.16 + flowingField * 0.20 + ambientFlow * 0.14,
       rightMass * 0.78
     );
 
@@ -100,11 +103,13 @@ const fragmentShader = `
     fluidColor = mix(fluidColor, cyan, rim * 0.48 + innerFold * 0.12);
     fluidColor = mix(fluidColor, lightCyan, highlight * 0.34);
     fluidColor *= 0.52 + 0.48 * smoothstep(0.35, 0.75, pocketNoise);
+    // Light mode keeps the same motion as a restrained pale-cyan wash.
+    fluidColor = mix(fluidColor, vec3(0.05, 0.58, 0.68), uTheme * 0.86);
 
     float centerQuiet = 1.0 - 0.16 * exp(-2.6 * dot(p * vec2(0.72, 0.95), p * vec2(0.72, 0.95)));
     float alpha = liquid * 0.82 + rim * 0.24 + innerFold * 0.14 + highlight * 0.28;
     alpha *= centerQuiet;
-    alpha *= 1.0 - uTheme;
+    alpha *= mix(1.0, 0.58, uTheme);
     gl_FragColor = vec4(fluidColor, alpha);
   }
 `;

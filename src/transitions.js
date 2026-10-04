@@ -145,16 +145,20 @@ function startIncomingMetricCounters(content) {
  * Prefetches target HTML for instantaneous transition response
  */
 export async function prefetchPage(urlStr) {
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), 8000);
   try {
     const normUrl = urlStr.split('#')[0];
     if (htmlCache.has(normUrl)) return htmlCache.get(normUrl);
-    const res = await fetch(normUrl);
+    const res = await fetch(normUrl, { signal: controller.signal });
     if (!res.ok) return null;
     const text = await res.text();
     htmlCache.set(normUrl, text);
     return text;
   } catch (e) {
     return null;
+  } finally {
+    window.clearTimeout(timeoutId);
   }
 }
 
@@ -186,6 +190,15 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
   }
 
   isTransitioning = true;
+  // A failed page initializer must never leave navigation permanently locked.
+  // The normal handoff completes in under a second; this is only a last-resort
+  // native navigation fallback for a stalled fetch, animation, or initializer.
+  let transitionSafetyTimer = window.setTimeout(() => {
+    if (!isTransitioning) return;
+    console.warn('Page transition timed out; falling back to native navigation.');
+    isTransitioning = false;
+    window.location.href = targetHref;
+  }, 2600);
 
   try {
     // 1. Retrieve target document HTML (from memory cache or network)
@@ -419,29 +432,42 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
           window.lenis.resize();
         }
 
-        // Initialize page scripts in next animation frame once DOM is rendered
-        requestAnimationFrame(() => {
-          if (window.__hvInitPageScripts) {
-            window.__hvInitPageScripts(window.location.pathname);
-          }
-
-          window.__hvResetNavbar?.(window.location.pathname);
-
-          // Repeated frame passes ensure the carousel never gets stuck on 1 reel
-          let passes = 0;
-          const refreshPass = () => {
-            window.__hvHeroReelRefresh?.();
-            passes++;
-            if (passes < 4) {
-              requestAnimationFrame(refreshPass);
-            } else {
-              if (window.ScrollTrigger) {
-                ScrollTrigger.refresh();
-              }
-              isTransitioning = false;
+      // Initialize page scripts in next animation frame once DOM is rendered
+      requestAnimationFrame(() => {
+          try {
+            if (window.__hvInitPageScripts) {
+              window.__hvInitPageScripts(window.location.pathname);
             }
-          };
-          requestAnimationFrame(refreshPass);
+
+            window.__hvResetNavbar?.(window.location.pathname);
+
+            // Repeated frame passes ensure the carousel never gets stuck on 1 reel
+            let passes = 0;
+            const refreshPass = () => {
+              try {
+                window.__hvHeroReelRefresh?.();
+                passes++;
+                if (passes < 4) {
+                  requestAnimationFrame(refreshPass);
+                } else {
+                  if (window.ScrollTrigger) {
+                    ScrollTrigger.refresh();
+                  }
+                  isTransitioning = false;
+                  window.clearTimeout(transitionSafetyTimer);
+                }
+              } catch (err) {
+                console.error('Page runtime refresh failed:', err);
+                isTransitioning = false;
+                window.clearTimeout(transitionSafetyTimer);
+              }
+            };
+            requestAnimationFrame(refreshPass);
+          } catch (err) {
+            console.error('Incoming page initialization failed:', err);
+            isTransitioning = false;
+            window.clearTimeout(transitionSafetyTimer);
+          }
         });
       }
     })
@@ -480,6 +506,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
 
   } catch (err) {
     console.error('Page transition encountered an error:', err);
+    window.clearTimeout(transitionSafetyTimer);
     window.location.href = targetHref;
     isTransitioning = false;
   }

@@ -46,6 +46,11 @@ export class HighverzIntro {
           </div>
         </div>
       </div>
+      <div class="hv-loader-progress" aria-hidden="true">
+        <div class="hv-loader-progress-track">
+          <span class="hv-loader-progress-fill"></span>
+        </div>
+      </div>
     `;
 
     if (!container) {
@@ -67,9 +72,11 @@ export class HighverzIntro {
   animate() {
     const logo      = this.container.querySelector('#hv-reveal-logo');
     const center    = this.container.querySelector('#hv-reveal-center');
+    const progress  = this.container.querySelector('.hv-loader-progress-fill');
 
     // Matches the Framer SiteLoader default: fade in the complete logo as one unit.
     gsap.set(logo, { opacity: 0, scale: 0.92, y: 8 });
+    gsap.set(progress, { scaleX: 0, transformOrigin: 'left center' });
 
     this.tl = gsap.timeline({
       onComplete: () => this.destroy()
@@ -82,6 +89,12 @@ export class HighverzIntro {
       y: 0,
       duration: 0.6,
       ease: 'power2.out',
+    }, 0);
+
+    this.tl.to(progress, {
+      scaleX: 1,
+      duration: 2.5,
+      ease: 'power1.inOut',
     }, 0);
 
     // Hold the mark, then lift the complete loading window upward. The page is
@@ -113,6 +126,10 @@ export class HighverzIntro {
 
     this.triggerReveal();
     if (this.container) {
+      const progress = this.container.querySelector('.hv-loader-progress-fill');
+      if (progress) {
+        skipTl.to(progress, { scaleX: 1, duration: 0.22, ease: 'power2.out' }, 0);
+      }
       skipTl.to(this.container, {
         yPercent: -100,
         duration: 0.65,

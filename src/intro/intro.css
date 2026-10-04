@@ -72,6 +72,45 @@ html.intro-pending:not(.skip-intro) body > *:not(#highverz-intro) {
   overflow: visible;
 }
 
+/* Simple bottom progress bar for the loading window. */
+.hv-loader-progress {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  left: 24px;
+  z-index: 12;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.hv-loader-progress-track {
+  width: min(260px, 42vw);
+  height: 3px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.hv-loader-progress-fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: #00d9e8;
+  box-shadow: 0 0 10px rgba(0, 217, 232, 0.42);
+  transform: scaleX(0);
+}
+
+[data-theme="light"] .hv-loader-progress-track {
+  background: rgba(8, 77, 88, 0.16);
+}
+
+[data-theme="light"] .hv-loader-progress-fill {
+  background: #00aebe;
+  box-shadow: 0 0 8px rgba(0, 174, 190, 0.22);
+}
+
 /* ==========================================================================
    LOGO — standalone HV mark in a glass frame
    ========================================================================== */
@@ -214,5 +253,11 @@ html.intro-pending:not(.skip-intro) body > *:not(#highverz-intro) {
   .hv-reveal-sheen {
     animation-duration: 7.5s;
     opacity: 0.7;
+  }
+
+  .hv-loader-progress {
+    right: 18px;
+    bottom: 18px;
+    left: 18px;
   }
 }

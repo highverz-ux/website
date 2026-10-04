@@ -2132,10 +2132,19 @@ export function initHeroReelCarousel() {
   const updateVideoPriority = () => {
     if (!stageStep || !videos.length || !isCarouselVisible) return;
 
-    videos.forEach((video) => {
+    // Keep the initial request set small. The poster remains visible for every
+    // card, while only the cards near the viewport receive their large MP4.
+    const centerIndex = Math.round(scrollPosition / stageStep);
+    const nearbyIndexes = new Set();
+    for (let offset = -2; offset <= 3; offset += 1) {
+      nearbyIndexes.add(((centerIndex + offset) % count + count) % count);
+    }
+
+    videos.forEach((video, index) => {
       if (!video) return;
-      if (!video.getAttribute('src') && video.dataset.src) {
-        loadVideo(video, 'high');
+      if (!nearbyIndexes.has(index)) {
+        if (!video.paused) video.pause();
+        return;
       }
       if (video.paused) {
         playVideo(video);
@@ -2143,11 +2152,8 @@ export function initHeroReelCarousel() {
     });
   };
 
-  // Pre-load and start continuous autoplay on all reels
-  videos.forEach((video) => {
-    loadVideo(video, 'high');
-    playVideo(video);
-  });
+  // Start only the first nearby reels. Additional videos are loaded as the
+  // carousel advances, keeping first paint and mobile data usage lightweight.
   updateVideoPriority();
 
   const heroVisibilityObserver = 'IntersectionObserver' in window

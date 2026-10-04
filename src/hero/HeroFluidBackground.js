@@ -49,12 +49,11 @@ const fragmentShader = `
     // Slow, continuous advection gives the masses a calm liquid flow.
     float t = uTime * 0.22;
 
-    // The pointer creates a soft local displacement, never becoming the
-    // source of the motion itself.
+    // The pointer creates a soft local displacement while the time-based
+    // drift remains the primary source of motion.
     vec2 pointer = (uPointer - 0.5) * vec2(aspect, 1.0);
     vec2 pointerDelta = p - pointer;
-    float pointerField = exp(-5.5 * dot(pointerDelta, pointerDelta));
-    // Automatic time-based motion drives the fluid; the pointer does not.
+    float pointerField = exp(-6.5 * dot(pointerDelta, pointerDelta));
 
     // Two slow domain-warp passes create broad liquid formations rather than
     // ribbons, clouds, or a tiled gradient.
@@ -66,7 +65,10 @@ const fragmentShader = `
       fbm(p * 1.25 + drift + vec2(3.1, 8.2)),
       fbm(p * 1.25 - drift + vec2(8.7, 1.9))
     ) - 0.5;
-    vec2 liquidPoint = p + warp * 1.8;
+    // A gentle cursor pull bends the nearby fluid instead of replacing its
+    // automatic flow or creating a hard spotlight around the pointer.
+    vec2 pointerDisplacement = -pointerDelta * pointerField * 0.28;
+    vec2 liquidPoint = p + warp * 1.8 + pointerDisplacement;
     float largeField = fbm(liquidPoint * 1.18 + drift * 0.55);
     float foldedField = fbm(liquidPoint * 2.15 - drift * 0.75 + warp * 0.8);
     float flowingField = fbm(
@@ -95,19 +97,19 @@ const fragmentShader = `
     float highlightNoise = fbm(liquidPoint * 3.5 + vec2(t * 0.45, -t * 0.3));
     float highlight = pow(max(0.0, highlightNoise - 0.57) * 2.25, 2.2) * liquid;
 
-    vec3 deepBlue = vec3(0.0, 0.012, 0.045);
-    vec3 electricBlue = vec3(0.0, 0.055, 0.18);
-    vec3 cyan = vec3(0.0, 0.42, 0.58);
-    vec3 lightCyan = vec3(0.24, 0.64, 0.72);
+    vec3 deepBlue = vec3(0.0, 0.009, 0.035);
+    vec3 electricBlue = vec3(0.0, 0.045, 0.14);
+    vec3 cyan = vec3(0.0, 0.30, 0.43);
+    vec3 lightCyan = vec3(0.18, 0.50, 0.60);
     vec3 fluidColor = mix(deepBlue, electricBlue, smoothstep(0.35, 0.72, density));
-    fluidColor = mix(fluidColor, cyan, rim * 0.48 + innerFold * 0.12);
-    fluidColor = mix(fluidColor, lightCyan, highlight * 0.34);
-    fluidColor *= 0.52 + 0.48 * smoothstep(0.35, 0.75, pocketNoise);
+    fluidColor = mix(fluidColor, cyan, rim * 0.38 + innerFold * 0.10);
+    fluidColor = mix(fluidColor, lightCyan, highlight * 0.25);
+    fluidColor *= 0.45 + 0.38 * smoothstep(0.35, 0.75, pocketNoise);
     // Light mode keeps the same motion as a restrained pale-cyan wash.
     fluidColor = mix(fluidColor, vec3(0.05, 0.58, 0.68), uTheme * 0.86);
 
     float centerQuiet = 1.0 - 0.16 * exp(-2.6 * dot(p * vec2(0.72, 0.95), p * vec2(0.72, 0.95)));
-    float alpha = liquid * 0.82 + rim * 0.24 + innerFold * 0.14 + highlight * 0.28;
+    float alpha = liquid * 0.61 + rim * 0.17 + innerFold * 0.105 + highlight * 0.19;
     alpha *= centerQuiet;
     alpha *= mix(1.0, 0.58, uTheme);
     gl_FragColor = vec4(fluidColor, alpha);
@@ -170,7 +172,7 @@ export function initHeroFluidBackground() {
 
   const render = (now = 0) => {
     if (isDestroyed || !isVisible) return;
-    pointer.lerp(targetPointer, 0.045);
+    pointer.lerp(targetPointer, 0.075);
     material.uniforms.uPointer.value.copy(pointer);
     material.uniforms.uTime.value = reducedMotion ? 0 : now * 0.001;
     renderer.render(scene, camera);

@@ -77,11 +77,11 @@ html.lenis, html.lenis body {
   --transition-theme: 800ms var(--ease-theme);
 
   /* Default to dark (FOUC prevention — matches inline <head> script default) */
-  --bg-primary: #050809;
-  --bg-secondary: #0A0F11;
-  --bg-card: rgba(13, 20, 22, 0.65);
-  --bg-elevated: rgba(17, 26, 29, 0.80);
-  --bg-translucent: rgba(5, 8, 9, 0.88);
+  --bg-primary: #020406;
+  --bg-secondary: #070B0E;
+  --bg-card: rgba(9, 15, 18, 0.72);
+  --bg-elevated: rgba(13, 21, 24, 0.84);
+  --bg-translucent: rgba(2, 4, 6, 0.92);
 
   --text-primary: #F1F3F2;
   --text-secondary: #929B9E;
@@ -107,11 +107,11 @@ html.lenis, html.lenis body {
    DARK MODE — "AFTER HOURS" (Cinematic · Immersive · Bold)
    ========================================================================== */
 [data-theme="dark"] {
-  --bg-primary: #050809;
-  --bg-secondary: #0A0F11;
-  --bg-card: #0D1416;
-  --bg-elevated: #111A1D;
-  --bg-translucent: rgba(5, 8, 9, 0.88);
+  --bg-primary: #020406;
+  --bg-secondary: #070B0E;
+  --bg-card: #090F12;
+  --bg-elevated: #0D1518;
+  --bg-translucent: rgba(2, 4, 6, 0.92);
 
   --text-primary: #F1F3F2;
   --text-secondary: #929B9E;
@@ -1321,6 +1321,12 @@ body.mobile-menu-active {
   display: inline;
 }
 
+/* Keep the supporting message intentionally balanced across two lines. */
+.hero-description--centered span + span {
+  display: block;
+  margin-top: 0.08em;
+}
+
 /* Centered actions */
 .hero-actions--centered {
   display: flex;
@@ -1328,6 +1334,7 @@ body.mobile-menu-active {
   justify-content: center;
   gap: 1.2rem;
   margin-bottom: 0;
+  transform: translateY(0.45rem);
 }
 
 /* Hide mobile helper class */
@@ -3638,14 +3645,14 @@ html.js .floating-badge-item {
   width: 100%;
   height: 100%;
   pointer-events: none;
-  opacity: 0.7;
+  opacity: 0.76;
   background: #000000;
   mix-blend-mode: normal;
   transition: opacity 700ms var(--ease-theme);
 }
 
 [data-theme="dark"] body {
-  background: #000000;
+  background: #020406;
 }
 
 [data-theme="dark"] .page-content,
@@ -3690,7 +3697,7 @@ html.js .floating-badge-item {
 
 @media (max-width: 720px) {
   .global-fluid-canvas {
-    opacity: 0.52;
+    opacity: 0.61;
   }
 
   [data-theme="light"] .global-fluid-canvas {
@@ -3700,7 +3707,7 @@ html.js .floating-badge-item {
 
 @media (prefers-reduced-motion: reduce) {
   .global-fluid-canvas {
-    opacity: 0.48;
+    opacity: 0.53;
   }
 }
 
@@ -3718,7 +3725,7 @@ html.js .floating-badge-item {
   position: relative;
   z-index: 2;
   width: 100vw;
-  margin: clamp(1rem, 1.8vw, 2rem) calc(50% - 50vw) 0;
+  margin: clamp(0.35rem, 0.8vw, 0.85rem) calc(50% - 50vw) 0;
   overflow: hidden;
   perspective: 880px;
   perspective-origin: 50% 50%;
@@ -3805,7 +3812,7 @@ html.js .floating-badge-item {
   .carousel-viewport {
     perspective: 900px;
     perspective-origin: 50% 50%;
-    margin-top: 1.5rem;
+    margin-top: 0.75rem;
   }
 
   .carousel-track {
@@ -3854,7 +3861,7 @@ html.js .floating-badge-item {
   z-index: 2;
   display: flex;
   width: fit-content;
-  margin: 1.75rem auto 0;
+  margin: 0.65rem auto 0;
   padding: 14px 28px;
   align-items: center;
   justify-content: center;

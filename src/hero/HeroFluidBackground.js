@@ -53,7 +53,7 @@ const fragmentShader = `
     // drift remains the primary source of motion.
     vec2 pointer = (uPointer - 0.5) * vec2(aspect, 1.0);
     vec2 pointerDelta = p - pointer;
-    float pointerField = exp(-6.5 * dot(pointerDelta, pointerDelta));
+    float pointerField = exp(-7.2 * dot(pointerDelta, pointerDelta));
 
     // Two slow domain-warp passes create broad liquid formations rather than
     // ribbons, clouds, or a tiled gradient.
@@ -65,9 +65,11 @@ const fragmentShader = `
       fbm(p * 1.25 + drift + vec2(3.1, 8.2)),
       fbm(p * 1.25 - drift + vec2(8.7, 1.9))
     ) - 0.5;
-    // A gentle cursor pull bends the nearby fluid instead of replacing its
-    // automatic flow or creating a hard spotlight around the pointer.
-    vec2 pointerDisplacement = -pointerDelta * pointerField * 0.28;
+    // The cursor bends and lightly swirls the liquid while the time-based
+    // drift remains continuous when the pointer is still.
+    vec2 pointerTangent = vec2(-pointerDelta.y, pointerDelta.x);
+    vec2 pointerDisplacement =
+      (-pointerDelta * 0.38 + pointerTangent * 0.12) * pointerField;
     vec2 liquidPoint = p + warp * 1.8 + pointerDisplacement;
     float largeField = fbm(liquidPoint * 1.18 + drift * 0.55);
     float foldedField = fbm(liquidPoint * 2.15 - drift * 0.75 + warp * 0.8);
@@ -172,7 +174,7 @@ export function initHeroFluidBackground() {
 
   const render = (now = 0) => {
     if (isDestroyed || !isVisible) return;
-    pointer.lerp(targetPointer, 0.075);
+    pointer.lerp(targetPointer, 0.12);
     material.uniforms.uPointer.value.copy(pointer);
     material.uniforms.uTime.value = reducedMotion ? 0 : now * 0.001;
     renderer.render(scene, camera);

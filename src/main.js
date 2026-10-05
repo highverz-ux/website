@@ -2282,7 +2282,7 @@ export function initHeroReelCarousel() {
     if (!isDragging) return;
     const currentX = e.clientX;
     const diff = currentX - startX;
-    if (Math.abs(diff) > 4) {
+    if (Math.abs(diff) > 2) {
       hasMoved = true;
     }
 
@@ -2308,6 +2308,16 @@ export function initHeroReelCarousel() {
     viewport.classList.remove('is-dragging');
     if (track.releasePointerCapture) {
       try { track.releasePointerCapture(e.pointerId); } catch (_) {}
+    }
+
+    // Give even a small swipe a gentle glide. This keeps short touchpad or
+    // finger swipes feeling like a slide instead of ending abruptly.
+    const totalDragDistance = lastDragX - startX;
+    if (Math.abs(totalDragDistance) > 2) {
+      autoDirection = totalDragDistance > 0 ? -1 : 1;
+      if (Math.abs(dragVelocity) < 140) {
+        dragVelocity = autoDirection * 220;
+      }
     }
 
     // Re-enable optic CSS transitions for the inertia coast phase

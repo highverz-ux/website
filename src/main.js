@@ -2099,6 +2099,7 @@ export function initHeroReelCarousel() {
   let lastDragTime = performance.now();
   let hasMoved = false;
   let isInteracting = false;
+  let autoDirection = 1;
   let resumeTimer = null;
   let animId = null;
   let layoutRetryId = null;
@@ -2245,7 +2246,7 @@ export function initHeroReelCarousel() {
           dragVelocity = 0;
         }
       } else {
-        scrollPosition += autoSpeed * delta;
+        scrollPosition += autoSpeed * autoDirection * delta;
       }
 
       scrollPosition = ((scrollPosition % totalWidth) + totalWidth) % totalWidth;
@@ -2289,6 +2290,9 @@ export function initHeroReelCarousel() {
     const dt = Math.max(now - lastDragTime, 1);
     const instantaneousVel = -(currentX - lastDragX) / (dt / 1000);
     dragVelocity = dragVelocity * 0.35 + instantaneousVel * 0.65;
+    if (Math.abs(dragVelocity) > 8) {
+      autoDirection = dragVelocity < 0 ? -1 : 1;
+    }
     lastDragX = currentX;
     lastDragTime = now;
 

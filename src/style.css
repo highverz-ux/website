@@ -488,6 +488,29 @@ body.cursor-active .custom-cursor {
   box-shadow: 0 0 16px rgba(0, 229, 255, 0.25);
 }
 
+/* Enlarged transparent lens for creator case-study actions. */
+.cursor-ring.is-view-detail {
+  width: 82px;
+  height: 82px;
+  margin-top: -41px;
+  margin-left: -41px;
+  border-color: rgba(0, 229, 255, 0.58);
+  background: rgba(0, 229, 255, 0.035);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 24px rgba(0, 229, 255, 0.16);
+}
+
+.cursor-ring.is-view-detail .cursor-text {
+  opacity: 1;
+  transform: scale(1);
+  color: var(--accent-cyan);
+  font-size: 0.56rem;
+  letter-spacing: 0.1em;
+}
+
 /* 2. Text Input State: Transforms into a luminous vertical precision caret */
 .cursor-ring.is-text-input {
   width: 2px !important;

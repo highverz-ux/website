@@ -255,7 +255,7 @@ function initCustomCursor() {
     if (cursorWrap) cursorWrap.classList.remove('is-hidden');
     if (cursorDot) cursorDot.classList.remove('is-hidden');
     if (cursorRing) {
-      cursorRing.classList.remove('is-interactive', 'is-badge', 'is-text-input', 'is-magnetic', 'is-clicking');
+      cursorRing.classList.remove('is-interactive', 'is-view-detail', 'is-badge', 'is-text-input', 'is-magnetic', 'is-clicking');
     }
     if (cursorText) cursorText.textContent = '';
     isMagnetic = false;
@@ -409,13 +409,25 @@ function initCustomCursor() {
         return;
       }
 
+      // Give case-study links a larger transparent lens cursor.
+      const viewDetailEl = e.target.closest('.view-detail-chip');
+      if (viewDetailEl) {
+        if (cursorRing) {
+          cursorRing.classList.remove('is-interactive', 'is-text-input', 'is-badge');
+          cursorRing.classList.add('is-view-detail');
+        }
+        if (cursorDot) cursorDot.classList.remove('is-hidden');
+        if (cursorText) cursorText.textContent = 'VIEW ↗';
+        return;
+      }
+
       // Priority 2: Media & Editorial Showcase Cards.
       // Keep the cursor in its regular precision mode on cards; do not expand
       // it into the large VIEW badge.
       const badgeEl = e.target.closest('.campaign-movie-card, .work-creator-card, .portfolio-vertical-card, .creator-card, [data-cursor-badge]');
       if (badgeEl) {
         if (cursorRing) {
-          cursorRing.classList.remove('is-interactive', 'is-text-input', 'is-badge');
+          cursorRing.classList.remove('is-interactive', 'is-view-detail', 'is-text-input', 'is-badge');
         }
         if (cursorDot) cursorDot.classList.remove('is-hidden');
         if (cursorText) cursorText.textContent = '';
@@ -426,7 +438,7 @@ function initCustomCursor() {
       const interactiveEl = e.target.closest('a, button, select, [role="button"], input[type="range"], .glass-dropdown-trigger, .glass-option-item, .nav-link, .campaign-tag-pill, .theme-switcher, .service-badge-item, .domain-chip, .founder-social-btn, .f-social');
       if (interactiveEl) {
         if (cursorRing) {
-          cursorRing.classList.remove('is-text-input', 'is-badge');
+          cursorRing.classList.remove('is-text-input', 'is-view-detail', 'is-badge');
           cursorRing.classList.add('is-interactive');
         }
         if (cursorDot) cursorDot.classList.remove('is-hidden');
@@ -445,7 +457,7 @@ function initCustomCursor() {
 
       // Reset cursor state back to default optic mode
       if (cursorRing) {
-        cursorRing.classList.remove('is-interactive', 'is-text-input', 'is-badge');
+        cursorRing.classList.remove('is-interactive', 'is-view-detail', 'is-text-input', 'is-badge');
       }
       if (cursorDot) {
         cursorDot.classList.remove('is-hidden');

@@ -53,7 +53,9 @@ const fragmentShader = `
     // drift remains the primary source of motion.
     vec2 pointer = (uPointer - 0.5) * vec2(aspect, 1.0);
     vec2 pointerDelta = p - pointer;
-    float pointerField = exp(-7.2 * dot(pointerDelta, pointerDelta));
+    // Keep the response broad enough to feel connected to the pointer,
+    // rather than like a tiny spotlight.
+    float pointerField = exp(-5.8 * dot(pointerDelta, pointerDelta));
 
     // Two slow domain-warp passes create broad liquid formations rather than
     // ribbons, clouds, or a tiled gradient.
@@ -69,7 +71,7 @@ const fragmentShader = `
     // drift remains continuous when the pointer is still.
     vec2 pointerTangent = vec2(-pointerDelta.y, pointerDelta.x);
     vec2 pointerDisplacement =
-      (-pointerDelta * 0.38 + pointerTangent * 0.12) * pointerField;
+      (-pointerDelta * 0.56 + pointerTangent * 0.22) * pointerField;
     vec2 liquidPoint = p + warp * 1.8 + pointerDisplacement;
     float largeField = fbm(liquidPoint * 1.18 + drift * 0.55);
     float foldedField = fbm(liquidPoint * 2.15 - drift * 0.75 + warp * 0.8);
@@ -174,7 +176,7 @@ export function initHeroFluidBackground() {
 
   const render = (now = 0) => {
     if (isDestroyed || !isVisible) return;
-    pointer.lerp(targetPointer, 0.12);
+    pointer.lerp(targetPointer, 0.18);
     material.uniforms.uPointer.value.copy(pointer);
     material.uniforms.uTime.value = reducedMotion ? 0 : now * 0.001;
     renderer.render(scene, camera);

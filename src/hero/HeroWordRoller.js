@@ -79,9 +79,9 @@ export class HeroWordRoller {
     currentItem.classList.add('is-animating');
     nextItem.classList.add('is-animating');
 
-    // Prepare the next word above the clipped line to fall down like gravity.
+    // Prepare the next word below the clipped line to slide up smoothly.
     gsap.set(nextItem, {
-      yPercent: -105,
+      yPercent: 105,
       opacity: 0,
       filter: 'none',
       visibility: 'visible'
@@ -116,21 +116,21 @@ export class HeroWordRoller {
       }
     });
 
-    // The current word drops down out of view with gravity acceleration
+    // The current word slides up and fades out
     tl.to(currentItem, {
-      yPercent: 105,
+      yPercent: -105,
       opacity: 0,
-      duration: 0.5,
-      ease: 'power3.in'
+      duration: 0.8,
+      ease: 'expo.inOut'
     }, 0);
 
-    // The next word falls from above and bounces off the baseline
+    // The next word elegantly slides up into view
     tl.to(nextItem, {
       yPercent: 0,
       opacity: 1,
       duration: 0.8,
-      ease: 'bounce.out'
-    }, 0.1);
+      ease: 'expo.inOut'
+    }, 0);
   }
 
   transitionReduced(fromIndex, toIndex) {

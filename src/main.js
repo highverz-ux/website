@@ -2273,14 +2273,16 @@ export function initHeroReelCarousel() {
     const delta = Math.min((currentTime - lastTime) / 1000, 0.05);
     lastTime = currentTime;
 
-    if (!isDragging && !isInteracting) {
+    if (!isDragging) {
       if (Math.abs(dragVelocity) > 0.5) {
+        // Butter smooth glide with lower friction
         scrollPosition += dragVelocity * delta;
-        dragVelocity *= Math.pow(0.92, delta * 60);
+        dragVelocity *= Math.pow(0.96, delta * 60);
         if (Math.abs(dragVelocity) < 0.5) {
           dragVelocity = 0;
         }
-      } else {
+      } else if (!isInteracting) {
+        // Only pause the slow auto-scroll while interacting
         scrollPosition += autoSpeed * autoDirection * delta;
       }
 
@@ -2350,8 +2352,8 @@ export function initHeroReelCarousel() {
     const totalDragDistance = lastDragX - startX;
     if (Math.abs(totalDragDistance) > 2) {
       autoDirection = totalDragDistance > 0 ? -1 : 1;
-      if (Math.abs(dragVelocity) < 140) {
-        dragVelocity = autoDirection * 220;
+      if (Math.abs(dragVelocity) < 200) {
+        dragVelocity = autoDirection * 350; // Increased base glide speed for buttery smoothness
       }
     }
 

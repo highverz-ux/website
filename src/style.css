@@ -13259,7 +13259,7 @@ body::after {
   transform: translateX(50%);
   pointer-events: none;
   user-select: none;
-  opacity: 0.12;
+  opacity: 1;
   filter: blur(0.2px) drop-shadow(0 0 34px rgba(0, 229, 255, 0.2));
   mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.7) 22%, #000 58%, transparent 100%);
   -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.7) 22%, #000 58%, transparent 100%);

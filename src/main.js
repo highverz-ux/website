@@ -3378,8 +3378,8 @@ function initTestimonialsReveal() {
       if (!animate || reducedMotion) {
         gsap.set(card, state);
       } else {
-        // Use a highly fluid buttery easing
-        gsap.to(card, { ...state, duration: 0.85, ease: 'expo.out', overwrite: 'auto' });
+        // Use a highly fluid buttery easing with a soft elastic bounce
+        gsap.to(card, { ...state, duration: 1.0, ease: 'elastic.out(1, 0.85)', overwrite: 'auto' });
       }
     });
     stack.dataset.testimonialsActiveIndex = String(activeIndex);
@@ -3409,9 +3409,9 @@ function initTestimonialsReveal() {
   };
 
   const settleStack = (immediate = false) => {
-    const state = { x: 0, y: 0, rotate: 0, overwrite: 'auto' };
+    const state = { x: 0, y: 0, rotate: 0, rotateY: 0, overwrite: 'auto' };
     if (immediate || reducedMotion) gsap.set(stack, state);
-    else gsap.to(stack, { ...state, duration: 0.85, ease: 'expo.out' });
+    else gsap.to(stack, { ...state, duration: 1.1, ease: 'elastic.out(1, 0.75)' });
   };
 
   const updateParallax = (event) => {
@@ -3446,10 +3446,18 @@ function initTestimonialsReveal() {
       return;
     }
     const rawX = event.clientX - dragStartX;
-    // Add soft rubber-band resistance for a buttery feel instead of a hard wall
-    dragOffsetX = rawX * (1 - Math.min(0.5, Math.abs(rawX) / 600));
-    const dragOffsetY = (event.clientY - dragStartY) * 0.12;
-    gsap.set(stack, { x: dragOffsetX, y: dragOffsetY, rotate: dragOffsetX * 0.015 });
+    // Ultra smooth free movement with very light dampening at the edges
+    const absX = Math.abs(rawX);
+    dragOffsetX = Math.sign(rawX) * (absX < 150 ? absX : 150 + (absX - 150) * 0.45);
+    const dragOffsetY = (event.clientY - dragStartY) * 0.18;
+    
+    // Add 3D rotation tilt dynamically based on the drag for a tactile coverflow feel
+    gsap.set(stack, { 
+      x: dragOffsetX, 
+      y: dragOffsetY, 
+      rotate: dragOffsetX * 0.02,
+      rotateY: dragOffsetX * 0.08
+    });
   };
 
   const onPointerUp = (event) => {

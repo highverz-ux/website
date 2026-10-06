@@ -3832,32 +3832,35 @@ html.js .floating-badge-item {
 
 .reel-view-count {
   position: absolute;
-  bottom: 0.8rem;
+  top: 0.8rem;
   left: 0.8rem;
-  top: auto;
+  bottom: auto;
   right: auto;
   z-index: 3;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 14px 8px 8px;
+  gap: 6px;
+  padding: 4px 10px 4px 4px;
   border-radius: 999px;
-  background: #2B2B2B;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   color: #FFFFFF;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.01em;
   white-space: nowrap;
   pointer-events: none;
-  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.22);
-  transition: transform 350ms ease, background 350ms ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: transform 350ms ease, background 350ms ease, border-color 350ms ease;
 }
 
 .rvc-icon-wrap {
-  width: 26px;
-  height: 26px;
+  width: 20px;
+  height: 20px;
   border-radius: 999px;
-  background: #FFFFFF;
+  background: rgba(255, 255, 255, 0.9);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -3865,13 +3868,14 @@ html.js .floating-badge-item {
 }
 
 .reel-view-count svg {
-  width: 16px;
-  height: 16px;
+  width: 12px;
+  height: 12px;
   fill: none;
 }
 
 .card-perspective:hover .reel-view-count {
-  background: #3a3a3a;
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.3);
   transform: translateY(-2px);
 }
 

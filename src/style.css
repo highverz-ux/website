@@ -3839,15 +3839,15 @@ html.js .floating-badge-item {
   z-index: 3;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px 4px 4px;
+  gap: 4px;
+  padding: 2px 8px 2px 2px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #FFFFFF;
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   font-weight: 600;
   letter-spacing: 0.01em;
   white-space: nowrap;
@@ -3857,8 +3857,8 @@ html.js .floating-badge-item {
 }
 
 .rvc-icon-wrap {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.9);
   display: inline-flex;
@@ -3868,8 +3868,8 @@ html.js .floating-badge-item {
 }
 
 .reel-view-count svg {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   fill: none;
 }
 
@@ -13260,7 +13260,7 @@ body::after {
   top: 50%; /* Center vertically in the footer */
   bottom: auto;
   z-index: 0;
-  width: min(700px, 45vw); /* Reduced size to not overlap links */
+  width: min(400px, 28vw); /* Reduced size even further */
   transform: translate(50%, -50%); /* Center horizontally and vertically */
   pointer-events: none;
   user-select: none;
@@ -13375,7 +13375,7 @@ body::after {
   .footer-watermark-logo {
     top: 50%;
     bottom: auto;
-    width: 60vw;
+    width: 35vw;
     opacity: 1;
   }
 }
@@ -13594,14 +13594,14 @@ body::after {
 /* Keep the footer watermark atmospheric without letting it wash over the
    footer copy and navigation. */
 .footer-watermark-logo {
-  width: min(700px, 45vw);
+  width: min(400px, 28vw);
   top: 50%;
   bottom: auto;
   opacity: 1;
 }
 
 [data-theme="light"] .footer-watermark-logo {
-  width: min(700px, 45vw);
+  width: min(400px, 28vw);
   top: 50%;
   bottom: auto;
   opacity: 1;
@@ -13610,14 +13610,14 @@ body::after {
 
 @media (max-width: 720px) {
   .footer-watermark-logo {
-    width: 80vw;
+    width: 50vw;
     top: 50%;
     bottom: auto;
     opacity: 1;
   }
 
   [data-theme="light"] .footer-watermark-logo {
-    width: 80vw;
+    width: 50vw;
     top: 50%;
     bottom: auto;
     opacity: 1;

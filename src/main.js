@@ -2168,11 +2168,11 @@ export function initHeroReelCarousel() {
   const updateVideoPriority = () => {
     if (!stageStep || !videos.length || !isCarouselVisible) return;
 
-    // Keep the initial request set small. The poster remains visible for every
-    // card, while only the cards near the viewport receive their large MP4.
+    // Widen the offset range to ensure videos on the far left and right of the viewport
+    // keep playing and don't prematurely pause while still visible.
     const centerIndex = Math.round(scrollPosition / stageStep);
     const nearbyIndexes = new Set();
-    for (let offset = -2; offset <= 3; offset += 1) {
+    for (let offset = -4; offset <= 5; offset += 1) {
       nearbyIndexes.add(((centerIndex + offset) % count + count) % count);
     }
 

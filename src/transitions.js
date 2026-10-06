@@ -366,28 +366,22 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
     const navbar = document.getElementById('navbar');
     if (navbar) navbar.classList.add('page-nav-outgoing');
 
-    // Lightweight, high-performance blur transition (60fps optimized, clearProps on finish)
+    // Lightweight, high-performance transition
     gsap.set(currentContent, {
       opacity: 1,
       y: 0,
-      scale: 1,
-      filter: 'blur(0px)',
-      willChange: 'opacity, transform, filter',
+      scale: 1
     });
     if (navbar) {
       gsap.set(navbar, {
         opacity: 1,
-        y: 0,
-        filter: 'blur(0px)',
-        willChange: 'opacity, transform, filter',
+        y: 0
       });
     }
     gsap.set(shell, {
       opacity: 0,
       y: 10,
-      scale: 0.995,
-      filter: 'blur(16px)',
-      willChange: 'opacity, transform, filter',
+      scale: 0.995
     });
     gsap.set(glow, { opacity: 0 });
 
@@ -474,7 +468,6 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
     })
       .to([currentContent, navbar].filter(Boolean), {
         opacity: 0,
-        filter: 'blur(16px)',
         y: -10,
         scale: 0.99,
         duration: 0.34,
@@ -482,17 +475,15 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       }, 0)
       .to(shell, {
         opacity: 1,
-        filter: 'blur(0px)',
         y: 0,
         scale: 1,
         duration: 0.48,
         ease: 'power3.out',
-        clearProps: 'filter,willChange',
       }, 0.08);
 
     if (navbar) {
       transitionTimeline.fromTo(navbar,
-        { opacity: 0, y: -8, filter: 'blur(6px)' },
+        { opacity: 0, y: -8 },
         {
           opacity: 1,
           y: 0,

@@ -976,7 +976,6 @@ body.cursor-active .custom-cursor {
 
 body.mobile-menu-active {
   overflow: hidden !important;
-  touch-action: none;
 }
 
 .mobile-nav-backdrop-glow {
@@ -7518,6 +7517,13 @@ html.js .floating-badge-item {
   position: relative;
 }
 
+@media (max-width: 900px) {
+  .work-hero-container {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+}
+
 /* LEFT COLUMN */
 .work-hero-left {
   display: flex;
@@ -7624,6 +7630,12 @@ html.js .floating-badge-item {
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
   position: relative;
   overflow: hidden;
+}
+
+@media (max-width: 600px) {
+  .work-metric-item {
+    padding: 1.2rem 1rem;
+  }
 }
 
 /* Subtle top specular line on each metric card */

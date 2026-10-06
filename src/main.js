@@ -555,7 +555,9 @@ function initNavbar() {
     window.__hvUpdateNavbar = function(targetPath) {
       const normTarget = targetPath.split('#')[0].split('?')[0].replace(/\/+$/, '') || '/';
       let matchedLink = null;
-      navLinks.forEach((link) => {
+      
+      const allLinks = document.querySelectorAll('.nav-link, .mobile-nav-link');
+      allLinks.forEach((link) => {
         const href = link.getAttribute('href');
         if (!href) return;
         const normHref = href.split('#')[0].split('?')[0].replace(/\/+$/, '') || '/';
@@ -564,8 +566,10 @@ function initNavbar() {
                         (normHref !== '/' && normTarget.includes(normHref.replace('.html', '')));
         if (isMatch) {
           link.classList.add('active');
-          matchedLink = link;
-          activeLink = link;
+          if (link.classList.contains('nav-link')) {
+            matchedLink = link;
+            activeLink = link;
+          }
         } else {
           link.classList.remove('active');
         }
@@ -1994,6 +1998,7 @@ function disposePageRuntime() {
     '__hvWorkflowCleanup',
     '__hvCaseReelsCleanup',
     '__hvFaqCleanup',
+    '__hvFooterScatterCleanup',
   ].forEach((key) => {
     try { window[key]?.(); } catch (_) {}
     window[key] = null;
@@ -2040,6 +2045,7 @@ export function initPageScripts(pathname) {
 
   initMagneticElements();
   initEnquirySystem();
+  initFooterScatterGrid();
 
   if (window.ScrollTrigger) {
     ScrollTrigger.refresh();
@@ -3939,7 +3945,8 @@ function initScrollVelocityEffects() {
 // 14. INSTAGRAM REELS INTERACTIVE PLAYER (CASE STUDY PAGES)
 // ==========================================================================
 function initInstagramReelsPlayer() {
-  const section = document.querySelector('.case-reels-section');
+  const shell = document.getElementById('page-transition-shell');
+  const section = shell ? shell.querySelector('.case-reels-section') : document.querySelector('.case-reels-section');
   const rail = section?.querySelector('.ig-reels-grid');
   if (!section || !rail) return;
 
@@ -4208,10 +4215,11 @@ function initInstagramReelsPlayer() {
 // Keeps the large Highverz mark intact at rest, then gently breaks its pixels
 // away from the pointer and lets them settle back into the logo.
 function initFooterScatterGrid() {
-  const watermark = document.querySelector('.footer-watermark-logo');
+  const shell = document.getElementById('page-transition-shell');
+  const watermark = shell ? shell.querySelector('.footer-watermark-logo') : document.querySelector('.footer-watermark-logo');
   if (!watermark || watermark.querySelector('.footer-scatter-canvas')) return;
   // Use a very bright slate/white color for maximum visibility
-  initScatterGrid(watermark, {
+  window.__hvFooterScatterCleanup = initScatterGrid(watermark, {
     dotSize: 5, // thick dots
     base: [200, 220, 240] // bright silver/white base
   });

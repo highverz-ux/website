@@ -18,6 +18,7 @@ import { initHeroWordRoller, prepareHeroWordRoller } from './hero/HeroWordRoller
 import { initHeroFluidBackground } from './hero/HeroFluidBackground.js';
 import { inject as injectAnalytics } from '@vercel/analytics';
 import { injectSpeedInsights } from '@vercel/speed-insights';
+import { initScatterGrid } from './scatterGrid.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -76,6 +77,7 @@ function boot() {
   initStatsMarquee();
   initCreatorsSection();
   initGrowthWidgets();
+  initFooterScatterGrid();
   initStatementParallax();
   initServicesReveal();
   initPortfolioGrid();
@@ -2057,6 +2059,27 @@ export function initHeroReelCarousel() {
 
   const cardPerspectives = cardPositions.map((pos) => pos.querySelector('.card-perspective'));
   const videos = cardPositions.map((pos) => pos.querySelector('.card-video'));
+  const reelViewCounts = ['24.5M', '38.2M', '19.4M', '45.0M', '82.6M', '54.1M', '16.8M', '29.3M', '41.7M', '67.4M'];
+
+  // Keep the view count attached to each reel as it moves around the
+  // carousel. Create it here so route refreshes never duplicate the badge.
+  cardPositions.forEach((position, index) => {
+    const videoCard = position.querySelector('.video-card');
+    if (!videoCard) return;
+    let viewCount = videoCard.querySelector('.reel-view-count');
+    if (!viewCount) {
+      viewCount = document.createElement('div');
+      viewCount.className = 'reel-view-count';
+      viewCount.setAttribute('aria-label', `${reelViewCounts[index] || '0'} views`);
+      viewCount.innerHTML = `
+        <span class="rvc-icon-wrap">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7Z" stroke="#000" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3" fill="#000"/></svg>
+        </span>
+        <span class="rvc-text">${reelViewCounts[index] || '0'} views</span>
+      `;
+      videoCard.appendChild(viewCount);
+    }
+  });
 
   // A soft route swap can carry animation styles from the outgoing document
   // for one frame. Reset every wrapper explicitly before measuring so the
@@ -4154,4 +4177,13 @@ function initInstagramReelsPlayer() {
       }
     );
   }
+}
+
+// FOOTER WATERMARK — INTERACTIVE SCATTER GRID
+// Keeps the large Highverz mark intact at rest, then gently breaks its pixels
+// away from the pointer and lets them settle back into the logo.
+function initFooterScatterGrid() {
+  const watermark = document.querySelector('.footer-watermark-logo');
+  if (!watermark || watermark.querySelector('.footer-scatter-canvas')) return;
+  initScatterGrid(watermark);
 }

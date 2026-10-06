@@ -3351,13 +3351,18 @@ function initTestimonialsReveal() {
 
   const roleState = (role) => {
     const isMobile = window.matchMedia('(max-width: 720px)').matches;
-    // GSAP's x value is pixels. Base the offset on the carousel width so both
-    // supporting cards remain visibly framed at either side of the lead card.
+    // Base the offset on the carousel width so supporting cards are framed nicely
     const carouselWidth = stack.clientWidth || 640;
-    const sideOffset = isMobile ? carouselWidth * 0.12 : carouselWidth * 0.48;
-    if (role === 0) return { x: 0, y: 0, scale: 1, opacity: 1, filter: 'blur(0px)', rotate: 0, zIndex: 3 };
-    if (role === 1) return { x: sideOffset, y: 12, scale: isMobile ? 0.92 : 0.9, opacity: isMobile ? 0.4 : 0.65, filter: 'blur(1.5px)', rotate: 0.6, zIndex: 2 };
-    return { x: -sideOffset, y: 12, scale: isMobile ? 0.92 : 0.9, opacity: isMobile ? 0.4 : 0.65, filter: 'blur(1.5px)', rotate: -0.6, zIndex: 2 };
+    const sideOffset = isMobile ? carouselWidth * 0.15 : carouselWidth * 0.52;
+    
+    // Add 3D perspective and snappier scale/rotation for a premium coverflow look
+    if (role === 0) {
+      return { x: 0, y: 0, scale: 1, opacity: 1, filter: 'blur(0px)', rotate: 0, rotateY: 0, zIndex: 3, transformPerspective: 1200 };
+    }
+    if (role === 1) {
+      return { x: sideOffset, y: 15, scale: isMobile ? 0.9 : 0.82, opacity: isMobile ? 0.5 : 0.6, filter: 'blur(3px)', rotate: 4, rotateY: -12, zIndex: 2, transformPerspective: 1200 };
+    }
+    return { x: -sideOffset, y: 15, scale: isMobile ? 0.9 : 0.82, opacity: isMobile ? 0.5 : 0.6, filter: 'blur(3px)', rotate: -4, rotateY: 12, zIndex: 2, transformPerspective: 1200 };
   };
 
   const renderStack = (animate = true) => {
@@ -3367,10 +3372,12 @@ function initTestimonialsReveal() {
       card.classList.toggle('is-testimonial-active', role === 0);
       card.setAttribute('data-card-role', role === 0 ? 'active' : role === 1 ? 'next' : 'previous');
       card.style.zIndex = String(state.zIndex);
+      
       if (!animate || reducedMotion) {
         gsap.set(card, state);
       } else {
-        gsap.to(card, { ...state, duration: 0.8, ease: 'back.out(0.7)', overwrite: 'auto' });
+        // Use a faster, smoother easing to fix the "lethargic" feel
+        gsap.to(card, { ...state, duration: 0.65, ease: 'expo.out', overwrite: 'auto' });
       }
     });
     stack.dataset.testimonialsActiveIndex = String(activeIndex);

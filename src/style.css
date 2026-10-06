@@ -13257,10 +13257,11 @@ body::after {
 .footer-watermark-logo {
   position: absolute;
   right: 50%;
-  bottom: 40%; /* Moved up by 50% */
+  top: 50%; /* Center vertically in the footer */
+  bottom: auto;
   z-index: 0;
-  width: min(2000px, 150vw); /* Increased size slightly */
-  transform: translateX(50%);
+  width: min(700px, 45vw); /* Reduced size to not overlap links */
+  transform: translate(50%, -50%); /* Center horizontally and vertically */
   pointer-events: none;
   user-select: none;
   opacity: 1;
@@ -13372,8 +13373,9 @@ body::after {
   }
 
   .footer-watermark-logo {
-    bottom: 20%;
-    width: 165vw;
+    top: 50%;
+    bottom: auto;
+    width: 60vw;
     opacity: 1;
   }
 }
@@ -13592,28 +13594,32 @@ body::after {
 /* Keep the footer watermark atmospheric without letting it wash over the
    footer copy and navigation. */
 .footer-watermark-logo {
-  width: min(1100px, 80vw);
-  bottom: 10%;
+  width: min(700px, 45vw);
+  top: 50%;
+  bottom: auto;
   opacity: 1;
 }
 
 [data-theme="light"] .footer-watermark-logo {
-  width: min(1000px, 72vw);
-  bottom: 10%;
+  width: min(700px, 45vw);
+  top: 50%;
+  bottom: auto;
   opacity: 1;
   filter: drop-shadow(0 0 18px rgba(0, 151, 167, 0.4));
 }
 
 @media (max-width: 720px) {
   .footer-watermark-logo {
-    width: 120vw;
-    bottom: 15%;
+    width: 80vw;
+    top: 50%;
+    bottom: auto;
     opacity: 1;
   }
 
   [data-theme="light"] .footer-watermark-logo {
-    width: 112vw;
-    bottom: 15%;
+    width: 80vw;
+    top: 50%;
+    bottom: auto;
     opacity: 1;
   }
 }

@@ -32,15 +32,17 @@ export class HeroWordRoller {
     this.items = Array.from(this.container.querySelectorAll('.roller-item'));
     if (!this.items.length) return;
 
-    // Reset items to clean initial state
+    // Reset items to clean initial state for 3D Slot
+    gsap.set(this.container, { perspective: 800, transformStyle: 'preserve-3d' });
+
     this.items.forEach((item, index) => {
       if (index === 0) {
         item.classList.add('is-active');
         item.classList.remove('is-animating');
-        gsap.set(item, { yPercent: 0, opacity: 1, visibility: 'visible', clearProps: 'filter,transform' });
+        gsap.set(item, { yPercent: 0, rotateX: 0, opacity: 1, visibility: 'visible', clearProps: 'filter', transformOrigin: '50% 50% -0.5em' });
       } else {
         item.classList.remove('is-active', 'is-animating');
-        gsap.set(item, { yPercent: 105, opacity: 0, filter: 'none', visibility: 'hidden' });
+        gsap.set(item, { rotateX: -90, opacity: 0, filter: 'none', visibility: 'hidden', transformOrigin: '50% 50% -0.5em' });
       }
     });
 
@@ -79,19 +81,28 @@ export class HeroWordRoller {
     currentItem.classList.add('is-animating');
     nextItem.classList.add('is-animating');
 
-    // Prepare the next word below the clipped line to slide up smoothly.
+    // Prepare the next word to be rotated back on the 3D cylinder
     gsap.set(nextItem, {
-      yPercent: 105,
+      yPercent: 0,
+      rotateX: -90,
+      transformOrigin: '50% 50% -0.5em',
+      transformPerspective: 800,
       opacity: 0,
       filter: 'none',
       visibility: 'visible'
+    });
+
+    // Ensure current item has correct origin
+    gsap.set(currentItem, {
+      transformOrigin: '50% 50% -0.5em',
+      transformPerspective: 800
     });
 
     const tl = gsap.timeline({
       onComplete: () => {
         // Reset currentItem cleanly for next cycle
         gsap.set(currentItem, {
-          yPercent: 105,
+          rotateX: 0,
           opacity: 0,
           filter: 'none',
           visibility: 'hidden'
@@ -100,9 +111,9 @@ export class HeroWordRoller {
         nextItem.classList.remove('is-animating');
         nextItem.classList.add('is-active');
 
-        // Keep the settled word pinned to the baseline to prevent a visible hop.
+        // Keep the settled word pinned to the baseline
         gsap.set(nextItem, {
-          yPercent: 0,
+          rotateX: 0,
           opacity: 1,
           filter: 'none',
           clearProps: 'filter'
@@ -116,19 +127,19 @@ export class HeroWordRoller {
       }
     });
 
-    // The current word slides up and fades out
+    // The current word rotates up and fades out (into the cylinder)
     tl.to(currentItem, {
-      yPercent: -105,
+      rotateX: 90,
       opacity: 0,
-      duration: 0.8,
+      duration: 0.9,
       ease: 'expo.inOut'
     }, 0);
 
-    // The next word elegantly slides up into view
+    // The next word elegantly rotates down into view
     tl.to(nextItem, {
-      yPercent: 0,
+      rotateX: 0,
       opacity: 1,
-      duration: 0.8,
+      duration: 0.9,
       ease: 'expo.inOut'
     }, 0);
   }
@@ -139,11 +150,11 @@ export class HeroWordRoller {
     const nextItem = this.items[toIndex];
 
     currentItem.classList.remove('is-active', 'is-animating');
-    gsap.set(currentItem, { yPercent: 105, opacity: 0, filter: 'none', visibility: 'hidden' });
+    gsap.set(currentItem, { rotateX: 90, opacity: 0, filter: 'none', visibility: 'hidden' });
 
     nextItem.classList.remove('is-animating');
     nextItem.classList.add('is-active');
-    gsap.set(nextItem, { yPercent: 0, opacity: 1, filter: 'none', visibility: 'visible', clearProps: 'filter' });
+    gsap.set(nextItem, { rotateX: 0, opacity: 1, filter: 'none', visibility: 'visible', clearProps: 'filter' });
 
     this.currentIndex = toIndex;
     this.isAnimating = false;
@@ -201,14 +212,15 @@ export function prepareHeroWordRoller() {
   const el = document.getElementById('hero-word-roller');
   if (!el) return;
   const items = Array.from(el.querySelectorAll('.roller-item'));
+  gsap.set(el, { perspective: 800, transformStyle: 'preserve-3d' });
   items.forEach((item, index) => {
     if (index === 0) {
       item.classList.add('is-active');
       item.classList.remove('is-animating');
-      gsap.set(item, { yPercent: 0, opacity: 1, filter: 'none', visibility: 'visible', clearProps: 'filter,transform' });
+      gsap.set(item, { yPercent: 0, rotateX: 0, opacity: 1, filter: 'none', visibility: 'visible', clearProps: 'filter', transformOrigin: '50% 50% -0.5em' });
     } else {
       item.classList.remove('is-active', 'is-animating');
-      gsap.set(item, { yPercent: 105, opacity: 0, filter: 'none', visibility: 'hidden' });
+      gsap.set(item, { rotateX: -90, opacity: 0, filter: 'none', visibility: 'hidden', transformOrigin: '50% 50% -0.5em' });
     }
   });
 }

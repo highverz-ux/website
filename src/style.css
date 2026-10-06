@@ -2271,7 +2271,7 @@ html.js .floating-badge-item {
 /* Creators Showcase: Side-by-Side Dual Grid */
 .creators-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1.75rem;
   align-items: stretch;
   width: 100%;
@@ -2545,7 +2545,7 @@ html.js .floating-badge-item {
 /* Meta Chips — Perfectly Balanced 2x2 Glass Grid */
 .creator-meta-row {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.6rem;
   align-items: stretch;
   width: 100%;
@@ -2862,7 +2862,7 @@ html.js .floating-badge-item {
 /* 5 Cards Grid */
 .services-cards-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 1.25rem;
 }
 
@@ -4085,7 +4085,7 @@ html.js .floating-badge-item {
 /* 4-Column Editorial Creator Grid */
 .work-creators-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1.8rem;
   position: relative;
 }
@@ -4539,7 +4539,7 @@ html.js .floating-badge-item {
 /* Brand Grid (Matching Non-Marquee View) */
 .work-brands-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 2rem;
 }
 
@@ -4551,11 +4551,11 @@ html.js .floating-badge-item {
 /* Responsive Grid Breakpoints */
 @media (max-width: 1200px) {
   .work-creators-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1.6rem;
   }
   .work-brands-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -4634,7 +4634,7 @@ html.js .floating-badge-item {
 
 .testimonials-cards-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.8rem;
   perspective: 1200px;
 }
@@ -4996,7 +4996,7 @@ html.js .floating-badge-item {
   position: absolute;
   inset: 0;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 1.5rem;
   pointer-events: none;
 }
@@ -5028,7 +5028,7 @@ html.js .floating-badge-item {
 /* Process 5-Column Grid */
 .process-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 1.5rem;
 }
 
@@ -7110,7 +7110,7 @@ html.js .floating-badge-item {
   .hero-badges-track { margin-left: 0; }
   .model-intro { display: none; }
   .services-cards-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .cta-inner-layout {
     grid-template-columns: 1fr;
@@ -7237,7 +7237,7 @@ html.js .floating-badge-item {
   }
 
   .services-cards-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1.25rem;
   }
 
@@ -7707,7 +7707,7 @@ html.js .floating-badge-item {
 
 /* Expanded Grid for 10 Services */
 .services-cards-grid.expanded-grid {
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.5rem;
 }
 
@@ -7763,7 +7763,7 @@ html.js .floating-badge-item {
 
 .standards-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1.5rem;
   margin-top: 3.5rem;
 }
@@ -7805,10 +7805,10 @@ html.js .floating-badge-item {
 
 @media (max-width: 1080px) {
   .services-cards-grid.expanded-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .standards-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -7883,7 +7883,7 @@ html.js .floating-badge-item {
 
 .work-capabilities-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.75rem;
 }
 
@@ -7999,7 +7999,7 @@ html.js .floating-badge-item {
 
 @media (max-width: 1080px) {
   .work-capabilities-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1.5rem;
   }
 }
@@ -8807,7 +8807,7 @@ html.js .floating-badge-item {
 /* Growth HUD Grid */
 .case-hud-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.85rem;
   max-width: 680px;
 }
@@ -8889,7 +8889,7 @@ html.js .floating-badge-item {
 /* Reels 3-Column Grid */
 .ig-reels-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.85rem;
   max-width: var(--container-width);
   margin: 0 auto;
@@ -9155,7 +9155,7 @@ html.js .floating-badge-item {
 /* Strategy Grid */
 .breakdown-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.75rem;
   margin-bottom: 3.5rem;
 }
@@ -9298,7 +9298,7 @@ html.js .floating-badge-item {
     gap: 2.5rem;
   }
   .case-hud-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -9322,7 +9322,7 @@ html.js .floating-badge-item {
     margin: 0 auto;
   }
   .ig-reels-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .breakdown-grid {
     grid-template-columns: 1fr;
@@ -9452,7 +9452,7 @@ html.js .floating-badge-item {
 /* Team Metrics HUD */
 .team-metrics-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1.25rem;
   margin-top: 2rem;
   background: transparent;
@@ -9859,7 +9859,7 @@ html.js .floating-badge-item {
 
 .accord-stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.8rem;
   border-top: 1px solid rgba(255,255,255,0.06);
   padding-top: 1.2rem;
@@ -9902,7 +9902,7 @@ html.js .floating-badge-item {
   .accord-stats {
     grid-column: 1;
   }
-  .accord-stats { grid-template-columns: repeat(2, 1fr); }
+  .accord-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 
@@ -10107,7 +10107,7 @@ html.js .floating-badge-item {
 
 .founder-achieve-footer {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.8rem;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   padding-top: 1.4rem;
@@ -10180,7 +10180,7 @@ html.js .floating-badge-item {
 
 .pillars-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.85rem;
 }
 
@@ -10287,7 +10287,7 @@ html.js .floating-badge-item {
     margin: 0 auto;
   }
   .team-metrics-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1.5rem;
   }
   .team-metric-item:nth-child(2) {
@@ -10418,7 +10418,7 @@ html.js .floating-badge-item {
 
 .comp-dual-cards {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 2.2rem;
   align-items: stretch;
 }
@@ -11282,11 +11282,19 @@ main + footer {
 @media (max-width: 800px) {
   .work-hero-metrics-grid {
     max-width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
   }
 
   .work-metric-item {
-    min-height: 148px;
-    padding: 1.25rem;
+    min-height: 120px;
+    padding: 1rem 0.8rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .work-metric-item {
+    padding: 0.8rem 0.5rem;
   }
 }
 
@@ -12243,7 +12251,7 @@ main + footer {
 
 @media (max-width: 760px) {
   .ig-reels-viewport { padding-bottom: 0.75rem; }
-  .ig-reel-card { flex-basis: min(77vw, 340px); }
+  .ig-reel-card { flex: 0 0 min(77vw, 340px) !important; }
   .ig-reel-bottom-info { bottom: 0.95rem; left: 0.95rem; right: 0.95rem; }
   .ig-reel-title { font-size: 0.95rem; }
 }

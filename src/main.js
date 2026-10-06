@@ -803,6 +803,7 @@ function initMobileNav(navbar) {
     const pathname = window.location.pathname;
     const isHome = pathname === '/' || pathname.endsWith('index.html') || (!pathname.includes('work') && !pathname.includes('team') && !pathname.includes('creator'));
     const isWork = pathname.includes('work.html');
+    const isCampaigns = pathname.includes('campaigns.html');
     const isTeam = pathname.includes('team.html');
     const isWhyUs = pathname.includes('why-us');
 
@@ -827,14 +828,20 @@ function initMobileNav(navbar) {
             </a>
           </li>
           <li class="mobile-nav-item">
-            <a href="/team.html" class="mobile-nav-link ${isTeam ? 'active' : ''}">
+            <a href="/campaigns.html" class="mobile-nav-link ${isCampaigns ? 'active' : ''}">
               <span class="mobile-nav-num">03</span>
+              <span class="mobile-nav-text">Campaigns</span>
+            </a>
+          </li>
+          <li class="mobile-nav-item">
+            <a href="/team.html" class="mobile-nav-link ${isTeam ? 'active' : ''}">
+              <span class="mobile-nav-num">04</span>
               <span class="mobile-nav-text">Team</span>
             </a>
           </li>
           <li class="mobile-nav-item">
             <a href="/why-us.html" class="mobile-nav-link ${isWhyUs ? 'active' : ''}">
-              <span class="mobile-nav-num">04</span>
+              <span class="mobile-nav-num">05</span>
               <span class="mobile-nav-text">Why Us</span>
             </a>
           </li>

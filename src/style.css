@@ -13249,7 +13249,7 @@ body::after {
 .footer {
   position: relative;
   isolation: isolate;
-  overflow: hidden;
+  overflow: visible; /* Prevents the watermark logo from cutting off */
   padding: clamp(2.5rem, 3.5vw, 3.25rem) 0 clamp(1.75rem, 2.5vw, 2.25rem);
   border-top: 1px solid rgba(164, 239, 246, 0.1);
 }

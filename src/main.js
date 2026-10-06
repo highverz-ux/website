@@ -3352,19 +3352,18 @@ function initTestimonialsReveal() {
   let isDragging = false;
 
   const roleState = (role) => {
-    const isMobile = window.matchMedia('(max-width: 720px)').matches;
-    // Base the offset on the carousel width so supporting cards are framed nicely
-    const carouselWidth = stack.clientWidth || 640;
-    const sideOffset = isMobile ? carouselWidth * 0.15 : carouselWidth * 0.52;
-    
-    // Add 3D perspective and snappier scale/rotation for a premium coverflow look
+    // Premium "Testimonial Depth" stack (like Framer): 
+    // Cards stack vertically behind one another with scaling, Z-depth and blur
     if (role === 0) {
+      // Active Top Card
       return { x: 0, y: 0, scale: 1, opacity: 1, filter: 'blur(0px)', rotate: 0, rotateY: 0, zIndex: 3, transformPerspective: 1200 };
     }
     if (role === 1) {
-      return { x: sideOffset, y: 15, scale: isMobile ? 0.9 : 0.82, opacity: isMobile ? 0.5 : 0.6, filter: 'blur(3px)', rotate: 4, rotateY: -12, zIndex: 2, transformPerspective: 1200 };
+      // Middle Card (tucked behind)
+      return { x: 0, y: 28, scale: 0.92, opacity: 0.65, filter: 'blur(3px)', rotate: 0, rotateY: 0, zIndex: 2, transformPerspective: 1200 };
     }
-    return { x: -sideOffset, y: 15, scale: isMobile ? 0.9 : 0.82, opacity: isMobile ? 0.5 : 0.6, filter: 'blur(3px)', rotate: -4, rotateY: 12, zIndex: 2, transformPerspective: 1200 };
+    // Bottom Card (furthest behind)
+    return { x: 0, y: 56, scale: 0.84, opacity: 0.35, filter: 'blur(6px)', rotate: 0, rotateY: 0, zIndex: 1, transformPerspective: 1200 };
   };
 
   const renderStack = (animate = true) => {

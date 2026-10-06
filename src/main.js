@@ -4192,9 +4192,9 @@ function initInstagramReelsPlayer() {
 function initFooterScatterGrid() {
   const watermark = document.querySelector('.footer-watermark-logo');
   if (!watermark || watermark.querySelector('.footer-scatter-canvas')) return;
-  // Increase dotSize and base color brightness by ~50% so it's much more visible
+  // Use a very bright slate/white color for maximum visibility
   initScatterGrid(watermark, {
-    dotSize: 4.5, // larger dots for visibility
-    base: [80, 95, 120] // significantly brighter base slate color
+    dotSize: 5, // thick dots
+    base: [200, 220, 240] // bright silver/white base
   });
 }

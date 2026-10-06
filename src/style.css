@@ -13261,8 +13261,8 @@ body::after {
   user-select: none;
   opacity: 1;
   filter: blur(0.2px) drop-shadow(0 0 34px rgba(0, 229, 255, 0.2));
-  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.7) 22%, #000 58%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.7) 22%, #000 58%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 10%, #000 90%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 10%, #000 90%, transparent 100%);
 }
 
 .footer-watermark-logo img {

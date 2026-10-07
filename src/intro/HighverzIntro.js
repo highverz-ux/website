@@ -78,9 +78,7 @@ export class HighverzIntro {
     gsap.set(logo, { opacity: 0, scale: 0.92, y: 8 });
     gsap.set(progress, { scaleX: 0, transformOrigin: 'left center' });
 
-    this.tl = gsap.timeline({
-      onComplete: () => this.destroy()
-    });
+    this.tl = gsap.timeline();
 
     // SiteLoader's default logo entrance.
     this.tl.to(logo, {
@@ -91,26 +89,44 @@ export class HighverzIntro {
       ease: 'power2.out',
     }, 0);
 
+    // Animate progress to 80% while waiting for load
     this.tl.to(progress, {
+      scaleX: 0.8,
+      duration: 1.5,
+      ease: 'power1.out',
+    }, 0);
+  }
+
+  finishLoading() {
+    if (this.isCompleted || this.isFinishing) return;
+    this.isFinishing = true;
+
+    if (this.tl) { this.tl.kill(); this.tl = null; }
+
+    const center = this.container.querySelector('#hv-reveal-center');
+    const progress = this.container.querySelector('.hv-loader-progress-fill');
+    const finishTl = gsap.timeline({ onComplete: () => this.destroy() });
+
+    finishTl.to(progress, {
       scaleX: 1,
-      duration: 2.5,
-      ease: 'power1.inOut',
+      duration: 0.4,
+      ease: 'power1.inOut'
     }, 0);
 
-    // Hold the mark, then lift the complete loading window upward. The page is
-    // revealed underneath at the start of this motion, so there is no flash.
-    this.tl.call(() => this.triggerReveal(), [], 2.5);
-    this.tl.to(this.container, {
+    finishTl.call(() => this.triggerReveal(), [], 0.4);
+    
+    finishTl.to(this.container, {
       yPercent: -100,
       duration: 0.95,
       ease: 'power4.inOut',
-    }, 2.5);
-    this.tl.to(center, {
+    }, 0.4);
+    
+    finishTl.to(center, {
       opacity: 0,
       y: -18,
       duration: 0.42,
       ease: 'power2.in',
-    }, 2.5);
+    }, 0.4);
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -189,7 +205,20 @@ export class HighverzIntro {
 
     this.safetyTimer = setTimeout(() => {
       if (!this.isCompleted) this.finishSafely();
-    }, 7000);
+    }, 8000);
+
+    const onWindowLoad = () => {
+      // Small delay to ensure rendering catches up
+      setTimeout(() => {
+        if (!this.isCompleted) this.finishLoading();
+      }, 200);
+    };
+
+    if (document.readyState === 'complete') {
+      onWindowLoad();
+    } else {
+      window.addEventListener('load', onWindowLoad);
+    }
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {

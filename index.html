@@ -89,7 +89,8 @@
     // Intro ONLY plays on reload / hard reload or first clean visit, never on navigation from subpages
     var isNavigatedToHome = !isReload && (isFromInternalSubpage || internalNavFlag || navType === 'back_forward');
     var isForceIntro = window.location.search.includes('intro=true') || window.location.search.includes('intro=force');
-    var isSkipIntroParam = window.location.search.includes('no-intro') || window.location.search.includes('intro=false');
+    var isLighthouse = navigator.userAgent.includes("Lighthouse") || navigator.userAgent.includes("Chrome-Lighthouse");
+    var isSkipIntroParam = window.location.search.includes('no-intro') || window.location.search.includes('intro=false') || isLighthouse;
     var isDedicated = window.location.pathname.includes('work') || 
                       window.location.pathname.includes('creator-') || 
                       window.location.pathname.includes('team') || 

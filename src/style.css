@@ -11010,8 +11010,8 @@ html.page-transitioned .campaign-featured-label,
 .page-transition-shell {
   position: fixed !important;
   inset: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
+  width: 100% !important;
+  height: 100% !important;
   overflow: hidden !important;
   pointer-events: none !important;
   z-index: 800 !important;
@@ -11029,8 +11029,8 @@ html.page-transitioned .campaign-featured-label,
 .page-transition-glow {
   position: fixed !important;
   inset: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
+  width: 100% !important;
+  height: 100% !important;
   pointer-events: none !important;
   z-index: 995 !important;
   opacity: 0;

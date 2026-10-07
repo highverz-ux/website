@@ -417,43 +417,43 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
           window.lenis.resize();
         }
 
-      // Initialize page scripts in next animation frame once DOM is rendered
-      requestAnimationFrame(() => {
+      // Initialize page scripts synchronously before the next browser paint
+      // This prevents the split-second layout shift / shake caused by ScrollTrigger adding pin-spacers
+      try {
+        if (window.__hvInitPageScripts) {
+          window.__hvInitPageScripts(window.location.pathname);
+        }
+
+        window.__hvResetNavbar?.(window.location.pathname);
+        
+        if (window.ScrollTrigger) {
+          ScrollTrigger.refresh();
+        }
+
+        // Repeated frame passes ensure the carousel never gets stuck on 1 reel
+        let passes = 0;
+        const refreshPass = () => {
           try {
-            if (window.__hvInitPageScripts) {
-              window.__hvInitPageScripts(window.location.pathname);
+            window.__hvHeroReelRefresh?.();
+            passes++;
+            if (passes < 4) {
+              requestAnimationFrame(refreshPass);
+            } else {
+              isTransitioning = false;
+              window.clearTimeout(transitionSafetyTimer);
             }
-
-            window.__hvResetNavbar?.(window.location.pathname);
-
-            // Repeated frame passes ensure the carousel never gets stuck on 1 reel
-            let passes = 0;
-            const refreshPass = () => {
-              try {
-                window.__hvHeroReelRefresh?.();
-                passes++;
-                if (passes < 4) {
-                  requestAnimationFrame(refreshPass);
-                } else {
-                  if (window.ScrollTrigger) {
-                    ScrollTrigger.refresh();
-                  }
-                  isTransitioning = false;
-                  window.clearTimeout(transitionSafetyTimer);
-                }
-              } catch (err) {
-                console.error('Page runtime refresh failed:', err);
-                isTransitioning = false;
-                window.clearTimeout(transitionSafetyTimer);
-              }
-            };
-            requestAnimationFrame(refreshPass);
           } catch (err) {
-            console.error('Incoming page initialization failed:', err);
+            console.error('Page runtime refresh failed:', err);
             isTransitioning = false;
             window.clearTimeout(transitionSafetyTimer);
           }
-        });
+        };
+        requestAnimationFrame(refreshPass);
+      } catch (err) {
+        console.error('Incoming page initialization failed:', err);
+        isTransitioning = false;
+        window.clearTimeout(transitionSafetyTimer);
+      }
       }
     })
       .to([currentContent, navbar].filter(Boolean), {

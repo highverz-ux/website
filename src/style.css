@@ -13704,3 +13704,12 @@ body::after {
     inset 0 0 24px 0 rgba(255, 255, 255, 0.015),
     inset 0 -1px 0 rgba(0, 0, 0, 0.35);
 }
+
+html, body {
+  scrollbar-width: none;
+}
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+}
+

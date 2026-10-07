@@ -2331,7 +2331,7 @@ export function initHeroReelCarousel() {
   const onPointerMove = (e) => {
     if (!isDragging) return;
     const currentX = e.clientX;
-    const diff = (currentX - startX) * 1.8;
+    const diff = (currentX - startX) * 2.8;
     if (Math.abs(diff) > 2) {
       hasMoved = true;
     }
@@ -4090,7 +4090,7 @@ function initInstagramReelsPlayer() {
   const onPointerLeave = () => { isHovering = false; };
   const onPointerMove = (event) => {
     if (!isDragging || !loopWidth) return;
-    const distance = (event.clientX - dragStartX) * 1.8;
+    const distance = (event.clientX - dragStartX) * 2.8;
     if (Math.abs(distance) > 4) suppressClick = true;
     offset = ((dragStartOffset - distance) % loopWidth + loopWidth) % loopWidth;
     render();

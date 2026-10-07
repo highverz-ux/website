@@ -251,16 +251,6 @@ export function initHighverzIntro(options = {}) {
     || urlParams.get('intro') === 'force'
     || options.force === true;
 
-  const isWorkPage      = window.location.pathname.includes('work')     || !!document.querySelector('.work-hero-section');
-  const isCaseStudyPage = window.location.pathname.includes('creator-') || !!document.querySelector('.ig-profile-shell');
-  if ((isWorkPage || isCaseStudyPage) && !isForceIntro) {
-    const existing = document.getElementById('highverz-intro');
-    if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
-    document.body.classList.remove('intro-active');
-    if (options.onComplete) options.onComplete();
-    return;
-  }
-
   if (isExplicitlyDisabled || (window.__HV_SKIP_INTRO__ && !isForceIntro)) {
     const existing = document.getElementById('highverz-intro');
     if (existing && existing.parentNode) existing.parentNode.removeChild(existing);

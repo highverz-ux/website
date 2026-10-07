@@ -91,13 +91,7 @@
     var isForceIntro = window.location.search.includes('intro=true') || window.location.search.includes('intro=force');
     var isLighthouse = navigator.userAgent.includes("Lighthouse") || navigator.userAgent.includes("Chrome-Lighthouse");
     var isSkipIntroParam = window.location.search.includes('no-intro') || window.location.search.includes('intro=false') || isLighthouse;
-    var isDedicated = window.location.pathname.includes('work') || 
-                      window.location.pathname.includes('creator-') || 
-                      window.location.pathname.includes('team') || 
-                      window.location.pathname.includes('why-us') || 
-                      window.location.pathname.includes('campaigns');
-
-    if (!isForceIntro && (isSkipIntroParam || isDedicated || isNavigatedToHome)) {
+    if (!isForceIntro && (isSkipIntroParam || isNavigatedToHome)) {
       document.documentElement.classList.add('skip-intro');
       window.__HV_SKIP_INTRO__ = true;
     } else {

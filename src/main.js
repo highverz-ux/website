@@ -98,14 +98,7 @@ function boot() {
   const isCampaignsPage = window.location.pathname.includes('campaigns') || !!document.querySelector('.page-campaigns');
   const isDedicatedPage = isWorkPage || isCaseStudyPage || isTeamPage || isWhyUs || isCampaignsPage;
 
-  if (isDedicatedPage) {
-    // Dedicated pages (Work, Creators, Team, Why Us) enter immediately without intro screen
-    if (lenis) lenis.start();
-    initPageScripts(window.location.pathname);
-  }
-
-  if (!isDedicatedPage) {
-    const navEntries = (window.performance && window.performance.getEntriesByType)
+  const navEntries = (window.performance && window.performance.getEntriesByType)
       ? window.performance.getEntriesByType('navigation')
       : [];
     const navType = navEntries.length > 0
@@ -147,39 +140,49 @@ function boot() {
       sessionStorage.removeItem('hv_from_subpage');
     } catch (_) {}
 
-    if (skipIntro) {
-      // Intro skipped (navigated from another page to home)
-      const introEl = document.getElementById('highverz-intro');
-      if (introEl) introEl.remove();
-      document.documentElement.classList.remove('intro-pending');
-      document.documentElement.classList.add('skip-intro');
-      document.body.classList.remove('intro-active');
-      if (lenis) {
-        lenis.start();
-        lenis.scrollTo(0, { immediate: true });
-      }
+  if (skipIntro) {
+    // Intro skipped (navigated from another page)
+    const introEl = document.getElementById('highverz-intro');
+    if (introEl) introEl.remove();
+    document.documentElement.classList.remove('intro-pending');
+    document.documentElement.classList.add('skip-intro');
+    document.body.classList.remove('intro-active');
+    if (lenis) {
+      lenis.start();
+      lenis.scrollTo(0, { immediate: true });
+    }
+    
+    if (isHomeRoute(window.location.pathname)) {
       prepareHeroInitialState();
       initHeroIntro(false);
     } else {
-      // Play loading intro screen on reload and initial visit
-      prepareHeroInitialState();
-      if (lenis) lenis.stop();
-      initHighverzIntro({
-        onStartReveal: () => {
-          if (lenis) lenis.start();
-          initHeroIntro(false);
-        }
-      });
+      initPageScripts(window.location.pathname);
     }
-
-    // Shift + I triggers intro replay dynamically in-place without page reload
-    window.addEventListener('keydown', (e) => {
-      if (e.shiftKey && (e.key === 'I' || e.key === 'i')) {
-        if (lenis) lenis.stop();
-        replayHighverzIntro();
+  } else {
+    // Play loading intro screen on reload and initial visit
+    if (isHomeRoute(window.location.pathname)) {
+      prepareHeroInitialState();
+    }
+    if (lenis) lenis.stop();
+    initHighverzIntro({
+      onStartReveal: () => {
+        if (lenis) lenis.start();
+        if (isHomeRoute(window.location.pathname)) {
+          initHeroIntro(false);
+        } else {
+          initPageScripts(window.location.pathname);
+        }
       }
     });
   }
+
+  // Shift + I triggers intro replay dynamically in-place without page reload
+  window.addEventListener('keydown', (e) => {
+    if (e.shiftKey && (e.key === 'I' || e.key === 'i')) {
+      if (lenis) lenis.stop();
+      replayHighverzIntro();
+    }
+  });
 
   // Recalculate ScrollTrigger measurements once layout is painted
   requestAnimationFrame(() => {

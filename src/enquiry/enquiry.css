@@ -85,19 +85,7 @@ body.enquiry-modal-open .admin-leads-close {
 }
 
 .enquiry-modal-window::-webkit-scrollbar {
-  width: 8px;
-}
-
-.enquiry-modal-window::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: 999px;
-}
-
-.enquiry-modal-window::-webkit-scrollbar-thumb {
-  background: rgba(0, 229, 255, 0.45);
-  border: 2px solid transparent;
-  background-clip: padding-box;
-  border-radius: 999px;
+  display: none;
 }
 
 .simple-enquiry-window #enquiry-form-stage {

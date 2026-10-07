@@ -457,7 +457,10 @@ function bindModalEvents() {
 /**
  * Binds all CTA buttons to open the Enquiry Modal
  */
+let isTriggerBound = false;
 function bindTriggerElements() {
+  if (isTriggerBound) return;
+  isTriggerBound = true;
   document.addEventListener('click', (e) => {
     const target = e.target.closest(
       '[data-enquiry-trigger], .btn-nav-talk, #btn-nav-talk, .btn-primary-cyan-large, a[href="#contact"]'
@@ -651,7 +654,10 @@ export function openAdminLeadsDashboard() {
 /**
  * Keyboard shortcuts (Shift + L opens Admin Leads Dashboard)
  */
+let isKeyboardBound = false;
 function bindKeyboardShortcuts() {
+  if (isKeyboardBound) return;
+  isKeyboardBound = true;
   window.addEventListener('keydown', (e) => {
     if (e.shiftKey && (e.key === 'L' || e.key === 'l')) {
       openAdminLeadsDashboard();

@@ -11061,8 +11061,6 @@ html.page-transitioned .campaign-featured-label,
 /* Lock scroll and interactions during transition */
 body.page-is-transitioning {
   overflow: hidden !important;
-  scrollbar-gutter: stable;
-  padding-right: var(--transition-scrollbar-width, 0px);
 }
 
 body.page-is-transitioning > #page-content {

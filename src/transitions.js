@@ -340,17 +340,8 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
     document.body.appendChild(backdrop);
     document.body.appendChild(shell);
     document.body.appendChild(glow);
-    // Lock the space occupied by the native scrollbar before hiding overflow.
-    // Without this, centered sections briefly gain the scrollbar width and
-    // appear to jump right, then left, during the route handoff.
-    const transitionScrollbarWidth = Math.max(
-      0,
-      window.innerWidth - document.documentElement.clientWidth
-    );
-    document.body.style.setProperty(
-      '--transition-scrollbar-width',
-      `${transitionScrollbarWidth}px`
-    );
+    // Add transition state class
+
     document.body.classList.add('page-is-transitioning');
 
     // Stop observers, RAF loops, media, and counter tweens bound to the old
@@ -410,7 +401,6 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
           document.body.className = targetBodyClass;
         }
         document.body.classList.remove('page-is-transitioning');
-        document.body.style.removeProperty('--transition-scrollbar-width');
         if (navbar) navbar.classList.remove('page-nav-outgoing');
         if (wasCursorActive || window.innerWidth > 900) {
           document.body.classList.add('cursor-active');

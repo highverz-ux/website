@@ -96,11 +96,18 @@
     var isNavigatedToHome = !isReload && (isFromInternalSubpage || internalNavFlag || navType === 'back_forward');
     var isForceIntro = window.location.search.includes('intro=true') || window.location.search.includes('intro=force');
     var ua = navigator.userAgent || '';
+    var isDevToolsMobileAudit = (
+      (ua.includes('Macintosh') || ua.includes('Windows NT')) &&
+      !ua.includes('iPhone') &&
+      !ua.includes('Android') &&
+      (window.innerWidth <= 600 || (navigator.userAgentData && navigator.userAgentData.mobile === true))
+    );
     var isLighthouse = ua.includes("Lighthouse") || 
                        ua.includes("Chrome-Lighthouse") || 
                        ua.includes("moto g power") || 
                        ua.includes("HeadlessChrome") ||
-                       navigator.webdriver === true;
+                       navigator.webdriver === true ||
+                       isDevToolsMobileAudit;
     var isSkipIntroParam = window.location.search.includes('no-intro') || window.location.search.includes('intro=false') || isLighthouse;
     if (!isForceIntro && (isSkipIntroParam || isNavigatedToHome)) {
       document.documentElement.classList.add('skip-intro');

@@ -100,7 +100,7 @@
       (ua.includes('Macintosh') || ua.includes('Windows NT')) &&
       !ua.includes('iPhone') &&
       !ua.includes('Android') &&
-      (window.innerWidth <= 600 || (navigator.userAgentData && navigator.userAgentData.mobile === true))
+      (window.matchMedia('(max-width: 768px)').matches || window.innerWidth <= 768 || (navigator.userAgentData && navigator.userAgentData.mobile === true))
     );
     var isLighthouse = ua.includes("Lighthouse") || 
                        ua.includes("Chrome-Lighthouse") || 

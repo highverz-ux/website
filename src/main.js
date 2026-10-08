@@ -75,20 +75,18 @@ function initLenis() {
   gsap.ticker.lagSmoothing(500, 33);
 }
 
-// Load the ambient WebGL background only once the page is idle so three.js
-// never competes with first paint / LCP on mobile.
+// Load the ambient WebGL background promptly without multi-second delays
 function loadFluidBackground() {
   const start = () => {
     import('./hero/HeroFluidBackground.js')
       .then(({ initHeroFluidBackground }) => initHeroFluidBackground())
       .catch(() => {});
   };
-  const whenIdle = () => {
-    if ('requestIdleCallback' in window) requestIdleCallback(start, { timeout: 2500 });
-    else setTimeout(start, 600);
-  };
-  if (document.readyState === 'complete') whenIdle();
-  else window.addEventListener('load', whenIdle, { once: true });
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => setTimeout(start, 80), { once: true });
+  } else {
+    setTimeout(start, 80);
+  }
 }
 
 // Initialize on DOM Ready or immediately if document is already ready
@@ -2378,32 +2376,59 @@ export function initHeroReelCarousel() {
     animId = requestAnimationFrame(loop);
   };
 
-  // Drag interactivity
+  // Drag interactivity with touch axis locking
+  let isHorizontalDrag = false;
+  let isVerticalScroll = false;
+  let startY = 0;
+  let activePointerId = null;
+
   const onPointerDown = (e) => {
-    isDragging = true;
+    isDragging = false;
+    isHorizontalDrag = false;
+    isVerticalScroll = false;
     hasMoved = false;
-    isInteracting = true;
     dragVelocity = 0;
     startX = e.clientX;
+    startY = e.clientY;
     lastDragX = e.clientX;
     lastDragTime = performance.now();
     startScrollPosition = scrollPosition;
-    track.classList.add('is-dragging');
-    viewport.classList.add('is-dragging');
-    // Disable optic CSS transitions during drag for instant responsiveness
-    cardPositions.forEach((p) => { p.style.transition = 'none'; });
-    if (track.setPointerCapture) {
-      try { track.setPointerCapture(e.pointerId); } catch (_) {}
-    }
+    activePointerId = e.pointerId;
   };
 
   const onPointerMove = (e) => {
-    if (!isDragging) return;
+    if (isVerticalScroll) return;
+    if (activePointerId !== null && e.pointerId !== activePointerId) return;
+
     const currentX = e.clientX;
-    const diff = (currentX - startX) * 2.8;
-    if (Math.abs(diff) > 2) {
-      hasMoved = true;
+    const currentY = e.clientY;
+    const diffX = currentX - startX;
+    const diffY = currentY - startY;
+
+    // Axis locking: distinguish vertical page swipe from horizontal carousel drag
+    if (!isHorizontalDrag) {
+      if (Math.abs(diffX) < 6 && Math.abs(diffY) < 6) return;
+      if (Math.abs(diffY) > Math.abs(diffX)) {
+        isVerticalScroll = true;
+        isDragging = false;
+        isInteracting = false;
+        return;
+      }
+      isHorizontalDrag = true;
+      isDragging = true;
+      isInteracting = true;
+      track.classList.add('is-dragging');
+      viewport.classList.add('is-dragging');
+      cardPositions.forEach((p) => { p.style.transition = 'none'; });
+      if (track.setPointerCapture) {
+        try { track.setPointerCapture(e.pointerId); } catch (_) {}
+      }
     }
+
+    if (!isDragging) return;
+
+    hasMoved = true;
+    const diff = diffX * 2.4;
 
     const now = performance.now();
     const dt = Math.max(now - lastDragTime, 1);
@@ -2422,16 +2447,24 @@ export function initHeroReelCarousel() {
   };
 
   const onPointerUp = (e) => {
-    if (!isDragging) return;
+    activePointerId = null;
+    if (isVerticalScroll) {
+      isVerticalScroll = false;
+      return;
+    }
+    if (!isDragging) {
+      isHorizontalDrag = false;
+      return;
+    }
     isDragging = false;
+    isHorizontalDrag = false;
     track.classList.remove('is-dragging');
     viewport.classList.remove('is-dragging');
     if (track.releasePointerCapture) {
       try { track.releasePointerCapture(e.pointerId); } catch (_) {}
     }
 
-    // Give even a small swipe a gentle glide. This keeps short touchpad or
-    // finger swipes feeling like a slide instead of ending abruptly.
+    // Give even a small swipe a gentle glide.
     const totalDragDistance = lastDragX - startX;
     if (Math.abs(totalDragDistance) > 2) {
       autoDirection = totalDragDistance > 0 ? -1 : 1;

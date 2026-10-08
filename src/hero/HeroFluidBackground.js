@@ -34,7 +34,7 @@ const fragmentShader = `
   float fbm(vec2 p) {
     float value = 0.0;
     float amplitude = 0.5;
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 3; i++) {
       value += amplitude * noise(p);
       p = p * 2.03 + vec2(9.2, 3.7);
       amplitude *= 0.5;
@@ -45,14 +45,13 @@ const fragmentShader = `
   void main() {
     vec2 uv = vUv;
     float aspect = uResolution.x / max(uResolution.y, 1.0);
-    vec2 p = (uv - 0.5) * vec2(aspect, 1.0);
     // Slow, continuous advection gives the masses a calm liquid flow.
     float t = uTime * 0.22;
 
     // The pointer creates a soft local displacement while the time-based
     // drift remains the primary source of motion.
     vec2 pointer = (uPointer - 0.5) * vec2(aspect, 1.0);
-    vec2 pointerDelta = p - pointer;
+    vec2 pointerDelta = ((uv - 0.5) * vec2(aspect, 1.0)) - pointer;
     // Keep the response broad enough to feel connected to the pointer,
     // rather than like a tiny spotlight.
     float pointerField = exp(-5.8 * dot(pointerDelta, pointerDelta));
@@ -63,6 +62,16 @@ const fragmentShader = `
       t * 0.48 + sin(t * 0.42) * 0.42,
       -t * 0.31 + cos(t * 0.31) * 0.34
     );
+
+    // On portrait mobile screens, adapt coordinate scaling and mass positions so the liquid pools
+    // are centered directly behind the headline and carousel, instead of being cut off.
+    vec2 p;
+    if (aspect < 1.0) {
+      p = (uv - 0.5) * vec2(1.0, 1.0 / aspect) * 0.72;
+    } else {
+      p = (uv - 0.5) * vec2(aspect, 1.0);
+    }
+
     vec2 warp = vec2(
       fbm(p * 1.25 + drift + vec2(3.1, 8.2)),
       fbm(p * 1.25 - drift + vec2(8.7, 1.9))
@@ -83,8 +92,10 @@ const fragmentShader = `
     // instead of remaining locked to two fixed masses.
     float ambientFlow = fbm(p * 0.72 + drift * 0.24 + vec2(2.8, 6.1));
     // A second broad mass keeps the composition alive on the right side too.
-    // It shares the same warp field, so both sides feel like one flowing body.
-    vec2 rightPoint = p - vec2(0.92, -0.06) + warp * 0.9;
+    // In portrait mobile, position it centered below the hero headline.
+    vec2 rightPoint = aspect < 1.0
+      ? (p - vec2(0.18, -0.42) + warp * 0.75)
+      : (p - vec2(0.92, -0.06) + warp * 0.9);
     float rightMass = fbm(rightPoint * 1.12 - drift * 0.42 + vec2(5.4, 1.7));
     float density = max(
       largeField * 0.50 + foldedField * 0.16 + flowingField * 0.20 + ambientFlow * 0.14,
@@ -101,10 +112,10 @@ const fragmentShader = `
     float highlightNoise = fbm(liquidPoint * 3.5 + vec2(t * 0.45, -t * 0.3));
     float highlight = pow(max(0.0, highlightNoise - 0.57) * 2.25, 2.2) * liquid;
 
-    vec3 deepBlue = vec3(0.0, 0.009, 0.035);
-    vec3 electricBlue = vec3(0.0, 0.045, 0.14);
-    vec3 cyan = vec3(0.0, 0.30, 0.43);
-    vec3 lightCyan = vec3(0.18, 0.50, 0.60);
+    vec3 deepBlue = vec3(0.0, 0.012, 0.045);
+    vec3 electricBlue = vec3(0.0, 0.055, 0.18);
+    vec3 cyan = vec3(0.0, 0.42, 0.58);
+    vec3 lightCyan = vec3(0.24, 0.64, 0.72);
     vec3 fluidColor = mix(deepBlue, electricBlue, smoothstep(0.35, 0.72, density));
     fluidColor = mix(fluidColor, cyan, rim * 0.38 + innerFold * 0.10);
     fluidColor = mix(fluidColor, lightCyan, highlight * 0.25);
@@ -166,10 +177,10 @@ export function initHeroFluidBackground() {
   renderer.setClearColor(0x000000, 0);
 
   const resize = () => {
-    const isMobile = window.matchMedia('(max-width: 720px)').matches;
+    const isMobile = window.innerWidth < 768;
     const width = Math.max(1, window.innerWidth);
     const height = Math.max(1, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+    renderer.setPixelRatio(isMobile ? 1.0 : Math.min(window.devicePixelRatio || 1, 1.5));
     renderer.setSize(width, height, false);
     material.uniforms.uResolution.value.set(width, height);
   };
@@ -207,12 +218,13 @@ export function initHeroFluidBackground() {
   };
 
   const onResize = resize;
+  const heroTarget = document.getElementById('hero') || document.querySelector('.hero-section') || root;
   const visibilityObserver = new IntersectionObserver(([entry]) => {
     isVisible = entry.isIntersecting;
     if (isVisible) start();
     else cancelAnimationFrame(frameId);
   }, { threshold: 0.01 });
-  visibilityObserver.observe(root);
+  visibilityObserver.observe(heroTarget);
   const themeObserver = new MutationObserver(() => {
     material.uniforms.uTheme.value = document.documentElement.dataset.theme === 'light' ? 1 : 0;
     if (reducedMotion) render(performance.now());

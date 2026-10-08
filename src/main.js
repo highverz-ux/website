@@ -2210,6 +2210,7 @@ export function initHeroReelCarousel() {
   let animId = null;
   let layoutRetryId = null;
   let lastTime = performance.now();
+  let cachedViewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
 
   // During a soft page transition the incoming page can report a tiny width
   // for a paint while it is being promoted out of the transition shell. Never
@@ -2221,7 +2222,8 @@ export function initHeroReelCarousel() {
   };
 
   const measure = () => {
-    const width = getViewportWidth();
+    cachedViewportWidth = getViewportWidth();
+    const width = cachedViewportWidth;
     if (width < 640) {
       stageStep = Math.max(120, Math.min(150, width * 0.28));
     } else if (width < 1024) {
@@ -2240,8 +2242,7 @@ export function initHeroReelCarousel() {
   const updateVideoPriority = (force = false) => {
     if (!videosUnlocked || !stageStep || !videos.length || !isCarouselVisible) return;
 
-    const width = getViewportWidth();
-    const isMobile = width < 768;
+    const isMobile = cachedViewportWidth < 768;
     // On mobile devices, strictly play only the 1 center card (offset 0).
     // On desktop, play the 3 center cards (offset -1, 0, 1).
     // Playing 7-10 concurrent HTML5 videos overwhelms mobile video decoders and drops frames.
@@ -2308,8 +2309,7 @@ export function initHeroReelCarousel() {
 
   // Extracted Perspective View: Tightly spaced concave amphitheater wrap
   const render = () => {
-    const viewportWidth = getViewportWidth();
-    const isMobile = viewportWidth < 768;
+    const isMobile = cachedViewportWidth < 768;
 
     // Render cards on the concave perspective arc with tight spacing
     cardPositions.forEach((pos, index) => {
@@ -2453,7 +2453,7 @@ export function initHeroReelCarousel() {
     if (!isDragging) return;
 
     hasMoved = true;
-    const diff = diffX * 2.4;
+    const diff = diffX * 1.1;
 
     const now = performance.now();
     const dt = Math.max(now - lastDragTime, 1);

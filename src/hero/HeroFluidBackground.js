@@ -64,10 +64,10 @@ const fragmentShader = `
     );
 
     // On portrait mobile screens, adapt coordinate scaling and mass positions so the liquid pools
-    // are centered directly behind the headline and carousel, instead of being cut off.
+    // are centered directly behind the headline and carousel, blooming across the viewport.
     vec2 p;
     if (aspect < 1.0) {
-      p = (uv - 0.5) * vec2(1.0, 1.0 / aspect) * 0.72;
+      p = (uv - vec2(0.5, 0.65)) * vec2(0.85, 1.15);
     } else {
       p = (uv - 0.5) * vec2(aspect, 1.0);
     }
@@ -94,23 +94,23 @@ const fragmentShader = `
     // A second broad mass keeps the composition alive on the right side too.
     // In portrait mobile, position it centered below the hero headline.
     vec2 rightPoint = aspect < 1.0
-      ? (p - vec2(0.18, -0.42) + warp * 0.75)
+      ? (p - vec2(0.15, -0.15) + warp * 0.75)
       : (p - vec2(0.92, -0.06) + warp * 0.9);
     float rightMass = fbm(rightPoint * 1.12 - drift * 0.42 + vec2(5.4, 1.7));
     float density = max(
-      largeField * 0.50 + foldedField * 0.16 + flowingField * 0.20 + ambientFlow * 0.14,
-      rightMass * 0.78
+      largeField * 0.52 + foldedField * 0.18 + flowingField * 0.18 + ambientFlow * 0.14,
+      rightMass * 0.75
     );
 
     // Broad negative-space pockets keep black dominant while the threshold
     // edges stretch, merge, and separate like a slow liquid surface.
     float pocketNoise = fbm(liquidPoint * 0.82 - drift * 0.45 + vec2(4.0, 2.0));
-    float pocket = smoothstep(0.39, 0.67, pocketNoise);
-    float liquid = smoothstep(0.38, 0.66, density) * (0.58 + pocket * 0.42);
-    float rim = smoothstep(0.40, 0.53, density) * (1.0 - smoothstep(0.61, 0.76, density));
-    float innerFold = smoothstep(0.57, 0.75, foldedField) * liquid;
+    float pocket = smoothstep(0.35, 0.65, pocketNoise);
+    float liquid = smoothstep(0.34, 0.62, density) * (0.58 + pocket * 0.42);
+    float rim = smoothstep(0.36, 0.50, density) * (1.0 - smoothstep(0.58, 0.74, density));
+    float innerFold = smoothstep(0.52, 0.72, foldedField) * liquid;
     float highlightNoise = fbm(liquidPoint * 3.5 + vec2(t * 0.45, -t * 0.3));
-    float highlight = pow(max(0.0, highlightNoise - 0.57) * 2.25, 2.2) * liquid;
+    float highlight = pow(max(0.0, highlightNoise - 0.55) * 2.25, 2.2) * liquid;
 
     vec3 deepBlue = vec3(0.0, 0.012, 0.045);
     vec3 electricBlue = vec3(0.0, 0.055, 0.18);
@@ -123,7 +123,7 @@ const fragmentShader = `
     // Light mode keeps the same motion as a restrained pale-cyan wash.
     fluidColor = mix(fluidColor, vec3(0.05, 0.58, 0.68), uTheme * 0.86);
 
-    float centerQuiet = 1.0 - 0.16 * exp(-2.6 * dot(p * vec2(0.72, 0.95), p * vec2(0.72, 0.95)));
+    float centerQuiet = aspect < 1.0 ? 1.0 : (1.0 - 0.16 * exp(-2.6 * dot(p * vec2(0.72, 0.95), p * vec2(0.72, 0.95))));
     float alpha = liquid * 0.61 + rim * 0.17 + innerFold * 0.105 + highlight * 0.19;
     alpha *= centerQuiet;
     alpha *= mix(1.0, 0.58, uTheme);
@@ -218,13 +218,12 @@ export function initHeroFluidBackground() {
   };
 
   const onResize = resize;
-  const heroTarget = document.getElementById('hero') || document.querySelector('.hero-section') || root;
   const visibilityObserver = new IntersectionObserver(([entry]) => {
     isVisible = entry.isIntersecting;
     if (isVisible) start();
     else cancelAnimationFrame(frameId);
   }, { threshold: 0.01 });
-  visibilityObserver.observe(heroTarget);
+  visibilityObserver.observe(root);
   const themeObserver = new MutationObserver(() => {
     material.uniforms.uTheme.value = document.documentElement.dataset.theme === 'light' ? 1 : 0;
     if (reducedMotion) render(performance.now());

@@ -268,6 +268,7 @@ export function initScatterGrid(container, options = {}) {
   }
   
   const handlePointerMove = (e) => {
+    if (!isIntersecting) return;
     const rect = canvas.getBoundingClientRect();
     pointerX = e.clientX - rect.left;
     pointerY = e.clientY - rect.top;
@@ -279,6 +280,7 @@ export function initScatterGrid(container, options = {}) {
   };
   
   const handlePointerDown = (e) => {
+    if (!isIntersecting) return;
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -288,8 +290,8 @@ export function initScatterGrid(container, options = {}) {
     ripples.push({ x, y, r: 0 });
   };
   
-  window.addEventListener("pointermove", handlePointerMove, {passive: true});
-  window.addEventListener("pointerdown", handlePointerDown, {passive: true});
+  container.addEventListener("pointermove", handlePointerMove, {passive: true});
+  container.addEventListener("pointerdown", handlePointerDown, {passive: true});
   container.addEventListener("pointerleave", handlePointerLeave, {passive: true});
   
   const resizeObserver = new ResizeObserver(() => {
@@ -305,8 +307,8 @@ export function initScatterGrid(container, options = {}) {
     if (raf) cancelAnimationFrame(raf);
     visibilityObserver?.disconnect();
     resizeObserver.disconnect();
-    window.removeEventListener("pointermove", handlePointerMove);
-    window.removeEventListener("pointerdown", handlePointerDown);
+    container.removeEventListener("pointermove", handlePointerMove);
+    container.removeEventListener("pointerdown", handlePointerDown);
     container.removeEventListener("pointerleave", handlePointerLeave);
   };
 }

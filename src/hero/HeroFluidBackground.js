@@ -169,7 +169,7 @@ export function initHeroFluidBackground() {
     const isMobile = window.matchMedia('(max-width: 720px)').matches;
     const width = Math.max(1, window.innerWidth);
     const height = Math.max(1, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.15 : 1.5));
+    renderer.setPixelRatio(isMobile ? 0.6 : Math.min(window.devicePixelRatio || 1, 1.5));
     renderer.setSize(width, height, false);
     material.uniforms.uResolution.value.set(width, height);
   };

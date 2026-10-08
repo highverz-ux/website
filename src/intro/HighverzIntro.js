@@ -89,12 +89,94 @@ export class HighverzIntro {
       ease: 'power2.out',
     }, 0);
 
-    // Animate progress to 80% while waiting for load
+    // Initial progress bump while assets begin loading
     this.tl.to(progress, {
-      scaleX: 0.8,
-      duration: 1.5,
+      scaleX: 0.18,
+      duration: 0.4,
       ease: 'power1.out',
     }, 0);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // REAL ASSET PRELOADING COORDINATOR
+  // Actively buffers critical fonts, hero posters, and center hero reel videos
+  // while the intro is displayed so the website opens with zero lag.
+  // ─────────────────────────────────────────────────────────────────────────
+  async startAssetPreload() {
+    const progress = this.container?.querySelector('.hv-loader-progress-fill');
+    let currentScale = 0.18;
+
+    const setProgress = (val, duration = 0.35) => {
+      if (this.isFinishing || this.isCompleted || !progress) return;
+      currentScale = Math.max(currentScale, val);
+      gsap.to(progress, {
+        scaleX: currentScale,
+        duration,
+        ease: 'power2.out',
+        overwrite: 'auto'
+      });
+    };
+
+    // 1. Critical Typography
+    const fontTask = (document.fonts && document.fonts.ready)
+      ? document.fonts.ready.then(() => setProgress(0.38)).catch(() => {})
+      : Promise.resolve();
+
+    // 2. Critical Branding & Hero Reel Posters
+    const criticalImages = [
+      '/assets/highverz-hv-logo.svg',
+      '/assets/logo-white.png',
+      '/assets/creators/reels/clean/posters/reel_1.jpg',
+      '/assets/creators/reels/clean/posters/reel_2.jpg',
+      '/assets/creators/reels/clean/posters/reel_10.jpg',
+      '/assets/creators/opt/umarpnj.jpg',
+      '/assets/creators/opt/niv0ne.jpg',
+    ];
+    const imageTask = Promise.all(
+      criticalImages.map(src => new Promise(resolve => {
+        const img = new Image();
+        img.onload = resolve;
+        img.onerror = resolve;
+        img.src = src;
+        if (img.decode) img.decode().then(resolve).catch(resolve);
+      }))
+    ).then(() => setProgress(0.68));
+
+    // 3. Unlock and buffer the visible hero videos (center cards 0, 1, 9)
+    if (typeof window.__hvUnlockHeroVideos === 'function') {
+      window.__hvUnlockHeroVideos();
+    }
+    const centerVideos = Array.from(document.querySelectorAll(
+      '.card-position[data-index="0"] .card-video, .card-position[data-index="1"] .card-video, .card-position[data-index="9"] .card-video'
+    ));
+
+    const videoTask = centerVideos.length
+      ? Promise.all(centerVideos.map(video => new Promise(resolve => {
+          if (video.readyState >= 2) return resolve();
+          const done = () => { cleanup(); resolve(); };
+          const timer = setTimeout(done, 1500); // 1.5s max wait so slow networks never hang
+          const cleanup = () => {
+            video.removeEventListener('loadeddata', done);
+            video.removeEventListener('canplay', done);
+            clearTimeout(timer);
+          };
+          video.addEventListener('loadeddata', done, { once: true });
+          video.addEventListener('canplay', done, { once: true });
+        }))).then(() => setProgress(0.92))
+      : Promise.resolve();
+
+    // 4. Polish: minimum 1.1s for branded animation, maximum 2.2s safety cap
+    const minDelay = new Promise(resolve => setTimeout(resolve, 1100));
+    const maxTimeout = new Promise(resolve => setTimeout(resolve, 2200));
+
+    await Promise.race([
+      Promise.all([fontTask, imageTask, videoTask, minDelay]),
+      maxTimeout
+    ]);
+
+    if (!this.isCompleted && !this.isFinishing) {
+      this.finishLoading();
+    }
   }
 
   finishLoading() {
@@ -109,24 +191,24 @@ export class HighverzIntro {
 
     finishTl.to(progress, {
       scaleX: 1,
-      duration: 0.4,
+      duration: 0.35,
       ease: 'power1.inOut'
     }, 0);
 
-    finishTl.call(() => this.triggerReveal(), [], 0.4);
+    finishTl.call(() => this.triggerReveal(), [], 0.35);
     
     finishTl.to(this.container, {
       yPercent: -100,
-      duration: 0.95,
+      duration: 0.85,
       ease: 'power4.inOut',
-    }, 0.4);
+    }, 0.35);
     
     finishTl.to(center, {
       opacity: 0,
       y: -18,
-      duration: 0.42,
+      duration: 0.38,
       ease: 'power2.in',
-    }, 0.4);
+    }, 0.35);
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -205,24 +287,12 @@ export class HighverzIntro {
 
     this.safetyTimer = setTimeout(() => {
       if (!this.isCompleted) this.finishSafely();
-    }, 8000);
-
-    const onWindowLoad = () => {
-      // Small delay to ensure rendering catches up
-      setTimeout(() => {
-        if (!this.isCompleted) this.finishLoading();
-      }, 200);
-    };
-
-    if (document.readyState === 'complete') {
-      onWindowLoad();
-    } else {
-      window.addEventListener('load', onWindowLoad);
-    }
+    }, 4500);
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         this.animate();
+        this.startAssetPreload();
       });
     });
   }

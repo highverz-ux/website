@@ -26,16 +26,22 @@
 
     <!-- Typography System: Satoshi (Display Headlines) & Inter (Precision Sans) matching Clutra reference -->
     <link rel="preconnect" href="https://api.fontshare.com" />
+    <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Fonts load asynchronously so they never block first paint (Lighthouse: render-blocking requests) -->
     <link
       href="https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,400,300,901,701,501,401,301&display=swap"
-      rel="stylesheet"
+      rel="stylesheet" media="print" onload="this.media='all'"
     />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap"
-      rel="stylesheet"
+      rel="stylesheet" media="print" onload="this.media='all'"
     />
+    <noscript>
+      <link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,400,300,901,701,501,401,301&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet" />
+    </noscript>
 
     <!-- Favicon & Brand Icons -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -195,7 +201,7 @@
           <div class="hero-trust-avatars" aria-hidden="true">
             <img src="/assets/creators/umarpnj-avatar.png" alt="" />
             <img src="/assets/creators/niv0ne-avatar.png" alt="" />
-            <img src="/assets/creators/alex-gonzalez.jpg" alt="" />
+            <img src="/assets/creators/opt/alex-gonzalez.jpg" alt="" />
           </div>
           <span class="hero-trust-copy">Creator growth behind</span>
           <span class="hero-trust-number" id="stats-counter">0+</span>
@@ -256,70 +262,70 @@
               <div class="card-position" data-index="0">
                 <div class="card-perspective">
                   <div class="video-card">
-                    <video class="card-video" playsinline muted loop preload="none" fetchpriority="high" poster="/assets/creators/reels/clean/posters/reel_1.jpg" src="/assets/creators/reels/clean/reel_1.mp4"></video>
+                    <video class="card-video" playsinline muted loop preload="none" poster="/assets/creators/reels/clean/posters/reel_1.jpg" data-src="/assets/creators/reels/hero/reel_1.mp4"></video>
                   </div>
                 </div>
               </div>
               <div class="card-position" data-index="1">
                 <div class="card-perspective">
                   <div class="video-card">
-                    <video class="card-video" playsinline muted loop preload="none" poster="/assets/creators/reels/clean/posters/reel_2.jpg" src="/assets/creators/reels/clean/reel_2.mp4"></video>
+                    <video class="card-video" playsinline muted loop preload="none" poster="/assets/creators/reels/clean/posters/reel_2.jpg" data-src="/assets/creators/reels/hero/reel_2.mp4"></video>
                   </div>
                 </div>
               </div>
               <div class="card-position" data-index="2">
                 <div class="card-perspective">
                   <div class="video-card">
-                    <video class="card-video" playsinline muted loop preload="none" poster="/assets/creators/reels/clean/posters/reel_3.jpg" src="/assets/creators/reels/clean/reel_3.mp4"></video>
+                    <video class="card-video" playsinline muted loop preload="none" poster="/assets/creators/reels/clean/posters/reel_3.jpg" data-src="/assets/creators/reels/hero/reel_3.mp4"></video>
                   </div>
                 </div>
               </div>
               <div class="card-position" data-index="3">
                 <div class="card-perspective">
                   <div class="video-card">
-                    <video class="card-video" playsinline muted loop preload="none" poster="/assets/creators/reels/clean/posters/reel_4.jpg" src="/assets/creators/reels/wally%20sample%20(1).mp4"></video>
+                    <video class="card-video" playsinline muted loop preload="none" poster="/assets/creators/reels/clean/posters/reel_4.jpg" data-src="/assets/creators/reels/hero/reel_4.mp4"></video>
                   </div>
                 </div>
               </div>
               <div class="card-position" data-index="4">
                 <div class="card-perspective">
                   <div class="video-card">
-                    <video class="card-video" playsinline muted loop preload="none" poster="/assets/creators/reels/clean/posters/reel_5.jpg" src="/assets/creators/reels/clean/reel_5.mp4"></video>
+                    <video class="card-video" playsinline muted loop preload="none" poster="/assets/creators/reels/clean/posters/reel_5.jpg" data-src="/assets/creators/reels/hero/reel_5.mp4"></video>
                   </div>
                 </div>
               </div>
               <div class="card-position" data-index="5">
                 <div class="card-perspective">
                   <div class="video-card">
-                    <video class="card-video" playsinline muted loop preload="none" poster="/assets/creators/reels/clean/posters/reel_6.jpg" src="/assets/creators/reels/clean/reel_6.mp4"></video>
+                    <video class="card-video" playsinline muted loop preload="none" poster="/assets/creators/reels/clean/posters/reel_6.jpg" data-src="/assets/creators/reels/hero/reel_6.mp4"></video>
                   </div>
                 </div>
               </div>
               <div class="card-position" data-index="6">
                 <div class="card-perspective">
                   <div class="video-card">
-                    <video class="card-video" playsinline muted loop preload="none" poster="/assets/creators/reels/clean/posters/reel_7.jpg" src="/assets/creators/reels/clean/reel_7.mp4"></video>
+                    <video class="card-video" playsinline muted loop preload="none" poster="/assets/creators/reels/clean/posters/reel_7.jpg" data-src="/assets/creators/reels/hero/reel_7.mp4"></video>
                   </div>
                 </div>
               </div>
               <div class="card-position" data-index="7">
                 <div class="card-perspective">
                   <div class="video-card">
-                    <video class="card-video" playsinline muted loop preload="none" poster="/assets/creators/reels/clean/posters/reel_8.jpg" src="/assets/creators/reels/clean/reel_8.mp4"></video>
+                    <video class="card-video" playsinline muted loop preload="none" poster="/assets/creators/reels/clean/posters/reel_8.jpg" data-src="/assets/creators/reels/hero/reel_8.mp4"></video>
                   </div>
                 </div>
               </div>
               <div class="card-position" data-index="8">
                 <div class="card-perspective">
                   <div class="video-card">
-                    <video class="card-video" playsinline muted loop preload="none" poster="/assets/creators/reels/clean/posters/reel_9.jpg" src="/assets/creators/reels/clean/reel_9.mp4"></video>
+                    <video class="card-video" playsinline muted loop preload="none" poster="/assets/creators/reels/clean/posters/reel_9.jpg" data-src="/assets/creators/reels/hero/reel_9.mp4"></video>
                   </div>
                 </div>
               </div>
               <div class="card-position" data-index="9">
                 <div class="card-perspective">
                   <div class="video-card">
-                    <video class="card-video" playsinline muted loop preload="none" poster="/assets/creators/reels/clean/posters/reel_10.jpg" src="/assets/creators/reels/clean/reel_10.mp4"></video>
+                    <video class="card-video" playsinline muted loop preload="none" poster="/assets/creators/reels/clean/posters/reel_10.jpg" data-src="/assets/creators/reels/hero/reel_10.mp4"></video>
                   </div>
                 </div>
               </div>
@@ -497,7 +503,7 @@
           <div class="creator-card" id="creator-niv0ne">
             <div class="creator-image-col">
               <a href="https://www.instagram.com/niv0ne/" target="_blank" rel="noopener noreferrer" class="creator-image-wrap" data-cursor="INSTAGRAM ↗" aria-label="Niv0ne Instagram Profile">
-                <img src="/assets/creators/niv0ne.png" alt="Niv0ne — Creator growth case study" class="creator-img" />
+                <img src="/assets/creators/opt/niv0ne.jpg" alt="Niv0ne — Creator growth case study" class="creator-img" />
                 <div class="creator-image-gradient"></div>
                 <div class="creator-badge-overlay">
                   <span class="badge-growth">↗ 4,900% Growth</span>
@@ -560,7 +566,7 @@
           <div class="creator-card" id="creator-umarpnj">
             <div class="creator-image-col">
               <a href="https://www.instagram.com/umarpnj/" target="_blank" rel="noopener noreferrer" class="creator-image-wrap" data-cursor="INSTAGRAM ↗" aria-label="Umarpnj Instagram Profile">
-                <img src="/assets/creators/umarpnj.png" alt="Umarpnj — Creator growth case study" class="creator-img" />
+                <img src="/assets/creators/opt/umarpnj.jpg" alt="Umarpnj — Creator growth case study" class="creator-img" />
                 <div class="creator-image-gradient"></div>
                 <div class="creator-badge-overlay">
                   <span class="badge-growth">↗ From Zero</span>
@@ -827,7 +833,7 @@
             <!-- Set 1 -->
             <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
-                <img src="/assets/creators/niv0ne.png" alt="Niv0ne" class="p-card-img" loading="eager" />
+                <img src="/assets/creators/opt/niv0ne.jpg" alt="Niv0ne" class="p-card-img" loading="lazy" decoding="async" />
                 <div class="p-card-gradient"></div>
                 <h3 class="p-card-title">Niv0ne</h3>
               </div>
@@ -839,7 +845,7 @@
 
             <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
-                <img src="/assets/creators/umarpnj.png" alt="Umarpnj" class="p-card-img" loading="eager" />
+                <img src="/assets/creators/opt/umarpnj.jpg" alt="Umarpnj" class="p-card-img" loading="lazy" decoding="async" />
                 <div class="p-card-gradient"></div>
                 <h3 class="p-card-title">Umarpnj</h3>
               </div>
@@ -851,7 +857,7 @@
 
             <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
-                <img src="/assets/creators/alex-gonzalez.jpg" alt="Alex Gonzalez" class="p-card-img" loading="eager" />
+                <img src="/assets/creators/opt/alex-gonzalez.jpg" alt="Alex Gonzalez" class="p-card-img" loading="lazy" decoding="async" />
                 <div class="p-card-gradient"></div>
                 <h3 class="p-card-title">Alex Gonzalez</h3>
               </div>
@@ -863,7 +869,7 @@
 
             <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
-                <img src="/assets/creators/sabri-suby.jpg" alt="Sabri Suby" class="p-card-img" loading="eager" />
+                <img src="/assets/creators/opt/sabri-suby.jpg" alt="Sabri Suby" class="p-card-img" loading="lazy" decoding="async" />
                 <div class="p-card-gradient"></div>
                 <h3 class="p-card-title">Sabri Suby</h3>
               </div>
@@ -875,7 +881,7 @@
 
             <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
-                <img src="/assets/creators/iman-gadzhi.jpg" alt="Iman Gadzhi" class="p-card-img" loading="eager" />
+                <img src="/assets/creators/opt/iman-gadzhi.jpg" alt="Iman Gadzhi" class="p-card-img" loading="lazy" decoding="async" />
                 <div class="p-card-gradient"></div>
                 <h3 class="p-card-title">Iman Gadzhi</h3>
               </div>
@@ -887,7 +893,7 @@
 
             <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
-                <img src="/assets/creators/jack-neel.jpg" alt="Jack Neel" class="p-card-img" loading="eager" />
+                <img src="/assets/creators/opt/jack-neel.jpg" alt="Jack Neel" class="p-card-img" loading="lazy" decoding="async" />
                 <div class="p-card-gradient"></div>
                 <h3 class="p-card-title">Jack Neel</h3>
               </div>
@@ -899,7 +905,7 @@
 
             <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
-                <img src="/assets/creators/ben-azoulay.png" alt="Ben Azoulay" class="p-card-img" loading="eager" />
+                <img src="/assets/creators/opt/ben-azoulay.jpg" alt="Ben Azoulay" class="p-card-img" loading="lazy" decoding="async" />
                 <div class="p-card-gradient"></div>
                 <h3 class="p-card-title">Ben Azoulay</h3>
               </div>
@@ -911,7 +917,7 @@
 
             <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
-                <img src="/assets/creators/daniel-bitton.png" alt="Daniel Bitton" class="p-card-img" loading="eager" />
+                <img src="/assets/creators/opt/daniel-bitton.jpg" alt="Daniel Bitton" class="p-card-img" loading="lazy" decoding="async" />
                 <div class="p-card-gradient"></div>
                 <h3 class="p-card-title">Daniel Bitton</h3>
               </div>
@@ -924,7 +930,7 @@
             <!-- Set 2 (Seamless loop duplicate) -->
             <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
-                <img src="/assets/creators/niv0ne.png" alt="" class="p-card-img" loading="lazy" />
+                <img src="/assets/creators/opt/niv0ne.jpg" alt="" class="p-card-img" loading="lazy" />
                 <div class="p-card-gradient"></div>
                 <h3 class="p-card-title">Niv0ne</h3>
               </div>
@@ -936,7 +942,7 @@
 
             <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
-                <img src="/assets/creators/umarpnj.png" alt="" class="p-card-img" loading="lazy" />
+                <img src="/assets/creators/opt/umarpnj.jpg" alt="" class="p-card-img" loading="lazy" />
                 <div class="p-card-gradient"></div>
                 <h3 class="p-card-title">Umarpnj</h3>
               </div>
@@ -948,7 +954,7 @@
 
             <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
-                <img src="/assets/creators/alex-gonzalez.jpg" alt="" class="p-card-img" loading="lazy" />
+                <img src="/assets/creators/opt/alex-gonzalez.jpg" alt="" class="p-card-img" loading="lazy" />
                 <div class="p-card-gradient"></div>
                 <h3 class="p-card-title">Alex Gonzalez</h3>
               </div>
@@ -960,7 +966,7 @@
 
             <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
-                <img src="/assets/creators/sabri-suby.jpg" alt="" class="p-card-img" loading="lazy" />
+                <img src="/assets/creators/opt/sabri-suby.jpg" alt="" class="p-card-img" loading="lazy" />
                 <div class="p-card-gradient"></div>
                 <h3 class="p-card-title">Sabri Suby</h3>
               </div>
@@ -972,7 +978,7 @@
 
             <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
-                <img src="/assets/creators/iman-gadzhi.jpg" alt="" class="p-card-img" loading="lazy" />
+                <img src="/assets/creators/opt/iman-gadzhi.jpg" alt="" class="p-card-img" loading="lazy" />
                 <div class="p-card-gradient"></div>
                 <h3 class="p-card-title">Iman Gadzhi</h3>
               </div>
@@ -984,7 +990,7 @@
 
             <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
-                <img src="/assets/creators/jack-neel.jpg" alt="" class="p-card-img" loading="lazy" />
+                <img src="/assets/creators/opt/jack-neel.jpg" alt="" class="p-card-img" loading="lazy" />
                 <div class="p-card-gradient"></div>
                 <h3 class="p-card-title">Jack Neel</h3>
               </div>
@@ -996,7 +1002,7 @@
 
             <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
-                <img src="/assets/creators/ben-azoulay.png" alt="" class="p-card-img" loading="lazy" />
+                <img src="/assets/creators/opt/ben-azoulay.jpg" alt="" class="p-card-img" loading="lazy" />
                 <div class="p-card-gradient"></div>
                 <h3 class="p-card-title">Ben Azoulay</h3>
               </div>
@@ -1008,7 +1014,7 @@
 
             <div class="portfolio-vertical-card influencer-card">
               <div class="p-card-media-wrap">
-                <img src="/assets/creators/daniel-bitton.png" alt="" class="p-card-img" loading="lazy" />
+                <img src="/assets/creators/opt/daniel-bitton.jpg" alt="" class="p-card-img" loading="lazy" />
                 <div class="p-card-gradient"></div>
                 <h3 class="p-card-title">Daniel Bitton</h3>
               </div>
@@ -1047,7 +1053,7 @@
             </p>
             <div class="testi-author-row">
               <div class="testi-creator-profile">
-                <img src="/assets/creators/umarpnj.png" alt="Umar" class="testi-avatar" loading="lazy" />
+                <img src="/assets/creators/opt/umarpnj.jpg" alt="Umar" class="testi-avatar" loading="lazy" />
                 <div class="testi-author-info">
                   <span class="testi-name">Umar</span>
                   <span class="testi-handle">@umarpnj</span>
@@ -1066,7 +1072,7 @@
             </p>
             <div class="testi-author-row">
               <div class="testi-creator-profile">
-                <img src="/assets/creators/niv0ne.png" alt="NivOne" class="testi-avatar" loading="lazy" />
+                <img src="/assets/creators/opt/niv0ne.jpg" alt="NivOne" class="testi-avatar" loading="lazy" />
                 <div class="testi-author-info">
                   <span class="testi-name">NivOne</span>
                   <span class="testi-handle">@niv0ne</span>
@@ -1085,7 +1091,7 @@
             </p>
             <div class="testi-author-row">
               <div class="testi-creator-profile">
-                <img src="/assets/creators/ben-azoulay.png" alt="Ben Azoulay" class="testi-avatar" loading="lazy" />
+                <img src="/assets/creators/opt/ben-azoulay.jpg" alt="Ben Azoulay" class="testi-avatar" loading="lazy" />
                 <div class="testi-author-info">
                   <span class="testi-name">Ben Azoulay</span>
                   <span class="testi-handle">@benazoulay</span>

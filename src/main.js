@@ -6,7 +6,7 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
-import { initHV3D } from './hv3d.js';
+// hv3d.js (three.js, ~600 KB) is lazy-loaded inside init3DScene()
 import { initHighverzIntro, replayHighverzIntro } from './intro/HighverzIntro.js';
 import './enquiry/enquiry.css';
 import { initEnquirySystem } from './enquiry/enquiry.js';
@@ -15,7 +15,7 @@ import './campaigns/campaigns.css';
 import { initCampaignsPage } from './campaigns/campaigns.js';
 import { initPageTransitions } from './transitions.js';
 import { initHeroWordRoller, prepareHeroWordRoller } from './hero/HeroWordRoller.js';
-import { initHeroFluidBackground } from './hero/HeroFluidBackground.js';
+// HeroFluidBackground (three.js WebGL) is lazy-loaded after idle — see loadFluidBackground()
 import { inject as injectAnalytics } from '@vercel/analytics';
 import { injectSpeedInsights } from '@vercel/speed-insights';
 import { initScatterGrid } from './scatterGrid.js';
@@ -61,6 +61,22 @@ function initLenis() {
   gsap.ticker.lagSmoothing(0);
 }
 
+// Load the ambient WebGL background only once the page is idle so three.js
+// never competes with first paint / LCP on mobile.
+function loadFluidBackground() {
+  const start = () => {
+    import('./hero/HeroFluidBackground.js')
+      .then(({ initHeroFluidBackground }) => initHeroFluidBackground())
+      .catch(() => {});
+  };
+  const whenIdle = () => {
+    if ('requestIdleCallback' in window) requestIdleCallback(start, { timeout: 2500 });
+    else setTimeout(start, 600);
+  };
+  if (document.readyState === 'complete') whenIdle();
+  else window.addEventListener('load', whenIdle, { once: true });
+}
+
 // Initialize on DOM Ready or immediately if document is already ready
 let hasBooted = false;
 function boot() {
@@ -72,7 +88,7 @@ function boot() {
   initCustomCursor();
   initNavbar();
   init3DScene();
-  initHeroFluidBackground();
+  loadFluidBackground();
   initHeroReelCarousel();
   initStatsMarquee();
   initCreatorsSection();
@@ -1329,15 +1345,17 @@ if (import.meta.hot) {
 // 04. 2D HERO MONOLITH INITIALIZATION
 // ==========================================================================
 function init3DScene() {
-  try {
-    window.__hv3DCleanup?.();
-    const scene = initHV3D('hv-canvas', 'hv-canvas-container');
-    window.__hv3DCleanup = () => {
-      try { scene?.dispose?.(); } catch (_) {}
-    };
-  } catch (err) {
-    console.warn('Hero visual initialization notice:', err);
-  }
+  window.__hv3DCleanup?.();
+  // Only download three.js when the page actually contains the 3D canvas.
+  if (!document.getElementById('hv-canvas')) return;
+  import('./hv3d.js')
+    .then(({ initHV3D }) => {
+      const scene = initHV3D('hv-canvas', 'hv-canvas-container');
+      window.__hv3DCleanup = () => {
+        try { scene?.dispose?.(); } catch (_) {}
+      };
+    })
+    .catch((err) => console.warn('Hero visual initialization notice:', err));
 }
 
 // ==========================================================================
@@ -2119,7 +2137,7 @@ export function initHeroReelCarousel() {
     if (!video.getAttribute('src') && video.dataset.src) {
       video.setAttribute('src', video.dataset.src);
       video.removeAttribute('data-src');
-      video.preload = 'metadata';
+      video.preload = 'auto';
       video.load();
     }
     video.fetchPriority = priority;
@@ -2181,14 +2199,16 @@ export function initHeroReelCarousel() {
 
   let isCarouselVisible = true;
   let lastVideoPriorityIndex = -1;
+  let videosUnlocked = document.readyState === 'complete';
   const updateVideoPriority = () => {
-    if (!stageStep || !videos.length || !isCarouselVisible) return;
+    if (!videosUnlocked || !stageStep || !videos.length || !isCarouselVisible) return;
 
-    // Widen the offset range to ensure videos on the far left and right of the viewport
-    // keep playing and don't prematurely pause while still visible.
+    // Only cards that are actually inside the viewport (+1 buffer card each
+    // side) load and play.
     const centerIndex = Math.round(scrollPosition / stageStep);
+    const halfVisible = Math.ceil(getViewportWidth() / 2 / stageStep) + 1;
     const nearbyIndexes = new Set();
-    for (let offset = -4; offset <= 5; offset += 1) {
+    for (let offset = -halfVisible; offset <= halfVisible; offset += 1) {
       nearbyIndexes.add(((centerIndex + offset) % count + count) % count);
     }
 
@@ -2204,9 +2224,19 @@ export function initHeroReelCarousel() {
     });
   };
 
-  // Start only the first nearby reels. Additional videos are loaded as the
-  // carousel advances, keeping first paint and mobile data usage lightweight.
-  updateVideoPriority();
+  // Expose global unlock so the intro preloader can trigger video buffering during loading screen
+  window.__hvUnlockHeroVideos = () => {
+    videosUnlocked = true;
+    updateVideoPriority();
+  };
+
+  if (videosUnlocked) {
+    updateVideoPriority();
+  } else {
+    window.addEventListener('load', () => {
+      window.__hvUnlockHeroVideos();
+    }, { once: true });
+  }
 
   const heroVisibilityObserver = 'IntersectionObserver' in window
     ? new IntersectionObserver(([entry]) => {

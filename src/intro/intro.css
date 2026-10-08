@@ -14,7 +14,9 @@ html.skip-intro #highverz-intro {
 }
 
 html.intro-pending:not(.skip-intro) body > *:not(#highverz-intro) {
-  visibility: hidden !important;
+  /* Keep elements rendered and decoded behind the opaque intro curtain so fonts, layout, and images are warm before reveal */
+  pointer-events: none;
+  user-select: none;
 }
 
 /* ==========================================================================

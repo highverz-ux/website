@@ -77,12 +77,6 @@ function initLenis() {
 
 // Load the ambient WebGL background promptly without multi-second delays
 function loadFluidBackground() {
-  const isMobile = window.matchMedia('(max-width: 768px)').matches || window.innerWidth < 768;
-  if (isMobile) {
-    // Mobile uses lightweight pure-CSS hardware-accelerated ambient glows.
-    // Three.js chunk (523KB / 131KB gzip) is NEVER fetched or executed on mobile!
-    return;
-  }
   const start = () => {
     import('./hero/HeroFluidBackground.js')
       .then(({ initHeroFluidBackground }) => initHeroFluidBackground())
@@ -3118,14 +3112,14 @@ function initWhyUsAnimations() {
         gsap.set(philCards, { opacity: 1, y: 0 });
       } else {
         gsap.fromTo(philCards,
-          { opacity: 0, y: 35, scale: 0.97 },
+          { opacity: 0, y: 20 },
           {
             opacity: 1,
             y: 0,
-            scale: 1,
-            duration: 0.85,
-            stagger: 0.12,
-            ease: 'power3.out',
+            duration: 0.65,
+            stagger: 0.08,
+            ease: 'power2.out',
+            clearProps: 'transform',
             scrollTrigger: {
               trigger: philGrid,
               start: 'top 85%',
@@ -3164,12 +3158,13 @@ function initWhyUsAnimations() {
   // Section Header Entrance
   if (compTitle) {
     gsap.fromTo(compTitle,
-      { opacity: 0, y: 36 },
+      { opacity: 0, y: 24 },
       {
         opacity: 1,
         y: 0,
-        duration: 0.95,
-        ease: 'power3.out',
+        duration: 0.7,
+        ease: 'power2.out',
+        clearProps: 'transform',
         scrollTrigger: {
           trigger: compSection,
           start: 'top 85%',
@@ -3180,101 +3175,80 @@ function initWhyUsAnimations() {
   }
 
   // Dual Comparison Cards & Rows Orchestrated Entrance
+  // Clean in-place reveal: NO horizontal sideways x-shifting to prevent card jump glitches
   if (compCards && cardTrad && cardHv) {
-    const isMobile = window.innerWidth <= 860;
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: compCards,
-        start: 'top 80%',
+        start: 'top 85%',
         toggleActions: 'play none none none'
       }
     });
 
-    // 1. Cards Entrance: Glide in with gentle 3D-depth perspective
-    tl.fromTo(cardTrad,
+    // 1. Cards Entrance: Smooth vertical reveal in-place
+    tl.fromTo([cardTrad, cardHv],
       {
         opacity: 0,
-        y: 45,
-        x: isMobile ? 0 : -32,
-        scale: 0.96
+        y: 25,
       },
       {
         opacity: 1,
         y: 0,
-        x: 0,
-        scale: 1,
-        duration: 0.95,
-        ease: 'power3.out'
+        duration: 0.65,
+        stagger: 0.1,
+        ease: 'power2.out',
+        clearProps: 'transform'
       }
-    );
-
-    tl.fromTo(cardHv,
-      {
-        opacity: 0,
-        y: 45,
-        x: isMobile ? 0 : 32,
-        scale: 0.96
-      },
-      {
-        opacity: 1,
-        y: 0,
-        x: 0,
-        scale: 1,
-        duration: 0.95,
-        ease: 'power3.out'
-      },
-      '-=0.75'
     );
 
     // 2. Card Top Headers (Badges & Titles)
     const cardTops = compCards.querySelectorAll('.comp-card-top');
     if (cardTops.length > 0) {
       tl.fromTo(cardTops,
-        { opacity: 0, y: 16 },
-        { opacity: 1, y: 0, duration: 0.55, stagger: 0.1, ease: 'power2.out' },
-        '-=0.55'
-      );
-    }
-
-    // 3. Comparison Rows Stagger: Stagger down both cards
-    if (tradRows.length > 0) {
-      tl.fromTo(tradRows,
-        { opacity: 0, y: 12, x: isMobile ? 0 : -10 },
-        { opacity: 1, y: 0, x: 0, duration: 0.5, stagger: 0.06, ease: 'power2.out' },
+        { opacity: 0, y: 12 },
+        { opacity: 1, y: 0, duration: 0.45, stagger: 0.08, ease: 'power2.out', clearProps: 'transform' },
         '-=0.45'
       );
     }
 
-    if (hvRows.length > 0) {
-      tl.fromTo(hvRows,
-        { opacity: 0, y: 12, x: isMobile ? 0 : 10 },
-        { opacity: 1, y: 0, x: 0, duration: 0.5, stagger: 0.06, ease: 'power2.out' },
-        '-=0.65'
+    // 3. Comparison Rows: Stable vertical fade-in without lateral sliding
+    if (tradRows.length > 0 || hvRows.length > 0) {
+      tl.fromTo([...tradRows, ...hvRows],
+        { opacity: 0, y: 8 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.35,
+          stagger: 0.03,
+          ease: 'power2.out',
+          clearProps: 'transform'
+        },
+        '-=0.3'
       );
     }
 
     // 4. Dash icons on traditional card fade in
     if (tradDashes.length > 0) {
       tl.fromTo(tradDashes,
-        { opacity: 0, scale: 0.7 },
-        { opacity: 1, scale: 1, duration: 0.4, stagger: 0.05, ease: 'power2.out' },
-        '-=0.5'
+        { opacity: 0, scale: 0.8 },
+        { opacity: 1, scale: 1, duration: 0.3, stagger: 0.03, ease: 'power2.out', clearProps: 'transform' },
+        '-=0.2'
       );
     }
 
-    // 5. Highverz checkmark badges burst in with spring pop
+    // 5. Highverz checkmark badges burst in
     if (hvChecks.length > 0) {
       tl.fromTo(hvChecks,
-        { scale: 0, opacity: 0, rotation: -30 },
+        { scale: 0.5, opacity: 0 },
         {
           scale: 1,
           opacity: 1,
-          rotation: 0,
-          duration: 0.55,
-          stagger: 0.07,
-          ease: 'back.out(2.5)'
+          duration: 0.4,
+          stagger: 0.04,
+          ease: 'back.out(1.6)',
+          clearProps: 'transform'
         },
-        '-=0.6'
+        '-=0.25'
       );
     }
 
@@ -3282,7 +3256,7 @@ function initWhyUsAnimations() {
     if (compCta) {
       tl.fromTo(compCta,
         { opacity: 0, y: 24 },
-        { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' },
+        { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out', clearProps: 'transform' },
         '-=0.25'
       );
     }

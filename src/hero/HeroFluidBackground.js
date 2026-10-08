@@ -180,21 +180,13 @@ export function initHeroFluidBackground() {
     const isMobile = window.innerWidth < 768;
     const width = Math.max(1, window.innerWidth);
     const height = Math.max(1, window.innerHeight);
-    renderer.setPixelRatio(isMobile ? 1.0 : Math.min(window.devicePixelRatio || 1, 1.5));
+    renderer.setPixelRatio(isMobile ? 0.75 : Math.min(window.devicePixelRatio || 1, 1.5));
     renderer.setSize(width, height, false);
     material.uniforms.uResolution.value.set(width, height);
   };
 
-  let lastFrameTime = 0;
-  const isTouchDevice = window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 768;
-
   const render = (now = 0) => {
     if (isDestroyed || !isVisible) return;
-    if (isTouchDevice && (now - lastFrameTime < 32)) {
-      if (!reducedMotion) frameId = requestAnimationFrame(render);
-      return;
-    }
-    lastFrameTime = now;
 
     pointer.lerp(targetPointer, 0.18);
     material.uniforms.uPointer.value.copy(pointer);

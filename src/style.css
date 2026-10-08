@@ -3710,6 +3710,8 @@ html.js .floating-badge-item {
 
 [data-theme="dark"] .page-content,
 [data-theme="dark"] .hero-section,
+[data-theme="dark"] .why-hero-section,
+[data-theme="dark"] .comparison-section,
 [data-theme="dark"] .section-trusted,
 [data-theme="dark"] .section-stats-marquee,
 [data-theme="dark"] .section-creators,
@@ -3721,7 +3723,7 @@ html.js .floating-badge-item {
 [data-theme="dark"] .section-faq,
 [data-theme="dark"] .section-cta,
 [data-theme="dark"] .footer {
-  background-color: transparent;
+  background-color: transparent !important;
 }
 
 /* Every page uses the same atmospheric layer. Keep page sections transparent
@@ -10588,7 +10590,7 @@ html.js .floating-badge-item {
   gap: 0.45rem;
   padding: 1.2rem 0;
   border-bottom: 1px solid var(--border-card);
-  transition: all 0.25s ease;
+  transition: background 0.25s ease, border-color 0.25s ease;
 }
 
 .comp-card-hv .comp-list-row {
@@ -12681,8 +12683,12 @@ body::after {
   --why-glass-cyan: #23c7d8;
   background:
     radial-gradient(circle at 50% 16%, rgba(0, 229, 255, 0.075), transparent 31rem),
-    radial-gradient(circle at 12% 53%, rgba(0, 125, 155, 0.055), transparent 26rem),
-    var(--bg-primary);
+    radial-gradient(circle at 12% 53%, rgba(0, 125, 155, 0.055), transparent 26rem);
+}
+
+[data-theme="dark"] body.page-why-us,
+[data-theme="dark"].page-why-us {
+  background-color: transparent !important;
 }
 
 .page-why-us .why-hero-section {
@@ -12911,13 +12917,14 @@ body::after {
   border: 1px solid transparent;
   border-bottom-color: rgba(211, 243, 249, 0.09);
   border-radius: 14px;
-  transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .page-why-us .comp-list-row:hover {
   background: rgba(255, 255, 255, 0.045);
   border-color: rgba(174, 238, 245, 0.13);
   transform: translateX(3px);
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
 }
 
 .page-why-us .comp-card-hv .comp-list-row:hover {

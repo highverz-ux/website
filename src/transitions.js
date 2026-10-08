@@ -289,7 +289,10 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       '.work-hero-container',
       '.team-hero-container',
       '.why-hero-container',
-      '.case-hero-container'
+      '.case-hero-container',
+      '.services-cards-grid',
+      '.comp-dual-cards',
+      '.comp-card'
     ].join(',');
     incomingContent.querySelectorAll(heroSelectors).forEach((el) => {
       el.style.opacity = '1';
@@ -354,8 +357,6 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
     // triggers are removed first so only the incoming document is animated.
     ScrollTrigger.getAll().forEach((t) => t.kill());
     startIncomingMetricCounters(incomingContent);
-    const navbar = document.getElementById('navbar');
-    if (navbar) navbar.classList.add('page-nav-outgoing');
 
     // Lightweight, high-performance transition
     gsap.set(currentContent, {
@@ -363,12 +364,6 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       y: 0,
       scale: 1
     });
-    if (navbar) {
-      gsap.set(navbar, {
-        opacity: 1,
-        y: 0
-      });
-    }
     gsap.set(shell, {
       opacity: 0,
       y: 10,
@@ -377,6 +372,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
     gsap.set(glow, { opacity: 0 });
 
     // 7. Execute the ultra-smooth, lightweight Framer blur handoff (300-380ms total)
+    // Navbar remains stable and mounted at top: 0 while active indicator smoothly slides across
     const transitionTimeline = gsap.timeline({
       defaults: { overwrite: 'auto' },
       onComplete: () => {
@@ -391,9 +387,6 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
         incomingContent.removeAttribute('style');
         shell.insertAdjacentElement('beforebegin', incomingContent);
         shell.remove();
-        if (navbar) {
-          gsap.set(navbar, { clearProps: 'all' });
-        }
 
         // Update body class while preserving essential runtime flags (cursor, theme)
         const wasCursorActive = document.body.classList.contains('cursor-active');
@@ -401,7 +394,6 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
           document.body.className = targetBodyClass;
         }
         document.body.classList.remove('page-is-transitioning');
-        if (navbar) navbar.classList.remove('page-nav-outgoing');
         if (wasCursorActive || window.innerWidth > 900) {
           document.body.classList.add('cursor-active');
         }
@@ -456,7 +448,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       }
       }
     })
-      .to([currentContent, navbar].filter(Boolean), {
+      .to(currentContent, {
         opacity: 0,
         y: -10,
         scale: 0.99,
@@ -470,21 +462,6 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
         duration: 0.48,
         ease: 'power3.out',
       }, 0.08);
-
-    if (navbar) {
-      transitionTimeline.fromTo(navbar,
-        { opacity: 0, y: -8 },
-        {
-          opacity: 1,
-          y: 0,
-          filter: 'blur(0px)',
-          duration: 0.34,
-          ease: 'power2.out',
-          clearProps: 'all',
-        },
-        0.12
-      );
-    }
 
   } catch (err) {
     console.error('Page transition encountered an error:', err);

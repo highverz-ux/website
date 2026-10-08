@@ -222,7 +222,13 @@ export function initScatterGrid(container, options = {}) {
   const FIXED = 1/60;
   let acc = 0;
   
+  let isIntersecting = false;
+  
   function loop(now) {
+    if (!isIntersecting) {
+      raf = 0;
+      return;
+    }
     const dt = last ? Math.min(0.05, (now - last) / 1000) : FIXED;
     last = now;
     clock += dt;
@@ -240,7 +246,26 @@ export function initScatterGrid(container, options = {}) {
   }
   
   build();
-  raf = requestAnimationFrame(loop);
+
+  const visibilityObserver = 'IntersectionObserver' in window ? new IntersectionObserver(([entry]) => {
+    isIntersecting = entry.isIntersecting;
+    if (isIntersecting) {
+      last = performance.now();
+      if (!raf) raf = requestAnimationFrame(loop);
+    } else {
+      if (raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    }
+  }, { threshold: 0.01 }) : null;
+
+  if (visibilityObserver) {
+    visibilityObserver.observe(container);
+  } else {
+    isIntersecting = true;
+    raf = requestAnimationFrame(loop);
+  }
   
   const handlePointerMove = (e) => {
     const rect = canvas.getBoundingClientRect();
@@ -277,7 +302,8 @@ export function initScatterGrid(container, options = {}) {
   resizeObserver.observe(container);
   
   return () => {
-    cancelAnimationFrame(raf);
+    if (raf) cancelAnimationFrame(raf);
+    visibilityObserver?.disconnect();
     resizeObserver.disconnect();
     window.removeEventListener("pointermove", handlePointerMove);
     window.removeEventListener("pointerdown", handlePointerDown);

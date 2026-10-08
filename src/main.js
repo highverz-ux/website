@@ -38,14 +38,27 @@ function initVercelTelemetry() {
 }
 
 function initLenis() {
+  const isTouchDevice = window.matchMedia('(pointer: coarse)').matches ||
+                        ('ontouchstart' in window && window.innerWidth <= 1024) ||
+                        window.innerWidth <= 768;
+
+  // Touch screens have 120Hz/60Hz native hardware momentum scrolling.
+  // Intercepting touch scrolling with JS creates input latency and sluggish response.
+  if (isTouchDevice) {
+    window.lenis = null;
+    lenis = null;
+    gsap.ticker.lagSmoothing(500, 33);
+    return;
+  }
+
   lenis = new Lenis({
-    duration: 1.4,
+    duration: 1.2,
     easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
     orientation: 'vertical',
     gestureOrientation: 'vertical',
     smoothWheel: true,
     wheelMultiplier: 0.9,
-    touchMultiplier: 1.6,
+    syncTouch: false,
     infinite: false,
   });
 
@@ -55,10 +68,11 @@ function initLenis() {
   lenis.on('scroll', ScrollTrigger.update);
 
   gsap.ticker.add((time) => {
-    lenis.raf(time * 1000);
+    if (lenis) lenis.raf(time * 1000);
   });
 
-  gsap.ticker.lagSmoothing(0);
+  // Keep GSAP lag smoothing active so dropped frames recover smoothly instead of jittering
+  gsap.ticker.lagSmoothing(500, 33);
 }
 
 // Load the ambient WebGL background only once the page is idle so three.js
@@ -2200,15 +2214,22 @@ export function initHeroReelCarousel() {
   let isCarouselVisible = true;
   let lastVideoPriorityIndex = -1;
   let videosUnlocked = document.readyState === 'complete';
-  const updateVideoPriority = () => {
+  const updateVideoPriority = (force = false) => {
     if (!videosUnlocked || !stageStep || !videos.length || !isCarouselVisible) return;
 
-    // Only cards that are actually inside the viewport (+1 buffer card each
-    // side) load and play.
+    const width = getViewportWidth();
+    const isMobile = width < 768;
+    // On mobile devices, strictly play only the 1 center card (offset 0).
+    // On desktop, play the 3 center cards (offset -1, 0, 1).
+    // Playing 7-10 concurrent HTML5 videos overwhelms mobile video decoders and drops frames.
+    const activeRange = isMobile ? 0 : 1;
     const centerIndex = Math.round(scrollPosition / stageStep);
-    const halfVisible = Math.ceil(getViewportWidth() / 2 / stageStep) + 1;
+
+    if (!force && centerIndex === lastVideoPriorityIndex) return;
+    lastVideoPriorityIndex = centerIndex;
+
     const nearbyIndexes = new Set();
-    for (let offset = -halfVisible; offset <= halfVisible; offset += 1) {
+    for (let offset = -activeRange; offset <= activeRange; offset += 1) {
       nearbyIndexes.add(((centerIndex + offset) % count + count) % count);
     }
 
@@ -2227,11 +2248,11 @@ export function initHeroReelCarousel() {
   // Expose global unlock so the intro preloader can trigger video buffering during loading screen
   window.__hvUnlockHeroVideos = () => {
     videosUnlocked = true;
-    updateVideoPriority();
+    updateVideoPriority(true);
   };
 
   if (videosUnlocked) {
-    updateVideoPriority();
+    updateVideoPriority(true);
   } else {
     window.addEventListener('load', () => {
       window.__hvUnlockHeroVideos();
@@ -2240,12 +2261,24 @@ export function initHeroReelCarousel() {
 
   const heroVisibilityObserver = 'IntersectionObserver' in window
     ? new IntersectionObserver(([entry]) => {
+        const wasVisible = isCarouselVisible;
         isCarouselVisible = entry.isIntersecting;
         if (!isCarouselVisible) {
+          if (animId) {
+            cancelAnimationFrame(animId);
+            animId = null;
+          }
           videos.forEach((video) => { try { video?.pause(); } catch (_) {} });
           return;
         }
-        updateVideoPriority();
+        if (!wasVisible && isCarouselVisible) {
+          lastTime = performance.now();
+          lastVideoPriorityIndex = -1;
+          updateVideoPriority(true);
+          if (!animId) {
+            animId = requestAnimationFrame(loop);
+          }
+        }
       }, { threshold: 0.05 })
     : null;
   heroVisibilityObserver?.observe(viewport);
@@ -2316,6 +2349,11 @@ export function initHeroReelCarousel() {
   const autoSpeed = 50; // pixels per second
 
   const loop = (currentTime) => {
+    if (!isCarouselVisible) {
+      animId = null;
+      return;
+    }
+
     const delta = Math.min((currentTime - lastTime) / 1000, 0.05);
     lastTime = currentTime;
 
@@ -2334,9 +2372,7 @@ export function initHeroReelCarousel() {
 
       scrollPosition = ((scrollPosition % totalWidth) + totalWidth) % totalWidth;
       render();
-      if (isCarouselVisible) {
-        updateVideoPriority();
-      }
+      updateVideoPriority();
     }
 
     animId = requestAnimationFrame(loop);
@@ -2382,6 +2418,7 @@ export function initHeroReelCarousel() {
     scrollPosition = startScrollPosition - diff;
     scrollPosition = ((scrollPosition % totalWidth) + totalWidth) % totalWidth;
     render();
+    updateVideoPriority();
   };
 
   const onPointerUp = (e) => {
@@ -2451,13 +2488,23 @@ export function initHeroReelCarousel() {
 
   const onVisibilityChange = () => {
     if (document.hidden) {
+      if (animId) {
+        cancelAnimationFrame(animId);
+        animId = null;
+      }
       videos.forEach((video) => { try { video?.pause(); } catch (_) {} });
       return;
     }
-    lastVideoPriorityIndex = -1;
-    updateVideoPriority();
-    measure();
-    render();
+    if (isCarouselVisible) {
+      lastTime = performance.now();
+      lastVideoPriorityIndex = -1;
+      updateVideoPriority(true);
+      measure();
+      render();
+      if (!animId) {
+        animId = requestAnimationFrame(loop);
+      }
+    }
   };
   const onPageShow = () => {
     lastVideoPriorityIndex = -1;

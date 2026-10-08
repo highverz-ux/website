@@ -169,13 +169,22 @@ export function initHeroFluidBackground() {
     const isMobile = window.matchMedia('(max-width: 720px)').matches;
     const width = Math.max(1, window.innerWidth);
     const height = Math.max(1, window.innerHeight);
-    renderer.setPixelRatio(isMobile ? 0.6 : Math.min(window.devicePixelRatio || 1, 1.5));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
     renderer.setSize(width, height, false);
     material.uniforms.uResolution.value.set(width, height);
   };
 
+  let lastFrameTime = 0;
+  const isTouchDevice = window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 768;
+
   const render = (now = 0) => {
     if (isDestroyed || !isVisible) return;
+    if (isTouchDevice && (now - lastFrameTime < 32)) {
+      if (!reducedMotion) frameId = requestAnimationFrame(render);
+      return;
+    }
+    lastFrameTime = now;
+
     pointer.lerp(targetPointer, 0.18);
     material.uniforms.uPointer.value.copy(pointer);
     material.uniforms.uTime.value = reducedMotion ? 0 : now * 0.001;
@@ -209,6 +218,16 @@ export function initHeroFluidBackground() {
     if (reducedMotion) render(performance.now());
   });
   themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  
+  const onVisibilityChange = () => {
+    if (document.hidden) {
+      cancelAnimationFrame(frameId);
+      frameId = null;
+    } else if (isVisible && !reducedMotion && !isDestroyed) {
+      start();
+    }
+  };
+  document.addEventListener('visibilitychange', onVisibilityChange);
   window.addEventListener('pointermove', onPointerMove, { passive: true });
   window.addEventListener('resize', onResize, { passive: true });
 
@@ -222,6 +241,7 @@ export function initHeroFluidBackground() {
       isDestroyed = true;
       cancelAnimationFrame(frameId);
       window.removeEventListener('resize', onResize);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
       visibilityObserver.disconnect();
       themeObserver.disconnect();
       window.removeEventListener('pointermove', onPointerMove);

@@ -3748,9 +3748,17 @@ html.js .floating-badge-item {
   background: transparent !important;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 768px) {
   .global-fluid-canvas {
     opacity: 0.88;
+  }
+
+  [data-theme="dark"] body {
+    background:
+      radial-gradient(ellipse 600px 450px at 50% 12%, rgba(0, 186, 214, 0.22) 0%, rgba(5, 48, 71, 0.14) 45%, transparent 75%),
+      radial-gradient(ellipse 550px 420px at 85% 55%, rgba(26, 77, 118, 0.16) 0%, transparent 70%),
+      radial-gradient(ellipse 500px 400px at 20% 85%, rgba(0, 186, 214, 0.12) 0%, transparent 70%),
+      #020406;
   }
 
   [data-theme="dark"] #hero.hero-section::before {

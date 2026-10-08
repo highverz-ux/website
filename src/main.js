@@ -13,7 +13,7 @@ import { initEnquirySystem } from './enquiry/enquiry.js';
 import { initThemeSystem } from './theme.js';
 import './campaigns/campaigns.css';
 import { initCampaignsPage } from './campaigns/campaigns.js';
-import { initPageTransitions } from './transitions.js';
+import { initPageTransitions, isHomeRoute } from './transitions.js';
 import { initHeroWordRoller, prepareHeroWordRoller } from './hero/HeroWordRoller.js';
 // HeroFluidBackground (three.js WebGL) is lazy-loaded after idle — see loadFluidBackground()
 import { inject as injectAnalytics } from '@vercel/analytics';

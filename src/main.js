@@ -2462,6 +2462,9 @@ export function initHeroReelCarousel() {
   let activePointerId = null;
 
   const onPointerDown = (e) => {
+    // Only primary button (left-click) for mouse pointers
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+
     isDragging = false;
     isHorizontalDrag = false;
     isVerticalScroll = false;
@@ -2481,8 +2484,16 @@ export function initHeroReelCarousel() {
   };
 
   const onPointerMove = (e) => {
+    // Drag MUST only occur when user has actively pressed down (pointerdown)
+    if (activePointerId === null || e.pointerId !== activePointerId) return;
+
+    // Safety: if mouse button was released outside the window
+    if (e.pointerType === 'mouse' && e.buttons === 0) {
+      onPointerUp(e);
+      return;
+    }
+
     if (isVerticalScroll) return;
-    if (activePointerId !== null && e.pointerId !== activePointerId) return;
 
     if (!animId) {
       lastTime = performance.now();
@@ -2536,7 +2547,10 @@ export function initHeroReelCarousel() {
   };
 
   const onPointerUp = (e) => {
+    if (activePointerId === null) return;
+    if (e && e.pointerId !== undefined && e.pointerId !== activePointerId) return;
     activePointerId = null;
+
     if (isVerticalScroll) {
       isVerticalScroll = false;
       return;
@@ -2549,7 +2563,7 @@ export function initHeroReelCarousel() {
     isHorizontalDrag = false;
     track.classList.remove('is-dragging');
     viewport.classList.remove('is-dragging');
-    if (track.releasePointerCapture) {
+    if (track.releasePointerCapture && e?.pointerId) {
       try { track.releasePointerCapture(e.pointerId); } catch (_) {}
     }
 
@@ -2637,10 +2651,17 @@ export function initHeroReelCarousel() {
     ? new ResizeObserver(() => requestAnimationFrame(onResize))
     : null;
 
+  const onWindowBlur = () => {
+    if (activePointerId !== null) {
+      onPointerUp();
+    }
+  };
+
   track.addEventListener('pointerdown', onPointerDown);
   window.addEventListener('pointermove', onPointerMove);
   window.addEventListener('pointerup', onPointerUp);
   window.addEventListener('pointercancel', onPointerUp);
+  window.addEventListener('blur', onWindowBlur);
   track.addEventListener('click', onClickCapture, true);
   window.addEventListener('resize', onResize, { passive: true });
   window.addEventListener('pageshow', onPageShow);
@@ -2660,10 +2681,14 @@ export function initHeroReelCarousel() {
     if (animId) cancelAnimationFrame(animId);
     if (layoutRetryId) cancelAnimationFrame(layoutRetryId);
     clearTimeout(resumeTimer);
+    activePointerId = null;
+    isDragging = false;
+    isHorizontalDrag = false;
     track.removeEventListener('pointerdown', onPointerDown);
     window.removeEventListener('pointermove', onPointerMove);
     window.removeEventListener('pointerup', onPointerUp);
     window.removeEventListener('pointercancel', onPointerUp);
+    window.removeEventListener('blur', onWindowBlur);
     track.removeEventListener('click', onClickCapture, true);
     window.removeEventListener('resize', onResize);
     window.removeEventListener('pageshow', onPageShow);

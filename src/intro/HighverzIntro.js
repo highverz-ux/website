@@ -165,9 +165,9 @@ export class HighverzIntro {
         }))).then(() => setProgress(0.92))
       : Promise.resolve();
 
-    // 4. Polish: minimum 1.1s for branded animation, maximum 2.2s safety cap
-    const minDelay = new Promise(resolve => setTimeout(resolve, 1100));
-    const maxTimeout = new Promise(resolve => setTimeout(resolve, 2200));
+    // 4. Polish: minimum 800ms for branded animation, maximum 1600ms safety cap
+    const minDelay = new Promise(resolve => setTimeout(resolve, 800));
+    const maxTimeout = new Promise(resolve => setTimeout(resolve, 1600));
 
     await Promise.race([
       Promise.all([fontTask, imageTask, videoTask, minDelay]),
@@ -325,7 +325,12 @@ export function initHighverzIntro(options = {}) {
     const existing = document.getElementById('highverz-intro');
     if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
     document.body.classList.remove('intro-active');
-    if (options.onComplete) options.onComplete();
+    document.documentElement.classList.remove('intro-pending');
+    if (typeof options.onStartReveal === 'function') {
+      options.onStartReveal();
+    } else if (typeof options.onComplete === 'function') {
+      options.onComplete();
+    }
     return;
   }
 

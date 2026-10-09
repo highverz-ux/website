@@ -1655,6 +1655,36 @@ body.mobile-menu-active {
   animation: none;
 }
 
+/* Prevent nested background-clip: text rendering artifacts & double ghosting */
+[data-adscale-words-ready="true"],
+:has(> .adscale-reveal-word),
+.work-hero-title:has(.adscale-reveal-word),
+.campaign-hero-headline:has(.adscale-reveal-word),
+.why-hero-title:has(.adscale-reveal-word),
+.team-hero-title:has(.adscale-reveal-word),
+.case-hero-title:has(.adscale-reveal-word),
+.comp-main-title:has(.adscale-reveal-word),
+.founders-title:has(.adscale-reveal-word),
+.pillars-title:has(.adscale-reveal-word),
+.creators-title:has(.adscale-reveal-word) {
+  background: none !important;
+  background-image: none !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+  -webkit-text-fill-color: initial !important;
+  color: inherit !important;
+}
+
+/* Ensure highlight-cyan wrappers do not double-clip when containing an adscale word */
+.highlight-cyan:has(.adscale-reveal-word) {
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+  -webkit-text-fill-color: initial !important;
+  filter: none !important;
+  animation: none !important;
+}
+
 .adscale-reveal-word.is-active {
   opacity: 1 !important;
   filter: blur(0) !important;
@@ -11003,24 +11033,41 @@ html.js .floating-badge-item {
    PAGE TRANSITION (FRAMER-STYLE, ZERO BLANK SCREEN, ZERO FLICKER)
    ========================================================================== */
 
-/* 1. Fluid On-Load Content Entrance for Hero Sections */
-@keyframes framerContentEntrance {
+/* 1. Fluid On-Load Content Entrance for Hero Sections — blur-to-focus reveal */
+@keyframes hvBlurFadeIn {
   0% {
     opacity: 0;
-    transform: translateY(14px);
+    filter: blur(12px);
+    transform: translateY(16px);
+  }
+  60% {
+    opacity: 1;
+    filter: blur(2px);
+    transform: translateY(4px);
   }
   100% {
     opacity: 1;
+    filter: blur(0px);
     transform: translateY(0);
   }
 }
 
-.page-work .work-hero-container,
-.page-team .team-hero-container,
-.page-why-us .why-hero-container,
+/* Fire on direct load / hard reload only — NOT during SPA transitions (transition shell owns the animation) */
+.page-work:not(.page-is-transitioning) .work-hero-container,
+.page-team:not(.page-is-transitioning) .team-hero-container,
+.page-why-us:not(.page-is-transitioning) .why-hero-container,
 .case-hero-container,
 html.skip-intro .hero-container {
-  animation: framerContentEntrance 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: hvBlurFadeIn 0.58s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Never fire the CSS entrance when inside the transition shell (GSAP controls the reveal) */
+.page-transition-shell .work-hero-container,
+.page-transition-shell .team-hero-container,
+.page-transition-shell .why-hero-container,
+.page-transition-shell .case-hero-container,
+.page-transition-shell .hero-container {
+  animation: none !important;
 }
 
 /* Transition shell isolates layout during page swap */

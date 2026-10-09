@@ -1125,9 +1125,15 @@ window.prepareHeroInitialState = prepareHeroInitialState;
 // Word tokenization with kinetic blur-to-focus emergence
 // ==========================================================================
 
-function splitAdscaleWords(element) {
+export function splitAdscaleWords(element) {
   if (!element || element.dataset.adscaleWordsReady) return;
   element.dataset.adscaleWordsReady = 'true';
+  // Strip parent background-clip: text to prevent nested text-mask clipping artifacts & ghost text
+  element.style.backgroundImage = 'none';
+  element.style.webkitBackgroundClip = 'initial';
+  element.style.backgroundClip = 'initial';
+  element.style.webkitTextFillColor = 'initial';
+  element.style.color = 'inherit';
 
   const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, {
     acceptNode: (node) => {
@@ -1148,6 +1154,15 @@ function splitAdscaleWords(element) {
     const parentSpan = textNode.parentElement;
     const isHighlight = parentSpan && parentSpan.classList.contains('highlight-cyan');
     const isBoldItalic = parentSpan && parentSpan.classList.contains('font-bold-italic');
+    if (parentSpan && isHighlight) {
+      // Prevent parent highlight span from double-applying background/filters over its child words
+      parentSpan.style.backgroundImage = 'none';
+      parentSpan.style.webkitBackgroundClip = 'initial';
+      parentSpan.style.backgroundClip = 'initial';
+      parentSpan.style.webkitTextFillColor = 'initial';
+      parentSpan.style.filter = 'none';
+      parentSpan.style.animation = 'none';
+    }
     const fragment = document.createDocumentFragment();
 
     textNode.nodeValue.split(/(\s+)/).forEach((part) => {
@@ -1168,7 +1183,7 @@ function splitAdscaleWords(element) {
   });
 }
 
-export function initAdscaleTextEffects() {
+export function initAdscaleTextEffects(root = document) {
   const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // Headings across all pages that resolve word-by-word with the kinetic AdScale blur-to-focus effect
@@ -1204,7 +1219,7 @@ export function initAdscaleTextEffects() {
     '.breakdown-title'
   ];
 
-  const revealElements = document.querySelectorAll(headingSelectors.join(', '));
+  const revealElements = (root || document).querySelectorAll(headingSelectors.join(', '));
   if (!revealElements.length) return;
 
   function revealWords(element) {
@@ -2151,7 +2166,7 @@ function disposePageRuntime() {
 }
 window.__hvDisposePageRuntime = disposePageRuntime;
 
-export function initPageScripts(pathname) {
+export function initPageScripts(pathname, isFromTransition = false) {
   const normPath = pathname ? pathname.replace(/\/+$/, '') : window.location.pathname.replace(/\/+$/, '');
   const isWorkPage = normPath.includes('work') || !!document.querySelector('.work-hero-section');
   const isCaseStudyPage = normPath.includes('creator-') || !!document.querySelector('.case-hero-section') || !!document.querySelector('.ig-profile-shell');
@@ -2191,7 +2206,7 @@ export function initPageScripts(pathname) {
   initEnquirySystem();
   initFooterScatterGrid();
   initAdscaleTextEffects();
-  triggerPageHeroEntrance(normPath);
+  triggerPageHeroEntrance(normPath, isFromTransition);
 
   if (window.ScrollTrigger) {
     ScrollTrigger.refresh();
@@ -2199,13 +2214,40 @@ export function initPageScripts(pathname) {
 }
 window.__hvInitPageScripts = initPageScripts;
 
-export function triggerPageHeroEntrance(pathname) {
+export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
   const normPath = pathname ? pathname.replace(/\/+$/, '') : window.location.pathname.replace(/\/+$/, '');
   const isWork = normPath.includes('work');
   const isTeam = normPath.includes('team');
   const isWhy = normPath.includes('why-us');
   const isCampaigns = normPath.includes('campaigns');
   const isCase = normPath.includes('creator-');
+
+  // If entering via smooth SPA blur transition, elements were already smoothly revealed
+  // by the transition shell. Do NOT reset opacity to 0 or jerk the hero elements!
+  const isRecentTransition = isFromTransition || (window.__hvLastTransitionTime && (Date.now() - window.__hvLastTransitionTime < 2500));
+  if (isRecentTransition) {
+    const heroHeadings = document.querySelectorAll(
+      '.work-hero-title, .campaign-hero-headline, .why-hero-title, .team-hero-title, .case-hero-title'
+    );
+    heroHeadings.forEach((h) => {
+      h.dataset.adscaleWordsReady = 'true';
+      h.dataset.adscaleAnimated = 'true';
+      const words = h.querySelectorAll('.adscale-reveal-word');
+      if (words.length) {
+        gsap.set(words, { opacity: 1, y: 0, filter: 'none', clearProps: 'all' });
+      }
+    });
+
+    // Ensure all hero elements in the incoming view are settled cleanly with zero layout shift
+    const heroElements = document.querySelectorAll(
+      '.work-hero-tag, .work-hero-desc, .work-hero-cta, .work-hero-metrics-grid, ' +
+      '.team-hero-tag, .team-hero-desc, .team-metrics-grid, ' +
+      '.why-hero-subtitle, .campaign-hero-tag, .campaign-hero-sub, .campaign-hero-pillars, ' +
+      '.case-kicker-tag, .case-profile-chip-row, .case-hero-media, .case-stats-hud'
+    );
+    gsap.set(heroElements, { opacity: 1, y: 0, clearProps: 'opacity,transform' });
+    return;
+  }
 
   // Ensure hero headline gets animated freshly on entrance
   const heroHeadings = document.querySelectorAll(

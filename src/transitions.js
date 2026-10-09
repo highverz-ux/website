@@ -317,6 +317,18 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
     incomingContent.style.pointerEvents = 'none';
     shell.appendChild(incomingContent);
 
+    // Pre-tokenize headings inside incoming shell so text mask is clean & unmasked before blur transition
+    try {
+      if (window.initAdscaleTextEffects) {
+        window.initAdscaleTextEffects(shell);
+      }
+      shell.querySelectorAll('.adscale-reveal-word').forEach((w) => {
+        w.style.opacity = '1';
+        w.style.filter = 'none';
+        w.style.transform = 'none';
+      });
+    } catch (_) {}
+
     // Hold the current page background underneath both fades. This prevents
     // the body/ambient layer from flashing through while content crossfades.
     const backdrop = document.createElement('div');
@@ -348,24 +360,32 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
     ScrollTrigger.getAll().forEach((t) => t.kill());
     startIncomingMetricCounters(incomingContent);
 
-    // Lightweight, high-performance transition
+    // Lightweight, high-performance blur-fade transition
     gsap.set(currentContent, {
       opacity: 1,
       y: 0,
-      scale: 1
+      scale: 1,
+      filter: 'blur(0px)'
     });
     gsap.set(shell, {
       opacity: 0,
-      y: 10,
-      scale: 0.995
+      y: 14,
+      scale: 0.996,
+      filter: 'blur(10px)'
     });
     gsap.set(glow, { opacity: 0 });
 
-    // 7. Execute the ultra-smooth, lightweight Framer blur handoff (300-380ms total)
-    // Navbar remains stable and mounted at top: 0 while active indicator smoothly slides across
+    // 7. Execute the blur focus-shift handoff (380-480ms total)
+    // Outgoing page blurs out, incoming page sharpens in — matching Highverz's kinetic language
     const transitionTimeline = gsap.timeline({
       defaults: { overwrite: 'auto' },
       onComplete: () => {
+        // Record timestamp so initializers know we arrived via SPA transition
+        window.__hvLastTransitionTime = Date.now();
+
+        // Remove blur from both after animation — prevent permanent filter from sticking
+        gsap.set(shell, { clearProps: 'filter,transform,opacity' });
+
         // Clean up glow & backdrop elements
         glow.remove();
         backdrop.remove();
@@ -404,7 +424,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       // This prevents the split-second layout shift / shake caused by ScrollTrigger adding pin-spacers
       try {
         if (window.__hvInitPageScripts) {
-          window.__hvInitPageScripts(window.location.pathname);
+          window.__hvInitPageScripts(window.location.pathname, true);
         }
 
         window.__hvResetNavbar?.(window.location.pathname);
@@ -439,20 +459,24 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       }
       }
     })
+      // Outgoing: blur out + float up slightly
       .to(currentContent, {
         opacity: 0,
-        y: -10,
+        y: -12,
         scale: 0.99,
-        duration: 0.34,
+        filter: 'blur(8px)',
+        duration: 0.32,
         ease: 'power2.inOut',
       }, 0)
+      // Incoming: blur-to-sharp reveal — premium kinetic entrance
       .to(shell, {
         opacity: 1,
         y: 0,
         scale: 1,
-        duration: 0.48,
+        filter: 'blur(0px)',
+        duration: 0.52,
         ease: 'power3.out',
-      }, 0.08);
+      }, 0.06);
 
   } catch (err) {
     console.error('Page transition encountered an error:', err);

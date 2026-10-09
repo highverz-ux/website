@@ -2197,30 +2197,50 @@ export function initHeroReelCarousel() {
     perspective.style.visibility = 'visible';
   });
 
-  // Load only the first/nearby reels. Keeping the source in data-src prevents
-  // the browser from requesting all 10 large MP4 files during first paint.
+  // Load reel sources with priority and preload
   const loadVideo = (video, priority = 'low') => {
     if (!video) return;
-    if (!video.getAttribute('src') && video.dataset.src) {
-      video.setAttribute('src', video.dataset.src);
-      video.removeAttribute('data-src');
+    const targetSrc = video.dataset.src || video.getAttribute('src');
+    if (!video.getAttribute('src') && targetSrc) {
+      video.setAttribute('src', targetSrc);
       video.preload = 'auto';
+      video.defaultMuted = true;
+      video.muted = true;
+      video.playsInline = true;
+      video.setAttribute('playsinline', '');
+      video.setAttribute('muted', '');
       video.load();
     }
     video.fetchPriority = priority;
   };
 
-  // Ensure a loaded reel plays inline, muted, and looping.
+  // Ensure a loaded reel plays inline, muted, and looping reliably
   const playVideo = (video) => {
     if (!video) return;
     loadVideo(video, 'high');
+    video.defaultMuted = true;
     video.muted = true;
     video.playsInline = true;
     video.loop = true;
     video.autoplay = true;
-    const playAttempt = video.paused ? video.play() : null;
-    if (playAttempt && playAttempt.catch) {
-      playAttempt.catch(() => {});
+    video.setAttribute('playsinline', '');
+    video.setAttribute('muted', '');
+    video.setAttribute('autoplay', '');
+
+    const tryPlay = () => {
+      if (!video.paused) return;
+      const playAttempt = video.play();
+      if (playAttempt && playAttempt.catch) {
+        playAttempt.catch(() => {});
+      }
+    };
+
+    if (video.readyState >= 2) {
+      tryPlay();
+    } else {
+      video.addEventListener('canplay', tryPlay, { once: true });
+      video.addEventListener('loadeddata', tryPlay, { once: true });
+      tryPlay();
     }
   };
 
@@ -2268,28 +2288,37 @@ export function initHeroReelCarousel() {
 
   let isCarouselVisible = true;
   let lastVideoPriorityIndex = -1;
-  let videosUnlocked = document.readyState === 'complete';
+  let videosUnlocked = true;
+
   const updateVideoPriority = (force = false) => {
     if (!videosUnlocked || !stageStep || !videos.length || !isCarouselVisible) return;
 
     const isMobile = cachedViewportWidth < 768;
-    // On mobile devices, strictly play only the 1 center card (offset 0).
-    // On desktop, play the 3 center cards (offset -1, 0, 1).
-    // Playing 7-10 concurrent HTML5 videos overwhelms mobile video decoders and drops frames.
-    const activeRange = isMobile ? 0 : 1;
+    // On desktop, keep 5 to 7 visible arc cards playing concurrently so the 3D amphitheater looks alive
+    // On mobile, keep 3 cards playing
+    const activeRange = isMobile ? 1 : 3;
+    const preloadRange = isMobile ? 2 : 4;
     const centerIndex = Math.round(scrollPosition / stageStep);
 
     if (!force && centerIndex === lastVideoPriorityIndex) return;
     lastVideoPriorityIndex = centerIndex;
 
-    const nearbyIndexes = new Set();
+    const activeIndexes = new Set();
     for (let offset = -activeRange; offset <= activeRange; offset += 1) {
-      nearbyIndexes.add(((centerIndex + offset) % count + count) % count);
+      activeIndexes.add(((centerIndex + offset) % count + count) % count);
+    }
+
+    const preloadIndexes = new Set();
+    for (let offset = -preloadRange; offset <= preloadRange; offset += 1) {
+      preloadIndexes.add(((centerIndex + offset) % count + count) % count);
     }
 
     videos.forEach((video, index) => {
       if (!video) return;
-      if (!nearbyIndexes.has(index)) {
+      if (preloadIndexes.has(index)) {
+        loadVideo(video, activeIndexes.has(index) ? 'high' : 'low');
+      }
+      if (!activeIndexes.has(index)) {
         if (!video.paused) video.pause();
         return;
       }
@@ -2299,15 +2328,32 @@ export function initHeroReelCarousel() {
     });
   };
 
+  // Preload initial visible cards immediately
+  for (let i = 0; i < Math.min(videos.length, 6); i++) {
+    loadVideo(videos[i], i < 3 ? 'high' : 'low');
+  }
+
+  // Resume / unlock autoplay on first interaction if browser blocked initial autoplay
+  const unlockOnInteraction = () => {
+    updateVideoPriority(true);
+    videos.forEach((v) => {
+      if (v && v.getAttribute('src') && v.paused) {
+        v.play().catch(() => {});
+      }
+    });
+  };
+  ['pointerdown', 'touchstart', 'scroll', 'wheel'].forEach((evt) => {
+    window.addEventListener(evt, unlockOnInteraction, { once: true, passive: true });
+  });
+
   // Expose global unlock so the intro preloader can trigger video buffering during loading screen
   window.__hvUnlockHeroVideos = () => {
     videosUnlocked = true;
     updateVideoPriority(true);
   };
 
-  if (videosUnlocked) {
-    updateVideoPriority(true);
-  } else {
+  updateVideoPriority(true);
+  if (document.readyState !== 'complete') {
     window.addEventListener('load', () => {
       window.__hvUnlockHeroVideos();
     }, { once: true });
@@ -4418,12 +4464,22 @@ function initInstagramReelsPlayer() {
 // Keeps the large Highverz mark intact at rest, then gently breaks its pixels
 // away from the pointer and lets them settle back into the logo.
 function initFooterScatterGrid() {
+  if (typeof window.__hvFooterScatterCleanup === 'function') {
+    try { window.__hvFooterScatterCleanup(); } catch (_) {}
+    window.__hvFooterScatterCleanup = null;
+  }
   const shell = document.getElementById('page-transition-shell');
   const watermark = shell ? shell.querySelector('.footer-watermark-logo') : document.querySelector('.footer-watermark-logo');
   if (!watermark || watermark.querySelector('.footer-scatter-canvas')) return;
-  // Use a very bright slate/white color for maximum visibility
+  // Enhanced reactive scatter physics with high visibility dots
   window.__hvFooterScatterCleanup = initScatterGrid(watermark, {
-    dotSize: 5, // thick dots
-    base: [200, 220, 240] // bright silver/white base
+    dotSize: 4,
+    dotGap: 2,
+    radius: 220,
+    strength: 2.2,
+    stiffness: 0.035,
+    damping: 0.86,
+    base: [210, 230, 250],
+    accent: [0, 229, 255]
   });
 }

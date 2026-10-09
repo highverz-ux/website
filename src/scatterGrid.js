@@ -65,6 +65,8 @@ export function initScatterGrid(container, options = {}) {
     canvas.style.height = height + "px";
     canvas.style.left = -bleed + "px";
     canvas.style.top = -bleed + "px";
+    canvas.style.right = "auto";
+    canvas.style.bottom = "auto";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     
     const mask = document.createElement("canvas");
@@ -77,42 +79,46 @@ export function initScatterGrid(container, options = {}) {
     const existingImg = container.querySelector('img');
     
     const drawAndExtract = () => {
-      const data = mctx.getImageData(0, 0, width, height).data;
-      
-      const minStep = Math.max(2, dotSize + dotGap);
-      let step = minStep;
-      
-      const countAt = s => {
-        let n = 0;
-        const half = s / 2;
-        for (let y = half; y < height; y += s) {
-          for (let x = half; x < width; x += s) {
+      try {
+        const data = mctx.getImageData(0, 0, width, height).data;
+        
+        const minStep = Math.max(2, dotSize + dotGap);
+        let step = minStep;
+        
+        const countAt = s => {
+          let n = 0;
+          const half = s / 2;
+          for (let y = half; y < height; y += s) {
+            for (let x = half; x < width; x += s) {
+              const px = (Math.round(y) * width + Math.round(x)) * 4;
+              if (data[px + 3] > 60) n++; // Alpha threshold
+            }
+          }
+          return n;
+        };
+        
+        let count = countAt(step);
+        let guard = 0;
+        while (count > 8000 && guard < 20) {
+          step *= 1.15;
+          count = countAt(step);
+          guard++;
+        }
+        
+        const nextDots = [];
+        const half = step / 2;
+        for (let y = half; y < height; y += step) {
+          for (let x = half; x < width; x += step) {
             const px = (Math.round(y) * width + Math.round(x)) * 4;
-            if (data[px + 3] > 60) n++; // Alpha threshold
+            if (data[px + 3] > 60) {
+              nextDots.push({ hx: x, hy: y, x, y, vx: 0, vy: 0 });
+            }
           }
         }
-        return n;
-      };
-      
-      let count = countAt(step);
-      let guard = 0;
-      while (count > 8000 && guard < 20) {
-        step *= 1.15;
-        count = countAt(step);
-        guard++;
+        dots = nextDots;
+      } catch (err) {
+        console.warn('scatterGrid getImageData error, falling back to text mask', err);
       }
-      
-      const nextDots = [];
-      const half = step / 2;
-      for (let y = half; y < height; y += step) {
-        for (let x = half; x < width; x += step) {
-          const px = (Math.round(y) * width + Math.round(x)) * 4;
-          if (data[px + 3] > 60) {
-            nextDots.push({ hx: x, hy: y, x, y, vx: 0, vy: 0 });
-          }
-        }
-      }
-      dots = nextDots;
     };
 
     if (existingImg && existingImg.complete && existingImg.naturalWidth > 0) {
@@ -270,8 +276,16 @@ export function initScatterGrid(container, options = {}) {
   const handlePointerMove = (e) => {
     if (!isIntersecting) return;
     const rect = canvas.getBoundingClientRect();
-    pointerX = e.clientX - rect.left;
-    pointerY = e.clientY - rect.top;
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    // Track pointer when it is within interaction reach of the watermark grid
+    if (x >= -radius && x <= width + radius && y >= -radius && y <= height + radius) {
+      pointerX = x;
+      pointerY = y;
+    } else {
+      pointerX = -9999;
+      pointerY = -9999;
+    }
   };
   
   const handlePointerLeave = () => {
@@ -284,15 +298,16 @@ export function initScatterGrid(container, options = {}) {
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    if (x < 0 || y < 0 || x > width || y > height) return;
+    if (x < -bleed || y < -bleed || x > width + bleed || y > height + bleed) return;
     
     if (ripples.length > 2) ripples.shift();
     ripples.push({ x, y, r: 0 });
   };
   
-  container.addEventListener("pointermove", handlePointerMove, {passive: true});
-  container.addEventListener("pointerdown", handlePointerDown, {passive: true});
-  container.addEventListener("pointerleave", handlePointerLeave, {passive: true});
+  // Track on window so overlaying footer content (links, copyright, text) does not block scatter reactivity
+  window.addEventListener("pointermove", handlePointerMove, {passive: true});
+  window.addEventListener("pointerdown", handlePointerDown, {passive: true});
+  window.addEventListener("pointerleave", handlePointerLeave, {passive: true});
   
   const resizeObserver = new ResizeObserver(() => {
     clearTimeout(resizeTimer);
@@ -307,8 +322,8 @@ export function initScatterGrid(container, options = {}) {
     if (raf) cancelAnimationFrame(raf);
     visibilityObserver?.disconnect();
     resizeObserver.disconnect();
-    container.removeEventListener("pointermove", handlePointerMove);
-    container.removeEventListener("pointerdown", handlePointerDown);
-    container.removeEventListener("pointerleave", handlePointerLeave);
+    window.removeEventListener("pointermove", handlePointerMove);
+    window.removeEventListener("pointerdown", handlePointerDown);
+    window.removeEventListener("pointerleave", handlePointerLeave);
   };
 }

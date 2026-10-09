@@ -106,7 +106,7 @@ export class HighverzIntro {
     const progress = this.container?.querySelector('.hv-loader-progress-fill');
     let currentScale = 0.25;
 
-    const setProgress = (val, duration = 0.2) => {
+    const setProgress = (val, duration = 0.25) => {
       if (this.isFinishing || this.isCompleted || !progress) return;
       currentScale = Math.max(currentScale, val);
       gsap.to(progress, {
@@ -117,13 +117,14 @@ export class HighverzIntro {
       });
     };
 
+    const isMobile = typeof window !== 'undefined' && (window.innerWidth < 768 || window.matchMedia('(max-width: 768px)').matches);
+
     // 1. Critical Typography
     const fontTask = (document.fonts && document.fonts.ready)
-      ? document.fonts.ready.then(() => setProgress(0.5)).catch(() => {})
+      ? document.fonts.ready.then(() => setProgress(0.45)).catch(() => {})
       : Promise.resolve();
 
-    // 2. Critical Branding & Hero Reel Posters (mobile buffers only the visible center reel)
-    const isMobile = typeof window !== 'undefined' && (window.innerWidth < 768 || window.matchMedia('(max-width: 768px)').matches);
+    // 2. Critical Branding & Hero Reel Posters
     const criticalImages = isMobile
       ? [
           '/assets/highverz-hv-logo.svg',
@@ -144,21 +145,29 @@ export class HighverzIntro {
         img.src = src;
         if (img.decode) img.decode().then(resolve).catch(resolve);
       }))
-    ).then(() => setProgress(0.8));
+    ).then(() => setProgress(0.65)).catch(() => {});
 
-    // 3. Unlock hero videos in parallel (non-blocking background stream)
+    // 3. Fluid WebGL Background Preload & Shader Compilation
+    const fluidTask = (typeof window.loadFluidBackground === 'function')
+      ? window.loadFluidBackground().then(() => setProgress(0.85)).catch(() => {})
+      : Promise.resolve();
+
+    // 4. Unlock hero videos in parallel (non-blocking background stream)
     if (typeof window.__hvUnlockHeroVideos === 'function') {
       window.__hvUnlockHeroVideos();
     }
 
-    // 4. Polish: minimum branded animation duration, safety cap for network variability
-    const minDelay = new Promise(resolve => setTimeout(resolve, isMobile ? 180 : 250));
-    const maxTimeout = new Promise(resolve => setTimeout(resolve, isMobile ? 380 : 550));
+    // 5. Polish: deliberate branded animation duration, safety cap for network variability
+    const minDelay = new Promise(resolve => setTimeout(resolve, isMobile ? 850 : 1100));
+    const maxTimeout = new Promise(resolve => setTimeout(resolve, 2500));
 
     await Promise.race([
-      Promise.all([fontTask, imageTask, minDelay]),
+      Promise.all([fontTask, imageTask, fluidTask, minDelay]),
       maxTimeout
     ]);
+
+    setProgress(1.0, 0.15);
+    await new Promise(resolve => setTimeout(resolve, 150));
 
     if (!this.isCompleted && !this.isFinishing) {
       this.finishLoading();

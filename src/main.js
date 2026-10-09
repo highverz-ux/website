@@ -76,19 +76,27 @@ function initLenis() {
   gsap.ticker.lagSmoothing(500, 33);
 }
 
-// Load the ambient WebGL background promptly without multi-second delays
-function loadFluidBackground() {
-  const start = () => {
-    import('./hero/HeroFluidBackground.js')
-      .then(({ initHeroFluidBackground }) => initHeroFluidBackground())
-      .catch(() => {});
-  };
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => setTimeout(start, 80), { once: true });
-  } else {
-    setTimeout(start, 80);
+// Load the ambient WebGL background promptly and return promise for preloader coordination
+export function loadFluidBackground() {
+  if (window.__hvFluidBackgroundPromise) {
+    return window.__hvFluidBackgroundPromise;
   }
+  const root = document.body;
+  if (root && root.dataset.fluidBackgroundReady === 'true') {
+    return Promise.resolve();
+  }
+  window.__hvFluidBackgroundPromise = import('./hero/HeroFluidBackground.js')
+    .then(({ initHeroFluidBackground }) => {
+      const bg = initHeroFluidBackground();
+      return bg;
+    })
+    .catch((err) => {
+      console.warn('Fluid background load error:', err);
+      return null;
+    });
+  return window.__hvFluidBackgroundPromise;
 }
+window.loadFluidBackground = loadFluidBackground;
 
 // Progressive below-the-fold feature hydrator:
 // Keeps initial main-thread work under 300ms so hero LCP paints on frame 1 without delay.
@@ -220,33 +228,30 @@ function boot() {
     if (isHomeRoute(window.location.pathname)) {
       prepareHeroInitialState();
       initHeroIntro(true);
-      if ('requestIdleCallback' in window) {
-        requestIdleCallback(() => initBelowFoldFeatures(), { timeout: 350 });
-      } else {
-        setTimeout(initBelowFoldFeatures, 80);
-      }
+      initBelowFoldFeatures();
     } else {
       initPageScripts(window.location.pathname);
     }
   } else {
-    // Play loading intro screen on reload and initial visit
+    // Play loading intro screen on reload and initial visit.
+    // Initialize all page sections, carousel, and features right now behind the loading screen!
     if (isHomeRoute(window.location.pathname)) {
       prepareHeroInitialState();
+      initBelowFoldFeatures();
+    } else {
+      initPageScripts(window.location.pathname);
     }
     if (lenis) lenis.stop();
+
     initHighverzIntro({
       onStartReveal: () => {
         if (lenis) lenis.start();
         if (isHomeRoute(window.location.pathname)) {
           initHeroIntro(false);
-          if ('requestIdleCallback' in window) {
-            requestIdleCallback(() => initBelowFoldFeatures(), { timeout: 450 });
-          } else {
-            setTimeout(initBelowFoldFeatures, 100);
-          }
-        } else {
-          initPageScripts(window.location.pathname);
         }
+        requestAnimationFrame(() => {
+          ScrollTrigger.refresh();
+        });
       }
     });
   }

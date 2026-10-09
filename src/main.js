@@ -2140,6 +2140,7 @@ export function initPageScripts(pathname) {
     initWhyUsAnimations();
     initCTAReveal();
   } else if (isCampaignsPage) {
+    loadFluidBackground();
     initCampaignsPage();
   } else if (isCaseStudyPage) {
     // Case-study media is initialized below. Do not run homepage scroll

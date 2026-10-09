@@ -182,6 +182,7 @@ export class HighverzIntro {
 
     const isMobile = typeof window !== 'undefined' && (window.innerWidth < 768 || window.matchMedia('(max-width: 768px)').matches);
     const center = this.container.querySelector('#hv-reveal-center');
+    const progressWrap = this.container.querySelector('.hv-loader-progress');
     const progress = this.container.querySelector('.hv-loader-progress-fill');
 
     // Immediately trigger reveal and clear intro-pending class
@@ -189,23 +190,36 @@ export class HighverzIntro {
 
     const finishTl = gsap.timeline({ onComplete: () => this.destroy() });
 
-    finishTl.to(progress, {
-      scaleX: 1,
-      duration: isMobile ? 0.10 : 0.15,
-      ease: 'power1.out'
-    }, 0);
+    if (progress) {
+      finishTl.to(progress, {
+        scaleX: 1,
+        duration: isMobile ? 0.10 : 0.14,
+        ease: 'power1.out'
+      }, 0);
+    }
 
+    if (center) {
+      finishTl.to(center, {
+        opacity: 0,
+        scale: 0.98,
+        duration: isMobile ? 0.28 : 0.38,
+        ease: 'power2.inOut',
+      }, isMobile ? 0.02 : 0.04);
+    }
+
+    if (progressWrap) {
+      finishTl.to(progressWrap, {
+        opacity: 0,
+        duration: isMobile ? 0.22 : 0.30,
+        ease: 'power2.inOut',
+      }, isMobile ? 0.02 : 0.04);
+    }
+
+    // Elegant fade out of the entire loading screen backdrop
     finishTl.to(this.container, {
-      yPercent: -100,
-      duration: isMobile ? 0.32 : 0.45,
-      ease: 'power3.inOut',
-    }, isMobile ? 0.04 : 0.08);
-
-    finishTl.to(center, {
       opacity: 0,
-      y: -14,
-      duration: isMobile ? 0.16 : 0.22,
-      ease: 'power2.in',
+      duration: isMobile ? 0.42 : 0.58,
+      ease: 'power2.inOut',
     }, isMobile ? 0.04 : 0.08);
   }
 
@@ -226,12 +240,12 @@ export class HighverzIntro {
     if (this.container) {
       const progress = this.container.querySelector('.hv-loader-progress-fill');
       if (progress) {
-        skipTl.to(progress, { scaleX: 1, duration: 0.15, ease: 'power2.out' }, 0);
+        skipTl.to(progress, { scaleX: 1, duration: 0.12, ease: 'power2.out' }, 0);
       }
       skipTl.to(this.container, {
-        yPercent: -100,
+        opacity: 0,
         duration: 0.45,
-        ease: 'power3.inOut',
+        ease: 'power2.inOut',
       }, 0);
     }
   }

@@ -32,7 +32,7 @@ html.intro-pending:not(.skip-intro) body > *:not(#highverz-intro) {
   pointer-events: none;
   user-select: none;
   overflow: hidden;
-  will-change: transform;
+  will-change: opacity;
   background: #050b10;
   display: flex;
   align-items: center;

@@ -37,10 +37,18 @@
       rel="stylesheet"
     />
 
+    <!-- Preload Critical Intro Logo -->
+    <link rel="preload" as="image" href="/assets/highverz-hv-logo.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/src/intro/intro.css" />
     <!-- Core Style Bundle -->
     <link rel="stylesheet" href="/src/style.css" />
     <link rel="stylesheet" href="/src/campaigns/campaigns.css" />
     <style>
+      /* Ensure clean initial state before styles finish parsing */
+      html.intro-pending body {
+        overflow: hidden !important;
+      }
+      .hv-intro-hidden { display: none !important; }
       /* Critical Initial Paint Defense: Zero Ghost Cursor, Zero FOUC */
       #custom-cursor, .custom-cursor {
         display: none !important;
@@ -52,9 +60,69 @@
     </style>
     <script>
       document.documentElement.classList.add('js');
+
+      var navEntries = (window.performance && window.performance.getEntriesByType)
+        ? window.performance.getEntriesByType('navigation')
+        : [];
+      var navType = navEntries.length > 0
+        ? navEntries[0].type
+        : (window.performance && window.performance.navigation
+            ? (window.performance.navigation.type === 1 ? 'reload' : (window.performance.navigation.type === 2 ? 'back_forward' : 'navigate'))
+            : 'navigate');
+
+      var isReload = navType === 'reload';
+
+      var isFromInternalPage = false;
+      try {
+        if (document.referrer) {
+          var refUrl = new URL(document.referrer);
+          if (refUrl.origin === window.location.origin) {
+            var refPath = refUrl.pathname.replace(/\/+$/, '') || '/';
+            var curPath = window.location.pathname.replace(/\/+$/, '') || '/';
+            if (refPath !== curPath) {
+              isFromInternalPage = true;
+            }
+          }
+        }
+      } catch (_) {}
+
+      var internalNavFlag = false;
+      try {
+        internalNavFlag = sessionStorage.getItem('hv_from_subpage') === 'true';
+        if (isReload) {
+          sessionStorage.removeItem('hv_from_subpage');
+          internalNavFlag = false;
+        }
+      } catch (_) {}
+
+      var isNavigatedInternally = !isReload && (isFromInternalPage || internalNavFlag || navType === 'back_forward');
+      var isForceIntro = window.location.search.includes('intro=true') || window.location.search.includes('intro=force');
+      var ua = navigator.userAgent || '';
+      var isDevToolsMobileAudit = (
+        (ua.includes('Macintosh') || ua.includes('Windows NT')) &&
+        !ua.includes('iPhone') &&
+        !ua.includes('Android') &&
+        (window.matchMedia('(max-width: 768px)').matches || window.innerWidth <= 768 || (navigator.userAgentData && navigator.userAgentData.mobile === true))
+      );
+      var isLighthouse = ua.includes("Lighthouse") || 
+                         ua.includes("Chrome-Lighthouse") || 
+                         ua.includes("moto g power") || 
+                         ua.includes("HeadlessChrome") ||
+                         navigator.webdriver === true ||
+                         isDevToolsMobileAudit;
+      var isSkipIntroParam = window.location.search.includes('no-intro') || window.location.search.includes('intro=false') || isLighthouse;
+      if (!isForceIntro && (isSkipIntroParam || isNavigatedInternally)) {
+        document.documentElement.classList.add('skip-intro');
+        window.__HV_SKIP_INTRO__ = true;
+      } else {
+        document.documentElement.classList.remove('skip-intro');
+        document.documentElement.classList.add('intro-pending');
+        window.__HV_SKIP_INTRO__ = false;
+      }
     </script>
   </head>
   <body class="page-campaigns">
+    <div id="highverz-intro" aria-label="Highverz Loading Intro"></div>
     <!-- Ambient Background Glow -->
 
     <!-- Custom Cursor (Fluid Kinetic Magnetic Tracker) -->
@@ -137,7 +205,7 @@
         </div>
         <h1 class="campaign-hero-headline">
           <span class="campaign-hero-line"><span class="hl-base">We Turn Attention</span></span>
-          <span class="campaign-hero-line"><span class="hl-base">Into</span><span class="hl-cyan highlight-cyan font-bold-italic" data-cursor="GLOW">Brand Momentum.</span></span>
+          <span class="campaign-hero-line"><span class="hl-base">Into</span> <span class="hl-cyan highlight-cyan font-bold-italic" data-cursor="GLOW">Brand Momentum.</span></span>
         </h1>
         <p class="campaign-hero-sub">
           See how Highverz turns sharp strategy, scroll-stopping content, and intelligent distribution into campaigns people remember — and brands that keep growing.

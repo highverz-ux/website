@@ -248,6 +248,8 @@ function boot() {
         if (lenis) lenis.start();
         if (isHomeRoute(window.location.pathname)) {
           initHeroIntro(false);
+        } else {
+          triggerPageHeroEntrance(window.location.pathname);
         }
         requestAnimationFrame(() => {
           ScrollTrigger.refresh();
@@ -1169,8 +1171,9 @@ function splitAdscaleWords(element) {
 export function initAdscaleTextEffects() {
   const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // Headings across the homepage that resolve word-by-word with the AdScale effect
+  // Headings across all pages that resolve word-by-word with the kinetic AdScale blur-to-focus effect
   const headingSelectors = [
+    // Homepage headings
     '.creators-title',
     '.creators-intro',
     '.growth-widgets-heading h2',
@@ -1178,7 +1181,27 @@ export function initAdscaleTextEffects() {
     '.testimonials-title',
     '.process-headline',
     '.faq-heading',
-    '.cta-main-title'
+    '.cta-main-title',
+    // Work page headings
+    '.work-hero-title',
+    '.work-capabilities-title',
+    '.workflow-heading h2',
+    '.services-main-title',
+    '.cta-display-title',
+    // Campaigns page headings
+    '.campaign-hero-headline',
+    // Why Us page headings
+    '.why-hero-title',
+    '.comp-main-title',
+    // Team page headings
+    '.team-hero-title',
+    '.founders-title',
+    '.pillars-title',
+    '.team-quote-text',
+    // Case studies
+    '.case-hero-title',
+    '.case-section-title',
+    '.breakdown-title'
   ];
 
   const revealElements = document.querySelectorAll(headingSelectors.join(', '));
@@ -1264,6 +1287,13 @@ export function initAdscaleTextEffects() {
       });
     }
 
+    // If intro screen is still active or pending, hold off revealing until curtain lifts
+    const isIntroPending = document.documentElement.classList.contains('intro-pending') ||
+                           document.body.classList.contains('intro-active');
+    if (isIntroPending) {
+      return;
+    }
+
     // Immediate viewport check: if already in view, reveal immediately (no stuck text!)
     const rect = element.getBoundingClientRect();
     const inViewport = rect.top < window.innerHeight * 0.92 && rect.bottom > 0;
@@ -1275,17 +1305,21 @@ export function initAdscaleTextEffects() {
   });
 
   // Safety net: after 800ms, ensure no element currently on screen remains stuck blurred
-  setTimeout(() => {
-    revealElements.forEach((element) => {
-      if (element.dataset.adscaleAnimated !== 'true') {
-        const rect = element.getBoundingClientRect();
-        if (rect.top < window.innerHeight * 0.95 && rect.bottom > 0) {
-          revealWords(element);
-          observer.unobserve(element);
+  const isIntroPending = document.documentElement.classList.contains('intro-pending') ||
+                         document.body.classList.contains('intro-active');
+  if (!isIntroPending) {
+    setTimeout(() => {
+      revealElements.forEach((element) => {
+        if (element.dataset.adscaleAnimated !== 'true') {
+          const rect = element.getBoundingClientRect();
+          if (rect.top < window.innerHeight * 0.95 && rect.bottom > 0) {
+            revealWords(element);
+            observer.unobserve(element);
+          }
         }
-      }
-    });
-  }, 800);
+      });
+    }, 800);
+  }
 }
 
 function initHeroIntro(immediate = false) {
@@ -2156,12 +2190,76 @@ export function initPageScripts(pathname) {
   initMagneticElements();
   initEnquirySystem();
   initFooterScatterGrid();
+  initAdscaleTextEffects();
+  triggerPageHeroEntrance(normPath);
 
   if (window.ScrollTrigger) {
     ScrollTrigger.refresh();
   }
 }
 window.__hvInitPageScripts = initPageScripts;
+
+export function triggerPageHeroEntrance(pathname) {
+  const normPath = pathname ? pathname.replace(/\/+$/, '') : window.location.pathname.replace(/\/+$/, '');
+  const isWork = normPath.includes('work');
+  const isTeam = normPath.includes('team');
+  const isWhy = normPath.includes('why-us');
+  const isCampaigns = normPath.includes('campaigns');
+  const isCase = normPath.includes('creator-');
+
+  // Ensure hero headline gets animated freshly on entrance
+  const heroHeadings = document.querySelectorAll(
+    '.work-hero-title, .campaign-hero-headline, .why-hero-title, .team-hero-title, .case-hero-title'
+  );
+  heroHeadings.forEach((h) => {
+    delete h.dataset.adscaleAnimated;
+  });
+
+  initAdscaleTextEffects();
+
+  if (isWork) {
+    const workHero = document.querySelector('.work-hero-section');
+    if (workHero) {
+      gsap.fromTo(workHero.querySelectorAll('.work-hero-tag, .work-hero-desc, .work-hero-cta, .work-hero-metrics-grid'),
+        { opacity: 0, y: 18 },
+        { opacity: 1, y: 0, duration: 0.7, stagger: 0.08, ease: 'power3.out', clearProps: 'transform,opacity' }
+      );
+    }
+  } else if (isTeam) {
+    const teamHero = document.querySelector('.team-hero-section');
+    if (teamHero) {
+      gsap.fromTo(teamHero.querySelectorAll('.team-hero-tag, .team-hero-desc, .team-metrics-grid'),
+        { opacity: 0, y: 18 },
+        { opacity: 1, y: 0, duration: 0.7, stagger: 0.08, ease: 'power3.out', clearProps: 'transform,opacity' }
+      );
+    }
+  } else if (isWhy) {
+    const whyHero = document.querySelector('.why-hero-section');
+    if (whyHero) {
+      gsap.fromTo(whyHero.querySelectorAll('.why-hero-subtitle'),
+        { opacity: 0, y: 18 },
+        { opacity: 1, y: 0, duration: 0.7, delay: 0.1, ease: 'power3.out', clearProps: 'transform,opacity' }
+      );
+    }
+  } else if (isCampaigns) {
+    const campaignHero = document.querySelector('.campaign-hero');
+    if (campaignHero) {
+      gsap.fromTo(campaignHero.querySelectorAll('.campaign-hero-tag, .campaign-hero-sub, .campaign-hero-pillars, .campaign-search-section, .campaign-featured-label'),
+        { opacity: 0, y: 18 },
+        { opacity: 1, y: 0, duration: 0.65, stagger: 0.06, ease: 'power3.out', clearProps: 'transform,opacity' }
+      );
+    }
+  } else if (isCase) {
+    const caseHero = document.querySelector('.case-hero-section');
+    if (caseHero) {
+      gsap.fromTo(caseHero.querySelectorAll('.case-kicker-tag, .case-profile-chip-row, .case-hero-media, .case-stats-hud'),
+        { opacity: 0, y: 18 },
+        { opacity: 1, y: 0, duration: 0.7, stagger: 0.07, ease: 'power3.out', clearProps: 'transform,opacity' }
+      );
+    }
+  }
+}
+window.__hvTriggerPageHeroEntrance = triggerPageHeroEntrance;
 
 // ===========================================================================
 // HOME HERO — 3D CYLINDRICAL REEL WALL CAROUSEL

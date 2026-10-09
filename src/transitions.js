@@ -294,35 +294,6 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
 
     document.documentElement.classList.add('page-transitioned');
 
-    // Pre-activate incoming hero elements so the wipe immediately reveals the live content
-    // This eliminates any blank delay during the wipe and prevents delayed secondary entrance animations
-    const heroSelectors = [
-      '.campaign-hero-tag',
-      '.campaign-hero-headline',
-      '.campaign-hero-sub',
-      '.campaign-hero-pillars',
-      '.campaign-search-section',
-      '.campaign-featured-label',
-      '.work-hero-container',
-      '.team-hero-container',
-      '.why-hero-container',
-      '.case-hero-container',
-      '.services-cards-grid',
-      '.section-services .service-card-item',
-      '.why-philosophy-section .service-card-item',
-      '.comp-dual-cards',
-      '.comp-card'
-    ].join(',');
-    incomingContent.querySelectorAll(heroSelectors).forEach((el) => {
-      el.style.opacity = '1';
-      el.style.transform = 'none';
-      el.style.animation = 'none';
-    });
-    const incCampaignHero = incomingContent.querySelector('.campaign-hero');
-    if (incCampaignHero) {
-      incCampaignHero.dataset.heroAnimated = 'true';
-    }
-
     // Pre-set metric counters in incoming content to 0 so they never flash target values before animating
     incomingContent.querySelectorAll('.work-metric-val').forEach((el) => {
       const target = parseFloat(el.getAttribute('data-metric-target'));
@@ -413,6 +384,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
           document.body.className = targetBodyClass;
         }
         document.body.classList.remove('page-is-transitioning');
+        document.documentElement.classList.remove('page-transitioned');
         if (wasCursorActive || window.innerWidth > 900) {
           document.body.classList.add('cursor-active');
         }

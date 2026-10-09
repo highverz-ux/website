@@ -119,10 +119,10 @@ export function initCampaignsPage() {
 // ==========================================================================
 function animateHero() {
   const campaignHero = document.querySelector('.campaign-hero');
-  if (campaignHero?.dataset.heroAnimated === 'true' || document.documentElement.classList.contains('page-transitioned')) {
+  if (campaignHero?.dataset.heroAnimated === 'true') {
     if (campaignHero) campaignHero.dataset.heroAnimated = 'true';
     const allHeroEls = document.querySelectorAll(
-      '.campaign-hero-tag, .campaign-hero-headline, .campaign-hero-sub, .campaign-hero-pillars, .campaign-search-section, .campaign-featured-label'
+      '.campaign-hero-tag, .campaign-hero-sub, .campaign-hero-pillars, .campaign-search-section, .campaign-featured-label'
     );
     allHeroEls.forEach((el) => {
       el.style.opacity = '1';
@@ -132,7 +132,6 @@ function animateHero() {
   }
   const heroElements = [
     '.campaign-hero-tag',
-    '.campaign-hero-headline',
     '.campaign-hero-sub',
     '.campaign-hero-pillars'
   ];

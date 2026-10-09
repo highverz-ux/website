@@ -1,3 +1,5 @@
+@import './intro/intro.css';
+
 /* ==========================================================================
    HIGHVERZ — LUXURY CREATIVE AGENCY DESIGN SYSTEM
    Exact Match to Highverz Reference Art Direction & Official Brand Assets
@@ -1609,10 +1611,27 @@ body.mobile-menu-active {
   display: inline-block;
   will-change: opacity, transform, filter;
   transform-origin: 50% 100%;
+  margin-right: 0.04em;
+  background-image: var(--hero-headline-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+[data-theme="light"] .adscale-reveal-word:not(.highlight-cyan) {
+  background-image: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  -webkit-text-fill-color: initial;
+  color: var(--text-primary);
 }
 
 .adscale-reveal-word.highlight-cyan,
 .highlight-cyan .adscale-reveal-word {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 700;
   background: linear-gradient(90deg, #00D5FF 0%, #5EFBFF 25%, #FFFFFF 50%, #23C7D8 75%, #00D5FF 100%);
   background-size: 200% auto;
   -webkit-background-clip: text;
@@ -1622,6 +1641,7 @@ body.mobile-menu-active {
   filter: drop-shadow(0 0 16px rgba(0, 229, 255, 0.4));
   animation: cyanTextSheen 5s ease-in-out infinite;
   display: inline-block;
+  padding-right: 0.15em;
 }
 
 [data-theme="light"] .adscale-reveal-word.highlight-cyan,
@@ -11003,30 +11023,9 @@ html.skip-intro .hero-container {
   animation: framerContentEntrance 0.38s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* Suppress redundant secondary hero entrance when revealed via diagonal wipe */
-html.page-transitioned .work-hero-container,
-html.page-transitioned .team-hero-container,
-html.page-transitioned .why-hero-container,
-html.page-transitioned .case-hero-container,
-html.page-transitioned .campaign-hero-tag,
-html.page-transitioned .campaign-hero-headline,
-html.page-transitioned .campaign-hero-sub,
-html.page-transitioned .campaign-hero-pillars,
-html.page-transitioned .campaign-search-section,
-html.page-transitioned .campaign-featured-label,
-.page-transition-shell .work-hero-container,
-.page-transition-shell .team-hero-container,
-.page-transition-shell .why-hero-container,
-.page-transition-shell .case-hero-container,
-.page-transition-shell .campaign-hero-tag,
-.page-transition-shell .campaign-hero-headline,
-.page-transition-shell .campaign-hero-sub,
-.page-transition-shell .campaign-hero-pillars,
-.page-transition-shell .campaign-search-section,
-.page-transition-shell .campaign-featured-label {
-  animation: none !important;
-  opacity: 1 !important;
-  transform: none !important;
+/* Transition shell isolates layout during page swap */
+.page-transition-shell {
+  isolation: isolate;
 }
 
 /* ==========================================================================

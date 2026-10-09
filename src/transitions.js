@@ -15,19 +15,36 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 /**
- * Checks if a given path or URL represents the Home route.
+ * Normalizes a URL or path string to a canonical route identifier (e.g. '/why-us', '/').
  */
-export function isHomeRoute(pathOrUrl) {
-  if (!pathOrUrl) return false;
+export function normalizeRoute(pathOrUrl) {
+  if (!pathOrUrl) return '/';
   try {
     const url = typeof pathOrUrl === 'string'
       ? new URL(pathOrUrl, window.location.origin)
       : pathOrUrl;
-    const p = url.pathname.replace(/\/+$/, '') || '/';
-    return p === '/' || p === '/index.html';
+    let p = (url.pathname || '/').split('#')[0].split('?')[0].replace(/\/+$/, '') || '/';
+    p = p.replace(/\.html$/, '');
+    if (p === '' || p === '/index') return '/';
+    return p;
   } catch (e) {
-    return false;
+    return '/';
   }
+}
+
+/**
+ * Checks if two routes point to the same destination.
+ */
+export function isSameRoute(routeA, routeB) {
+  return normalizeRoute(routeA) === normalizeRoute(routeB);
+}
+
+/**
+ * Checks if a given path or URL represents the Home route.
+ */
+export function isHomeRoute(pathOrUrl) {
+  if (!pathOrUrl) return false;
+  return normalizeRoute(pathOrUrl) === '/';
 }
 
 /**
@@ -42,8 +59,8 @@ export function canTransition(currentPath, targetUrl) {
   if (/\.(png|jpg|jpeg|gif|svg|webp|mp4|mov|webm|pdf|xlsx|zip|json|xml|txt)$/i.test(targetUrl.pathname)) {
     return false;
   }
-  // Exclude same page anchor navigation
-  if (targetUrl.pathname === window.location.pathname) {
+  // Exclude same page anchor or same route navigation
+  if (isSameRoute(currentPath, targetUrl)) {
     return false;
   }
   return true;
@@ -272,7 +289,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
 
     // 6. Mount incoming content inside an isolated 100vw x 100vh viewport shell
     const shell = document.createElement('div');
-    shell.className = 'page-transition-shell';
+    shell.className = `page-transition-shell ${targetBodyClass || ''}`.trim();
     shell.id = 'page-transition-shell';
 
     document.documentElement.classList.add('page-transitioned');
@@ -291,6 +308,8 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       '.why-hero-container',
       '.case-hero-container',
       '.services-cards-grid',
+      '.section-services .service-card-item',
+      '.why-philosophy-section .service-card-item',
       '.comp-dual-cards',
       '.comp-card'
     ].join(',');
@@ -513,13 +532,12 @@ export function initPageTransitions() {
       return;
     }
 
-    // If destination is same page with hash (anchor scroll), let normal/Lenis anchor scrolling work
-    if (url.pathname === window.location.pathname) {
+    // If destination is same route, scroll smoothly to top without re-triggering transition
+    if (isSameRoute(window.location.pathname, url)) {
       if (!url.hash) {
-        // Clicking same page link without hash: scroll smoothly to top
         e.preventDefault();
         if (window.lenis) {
-          window.lenis.scrollTo(0);
+          window.lenis.scrollTo(0, { duration: 0.8 });
         } else {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }

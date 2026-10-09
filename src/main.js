@@ -796,6 +796,21 @@ function initNavbar() {
         setTimeout(() => {
           isProgrammaticScroll = false;
         }, 1300);
+      } else {
+        // If clicking on active/same-route link without hash, smoothly scroll to top
+        try {
+          const linkUrl = new URL(href, window.location.origin);
+          const normLink = (linkUrl.pathname || '/').replace(/\/+$/, '').replace(/\.html$/, '') || '/';
+          const normCurrent = (window.location.pathname || '/').replace(/\/+$/, '').replace(/\.html$/, '') || '/';
+          if (normLink === normCurrent && !linkUrl.hash) {
+            e.preventDefault();
+            if (window.lenis) {
+              window.lenis.scrollTo(0, { duration: 0.8 });
+            } else {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+          }
+        } catch (_) {}
       }
     });
   });
@@ -3142,20 +3157,34 @@ function initTeamPageAnimations() {
 // WHY US & COMPARISON SECTION APPEAR ANIMATIONS
 // ==========================================================================
 function initWhyUsAnimations() {
-  const whyPage = document.querySelector('.page-why-us');
-  if (whyPage?.dataset.animationsInitialized === 'true') return;
-  if (whyPage) whyPage.dataset.animationsInitialized = 'true';
+  const pageContent = document.getElementById('page-content');
+  if (pageContent?.dataset.whyAnimationsInit === 'true') return;
+  if (pageContent) pageContent.dataset.whyAnimationsInit = 'true';
   const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isTransitioned = document.documentElement.classList.contains('page-transitioned');
 
-
-
-  // 2. Philosophy Cards Grid Stagger Entrance
-  const philGrid = document.querySelector('.section-services .services-cards-grid');
+  // 1. Philosophy Cards Grid Stagger Entrance
+  const philGrid = document.querySelector('.section-services .services-cards-grid, .why-philosophy-grid');
   if (philGrid) {
     const philCards = philGrid.querySelectorAll('.service-card-item');
     if (philCards.length > 0) {
-      if (isReducedMotion) {
-        gsap.set(philCards, { opacity: 1, y: 0 });
+      const rect = philGrid.getBoundingClientRect();
+      const isAlreadyInView = rect.top < (window.innerHeight * 0.96);
+
+      if (isReducedMotion || isTransitioned) {
+        gsap.set(philCards, { opacity: 1, y: 0, clearProps: 'transform,opacity' });
+      } else if (isAlreadyInView) {
+        gsap.fromTo(philCards,
+          { opacity: 0, y: 15 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.55,
+            stagger: 0.08,
+            ease: 'power2.out',
+            clearProps: 'transform,opacity'
+          }
+        );
       } else {
         gsap.fromTo(philCards,
           { opacity: 0, y: 20 },
@@ -3165,10 +3194,10 @@ function initWhyUsAnimations() {
             duration: 0.65,
             stagger: 0.08,
             ease: 'power2.out',
-            clearProps: 'transform',
+            clearProps: 'transform,opacity',
             scrollTrigger: {
               trigger: philGrid,
-              start: 'top 85%',
+              start: 'top 90%',
               toggleActions: 'play none none none'
             }
           }
@@ -3177,7 +3206,7 @@ function initWhyUsAnimations() {
     }
   }
 
-  // 3. Comparison Section ("What makes us different") Appear Animations
+  // 2. Comparison Section ("What makes us different") Appear Animations
   const compSection = document.querySelector('.comparison-section');
   if (!compSection) return;
 
@@ -3191,26 +3220,26 @@ function initWhyUsAnimations() {
   const hvChecks = compSection.querySelectorAll('.comp-card-hv .val-check-icon');
   const compCta = compSection.querySelector('.comparison-cta');
 
-  if (isReducedMotion) {
-    if (compTitle) gsap.set(compTitle, { opacity: 1, y: 0 });
-    if (cardTrad) gsap.set(cardTrad, { opacity: 1, x: 0, y: 0, scale: 1 });
-    if (cardHv) gsap.set(cardHv, { opacity: 1, x: 0, y: 0, scale: 1 });
-    gsap.set([...tradRows, ...hvRows], { opacity: 1, x: 0, y: 0 });
-    gsap.set([...tradDashes, ...hvChecks], { opacity: 1, scale: 1 });
-    if (compCta) gsap.set(compCta, { opacity: 1, y: 0 });
+  if (isReducedMotion || isTransitioned) {
+    if (compTitle) gsap.set(compTitle, { opacity: 1, y: 0, clearProps: 'transform,opacity' });
+    if (cardTrad) gsap.set(cardTrad, { opacity: 1, x: 0, y: 0, scale: 1, clearProps: 'transform,opacity' });
+    if (cardHv) gsap.set(cardHv, { opacity: 1, x: 0, y: 0, scale: 1, clearProps: 'transform,opacity' });
+    gsap.set([...tradRows, ...hvRows], { opacity: 1, x: 0, y: 0, clearProps: 'transform,opacity' });
+    gsap.set([...tradDashes, ...hvChecks], { opacity: 1, scale: 1, clearProps: 'transform,opacity' });
+    if (compCta) gsap.set(compCta, { opacity: 1, y: 0, clearProps: 'transform,opacity' });
     return;
   }
 
   // Section Header Entrance
   if (compTitle) {
     gsap.fromTo(compTitle,
-      { opacity: 0, y: 24 },
+      { opacity: 0, y: 20 },
       {
         opacity: 1,
         y: 0,
-        duration: 0.7,
+        duration: 0.6,
         ease: 'power2.out',
-        clearProps: 'transform',
+        clearProps: 'transform,opacity',
         scrollTrigger: {
           trigger: compSection,
           start: 'top 85%',
@@ -3221,7 +3250,6 @@ function initWhyUsAnimations() {
   }
 
   // Dual Comparison Cards & Rows Orchestrated Entrance
-  // Clean in-place reveal: NO horizontal sideways x-shifting to prevent card jump glitches
   if (compCards && cardTrad && cardHv) {
     const tl = gsap.timeline({
       scrollTrigger: {
@@ -3231,79 +3259,23 @@ function initWhyUsAnimations() {
       }
     });
 
-    // 1. Cards Entrance: Smooth vertical reveal in-place
     tl.fromTo([cardTrad, cardHv],
-      {
-        opacity: 0,
-        y: 25,
-      },
+      { opacity: 0, y: 20 },
       {
         opacity: 1,
         y: 0,
-        duration: 0.65,
+        duration: 0.6,
         stagger: 0.1,
         ease: 'power2.out',
-        clearProps: 'transform'
+        clearProps: 'transform,opacity'
       }
     );
 
-    // 2. Card Top Headers (Badges & Titles)
-    const cardTops = compCards.querySelectorAll('.comp-card-top');
-    if (cardTops.length > 0) {
-      tl.fromTo(cardTops,
-        { opacity: 0, y: 12 },
-        { opacity: 1, y: 0, duration: 0.45, stagger: 0.08, ease: 'power2.out', clearProps: 'transform' },
-        '-=0.45'
-      );
-    }
-
-    // 3. Comparison Rows: Stable vertical fade-in without lateral sliding
-    if (tradRows.length > 0 || hvRows.length > 0) {
-      tl.fromTo([...tradRows, ...hvRows],
-        { opacity: 0, y: 8 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.35,
-          stagger: 0.03,
-          ease: 'power2.out',
-          clearProps: 'transform'
-        },
-        '-=0.3'
-      );
-    }
-
-    // 4. Dash icons on traditional card fade in
-    if (tradDashes.length > 0) {
-      tl.fromTo(tradDashes,
-        { opacity: 0, scale: 0.8 },
-        { opacity: 1, scale: 1, duration: 0.3, stagger: 0.03, ease: 'power2.out', clearProps: 'transform' },
-        '-=0.2'
-      );
-    }
-
-    // 5. Highverz checkmark badges burst in
-    if (hvChecks.length > 0) {
-      tl.fromTo(hvChecks,
-        { scale: 0.5, opacity: 0 },
-        {
-          scale: 1,
-          opacity: 1,
-          duration: 0.4,
-          stagger: 0.04,
-          ease: 'back.out(1.6)',
-          clearProps: 'transform'
-        },
-        '-=0.25'
-      );
-    }
-
-    // 6. Call to Action Button Entrance
     if (compCta) {
       tl.fromTo(compCta,
-        { opacity: 0, y: 24 },
-        { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out', clearProps: 'transform' },
-        '-=0.25'
+        { opacity: 0, y: 16 },
+        { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', clearProps: 'transform,opacity' },
+        '-=0.2'
       );
     }
   }

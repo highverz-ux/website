@@ -10388,11 +10388,13 @@ html.js .floating-badge-item {
 
 .why-hero-title {
   font-family: var(--font-display);
-  font-size: clamp(3.5rem, 8vw, 5.5rem);
+  font-size: clamp(2.25rem, 5.5vw, 5.25rem);
   font-weight: 500;
-  line-height: 1.12;
+  line-height: 1.1;
   margin-bottom: 1.5rem;
   letter-spacing: -0.03em;
+  word-break: break-word;
+  overflow-wrap: break-word;
   background-image: var(--hero-headline-gradient);
   -webkit-background-clip: text;
   background-clip: text;
@@ -12744,7 +12746,9 @@ body::after {
   filter: blur(28px);
 }
 
-.page-why-us .service-card-item {
+.page-why-us .service-card-item,
+.page-transition-shell.page-why-us .service-card-item,
+.why-philosophy-section .service-card-item {
   position: relative;
   isolation: isolate;
   overflow: hidden;
@@ -12760,10 +12764,11 @@ body::after {
     0 24px 70px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.11),
     inset 0 -1px 0 rgba(0, 229, 255, 0.05);
-  transition: transform 0.45s var(--ease-expo), border-color 0.45s ease, box-shadow 0.45s ease;
+  transition: border-color 0.45s ease, box-shadow 0.45s ease;
 }
 
-.page-why-us .service-card-item::before {
+.page-why-us .service-card-item::before,
+.why-philosophy-section .service-card-item::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -12775,7 +12780,8 @@ body::after {
   opacity: 0.75;
 }
 
-.page-why-us .service-card-item::after {
+.page-why-us .service-card-item::after,
+.why-philosophy-section .service-card-item::after {
   content: '';
   position: absolute;
   width: 9rem;
@@ -12789,7 +12795,8 @@ body::after {
   transition: transform 0.5s ease, opacity 0.5s ease;
 }
 
-.page-why-us .service-card-item:hover {
+.page-why-us .service-card-item:hover,
+.why-philosophy-section .service-card-item:hover {
   transform: translateY(-9px);
   border-color: rgba(109, 235, 245, 0.42);
   background:
@@ -12799,26 +12806,31 @@ body::after {
     0 30px 82px rgba(0, 0, 0, 0.3),
     0 0 34px rgba(0, 229, 255, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  transition: transform 0.45s var(--ease-expo), border-color 0.45s ease, box-shadow 0.45s ease;
 }
 
-.page-why-us .service-card-item:hover::after {
+.page-why-us .service-card-item:hover::after,
+.why-philosophy-section .service-card-item:hover::after {
   transform: scale(1.55) translate(-0.8rem, -0.8rem);
   opacity: 0.9;
 }
 
-.page-why-us .service-card-icon-box {
+.page-why-us .service-card-icon-box,
+.why-philosophy-section .service-card-icon-box {
   border: 1px solid rgba(105, 235, 245, 0.2);
   border-radius: 14px;
   background: rgba(0, 229, 255, 0.09);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 8px 24px rgba(0, 229, 255, 0.06);
 }
 
-.page-why-us .comparison-section {
+.page-why-us .comparison-section,
+.comparison-section {
   isolation: isolate;
   background: transparent;
 }
 
-.page-why-us .comparison-section::before {
+.page-why-us .comparison-section::before,
+.comparison-section::before {
   content: '';
   position: absolute;
   z-index: -1;
@@ -12829,7 +12841,9 @@ body::after {
   filter: blur(30px);
 }
 
-.page-why-us .comp-card {
+.page-why-us .comp-card,
+.page-transition-shell.page-why-us .comp-card,
+.comparison-section .comp-card {
   --why-card-border: rgba(190, 242, 255, 0.17);
   overflow: hidden;
   border: 1px solid transparent;
@@ -12842,10 +12856,11 @@ body::after {
     0 24px 70px rgba(0, 0, 0, 0.26),
     inset 0 1px 0 rgba(255, 255, 255, 0.1),
     inset 0 -1px 0 rgba(0, 229, 255, 0.045);
-  transition: transform 0.45s var(--ease-expo), border-color 0.45s ease, box-shadow 0.45s ease;
+  transition: border-color 0.45s ease, box-shadow 0.45s ease;
 }
 
-.page-why-us .comp-card::after {
+.page-why-us .comp-card::after,
+.comparison-section .comp-card::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -12856,14 +12871,16 @@ body::after {
     radial-gradient(circle at 100% 0%, rgba(0, 229, 255, 0.12), transparent 32%);
 }
 
-.page-why-us .comp-card-traditional {
+.page-why-us .comp-card-traditional,
+.comparison-section .comp-card-traditional {
   --why-card-border: rgba(185, 215, 222, 0.13);
   box-shadow:
     0 24px 70px rgba(0, 0, 0, 0.24),
     inset 0 1px 0 rgba(255, 255, 255, 0.09);
 }
 
-.page-why-us .comp-card-hv {
+.page-why-us .comp-card-hv,
+.comparison-section .comp-card-hv {
   --why-card-border: rgba(0, 229, 255, 0.42);
   border-width: 1px;
   background:
@@ -12875,16 +12892,19 @@ body::after {
     inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
-.page-why-us .comp-card:hover {
+.page-why-us .comp-card:hover,
+.comparison-section .comp-card:hover {
   transform: translateY(-9px);
   border-color: rgba(136, 240, 248, 0.42);
   box-shadow:
     0 32px 88px rgba(0, 0, 0, 0.32),
     0 0 38px rgba(0, 229, 255, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  transition: transform 0.45s var(--ease-expo), border-color 0.45s ease, box-shadow 0.45s ease;
 }
 
-.page-why-us .comp-card-hv:hover {
+.page-why-us .comp-card-hv:hover,
+.comparison-section .comp-card-hv:hover {
   box-shadow:
     0 32px 94px rgba(0, 0, 0, 0.34),
     0 0 52px rgba(0, 229, 255, 0.2),
@@ -12972,36 +12992,43 @@ body::after {
 }
 
 [data-theme="light"] .page-why-us .service-card-item,
-[data-theme="light"] .page-why-us .comp-card {
+[data-theme="light"] .why-philosophy-section .service-card-item,
+[data-theme="light"] .page-why-us .comp-card,
+[data-theme="light"] .comparison-section .comp-card {
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.78), rgba(232, 247, 249, 0.62)) padding-box,
     linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(0, 151, 167, 0.18), rgba(0, 0, 0, 0.05)) border-box;
   box-shadow: 0 24px 62px rgba(0, 74, 91, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
-[data-theme="light"] .page-why-us .comp-card-hv {
+[data-theme="light"] .page-why-us .comp-card-hv,
+[data-theme="light"] .comparison-section .comp-card-hv {
   background:
     linear-gradient(145deg, rgba(225, 252, 254, 0.9), rgba(255, 255, 255, 0.7)) padding-box,
     linear-gradient(135deg, rgba(0, 151, 167, 0.32), rgba(0, 188, 212, 0.4), rgba(255, 255, 255, 0.95)) border-box;
 }
 
-[data-theme="light"] .page-why-us .comp-badge {
+[data-theme="light"] .page-why-us .comp-badge,
+[data-theme="light"] .comparison-section .comp-badge {
   background: rgba(255, 255, 255, 0.5);
   border-color: rgba(0, 84, 98, 0.14);
 }
 
-[data-theme="light"] .page-why-us .comp-list-row:hover {
+[data-theme="light"] .page-why-us .comp-list-row:hover,
+[data-theme="light"] .comparison-section .comp-list-row:hover {
   background: rgba(0, 188, 212, 0.06);
   border-color: rgba(0, 151, 167, 0.15);
 }
 
 @media (max-width: 768px) {
-  .page-why-us .service-card-item {
+  .page-why-us .service-card-item,
+  .why-philosophy-section .service-card-item {
     min-height: 0;
     border-radius: 20px;
   }
 
-  .page-why-us .comp-card {
+  .page-why-us .comp-card,
+  .comparison-section .comp-card {
     border-radius: 22px;
     padding: 2rem 1.35rem 1.7rem;
   }

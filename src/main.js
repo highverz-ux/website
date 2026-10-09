@@ -26,6 +26,7 @@ gsap.registerPlugin(ScrollTrigger);
 // LENIS SMOOTH SCROLL SETUP
 // ==========================================================================
 let lenis;
+let activeWorkMetricTweens = [];
 
 function initVercelTelemetry() {
   // These helpers are the framework-agnostic APIs for this Vite site. The
@@ -2216,14 +2217,17 @@ export function initHeroReelCarousel() {
   const loadVideo = (video, priority = 'low') => {
     if (!video) return;
     const targetSrc = video.dataset.src || video.getAttribute('src');
+    video.defaultMuted = true;
+    video.muted = true;
+    video.playsInline = true;
+    video.loop = true;
+    video.autoplay = true;
+    video.setAttribute('playsinline', '');
+    video.setAttribute('muted', '');
+    video.setAttribute('autoplay', '');
     if (!video.getAttribute('src') && targetSrc) {
       video.setAttribute('src', targetSrc);
       video.preload = 'auto';
-      video.defaultMuted = true;
-      video.muted = true;
-      video.playsInline = true;
-      video.setAttribute('playsinline', '');
-      video.setAttribute('muted', '');
       video.load();
     }
     video.fetchPriority = priority;
@@ -2308,56 +2312,33 @@ export function initHeroReelCarousel() {
   const updateVideoPriority = (force = false) => {
     if (!videosUnlocked || !stageStep || !videos.length || !isCarouselVisible) return;
 
-    const isMobile = cachedViewportWidth < 768;
-    // On desktop, keep 5 to 7 visible arc cards playing concurrently so the 3D amphitheater looks alive
-    // On mobile, keep 3 cards playing
-    const activeRange = isMobile ? 1 : 3;
-    const preloadRange = isMobile ? 2 : 4;
-    const centerIndex = Math.round(scrollPosition / stageStep);
-
-    if (!force && centerIndex === lastVideoPriorityIndex) return;
-    lastVideoPriorityIndex = centerIndex;
-
-    const activeIndexes = new Set();
-    for (let offset = -activeRange; offset <= activeRange; offset += 1) {
-      activeIndexes.add(((centerIndex + offset) % count + count) % count);
-    }
-
-    const preloadIndexes = new Set();
-    for (let offset = -preloadRange; offset <= preloadRange; offset += 1) {
-      preloadIndexes.add(((centerIndex + offset) % count + count) % count);
-    }
-
-    videos.forEach((video, index) => {
+    videos.forEach((video) => {
       if (!video) return;
-      if (preloadIndexes.has(index)) {
-        loadVideo(video, activeIndexes.has(index) ? 'high' : 'low');
-      }
-      if (!activeIndexes.has(index)) {
-        if (!video.paused) video.pause();
-        return;
-      }
+      loadVideo(video, 'high');
       if (video.paused) {
         playVideo(video);
       }
     });
   };
 
-  // Preload initial visible cards immediately
-  for (let i = 0; i < Math.min(videos.length, 6); i++) {
-    loadVideo(videos[i], i < 3 ? 'high' : 'low');
-  }
+  // Preload and start all carousel cards immediately
+  videos.forEach((video) => {
+    loadVideo(video, 'high');
+    playVideo(video);
+  });
 
   // Resume / unlock autoplay on first interaction if browser blocked initial autoplay
   const unlockOnInteraction = () => {
     updateVideoPriority(true);
     videos.forEach((v) => {
-      if (v && v.getAttribute('src') && v.paused) {
-        v.play().catch(() => {});
+      if (v) {
+        v.defaultMuted = true;
+        v.muted = true;
+        if (v.paused) v.play().catch(() => {});
       }
     });
   };
-  ['pointerdown', 'touchstart', 'scroll', 'wheel'].forEach((evt) => {
+  ['pointerdown', 'touchstart', 'scroll', 'wheel', 'click', 'keydown', 'pointerup', 'mousemove'].forEach((evt) => {
     window.addEventListener(evt, unlockOnInteraction, { once: true, passive: true });
   });
 
@@ -2480,12 +2461,6 @@ export function initHeroReelCarousel() {
 
     const isMobile = cachedViewportWidth < 768;
 
-    // Mobile optimization: sleep RAF loop when idle and inertia glide has completed
-    if (isMobile && !isDragging && Math.abs(dragVelocity) < 0.5) {
-      animId = null;
-      return;
-    }
-
     const delta = Math.min((currentTime - lastTime) / 1000, 0.05);
     lastTime = currentTime;
 
@@ -2497,9 +2472,10 @@ export function initHeroReelCarousel() {
         if (Math.abs(dragVelocity) < 0.5) {
           dragVelocity = 0;
         }
-      } else if (!isInteracting && !isMobile) {
-        // Desktop only: gentle auto-scroll
-        scrollPosition += autoSpeed * autoDirection * delta;
+      } else if (!isInteracting) {
+        // Continuous smooth auto-rotation on all screens (gentle pace on mobile)
+        const speed = isMobile ? 32 : autoSpeed;
+        scrollPosition += speed * autoDirection * delta;
       }
 
       scrollPosition = ((scrollPosition % totalWidth) + totalWidth) % totalWidth;
@@ -2778,18 +2754,23 @@ function initWorkflowSection() {
 
   const setWorkflowPlayback = (shouldPlay) => {
     videos.forEach((video) => {
+      video.defaultMuted = true;
       video.muted = true;
       video.playsInline = true;
       video.loop = true;
       video.autoplay = true;
+      video.setAttribute('muted', '');
+      video.setAttribute('playsinline', '');
       video.setAttribute('autoplay', '');
-      video.preload = 'metadata';
+      video.preload = 'auto';
       if (!shouldPlay) {
         try { video.pause(); } catch (_) {}
         return;
       }
-      const playAttempt = video.play();
-      if (playAttempt && playAttempt.catch) playAttempt.catch(() => {});
+      if (video.paused) {
+        const playAttempt = video.play();
+        if (playAttempt && playAttempt.catch) playAttempt.catch(() => {});
+      }
     });
   };
 
@@ -2807,8 +2788,17 @@ function initWorkflowSection() {
       hasRevealed = true;
       reveal.play(0);
     }
-  }, { threshold: 0.18 });
+  }, { rootMargin: '150px 0px 150px 0px', threshold: 0 });
   observer.observe(section);
+
+  const unlockWorkflowOnInteraction = () => {
+    if (sectionVisible && !document.hidden) {
+      setWorkflowPlayback(true);
+    }
+  };
+  ['pointerdown', 'touchstart', 'scroll', 'wheel', 'click'].forEach((evt) => {
+    window.addEventListener(evt, unlockWorkflowOnInteraction, { once: true, passive: true });
+  });
 
   const onVisibilityChange = () => setWorkflowPlayback(sectionVisible && !document.hidden);
   document.addEventListener('visibilitychange', onVisibilityChange);
@@ -2852,7 +2842,6 @@ function initCapabilityDeck() {
 // ==========================================================================
 // 07b. WORK HERO & SERVICE FILTERS (DEDICATED WORK PAGE)
 // ==========================================================================
-let activeWorkMetricTweens = [];
 function initWorkHeroIntro() {
   const workHero = document.querySelector('.work-hero-section');
   if (!workHero) return;
@@ -4260,19 +4249,23 @@ function initInstagramReelsPlayer() {
 
   const setPlayback = (shouldPlay) => {
     videos.forEach((video) => {
+      video.defaultMuted = true;
       video.muted = true;
       video.loop = true;
       video.playsInline = true;
       video.autoplay = true;
       video.setAttribute('muted', '');
       video.setAttribute('autoplay', '');
-      video.preload = 'metadata';
+      video.setAttribute('playsinline', '');
+      video.preload = 'auto';
       if (!shouldPlay) {
         try { video.pause(); } catch (_) {}
         return;
       }
-      const attempt = video.play();
-      if (attempt?.catch) attempt.catch(() => {});
+      if (video.paused) {
+        const attempt = video.play();
+        if (attempt?.catch) attempt.catch(() => {});
+      }
     });
   };
 
@@ -4291,8 +4284,25 @@ function initInstagramReelsPlayer() {
     isVisible = entry.isIntersecting;
     section.classList.toggle('is-reels-active', isVisible);
     setPlayback(isVisible && !document.hidden);
-  }, { threshold: 0.16 });
+  }, { rootMargin: '200px 0px 200px 0px', threshold: 0 });
   observer.observe(section);
+
+  const unlockOnInteraction = () => {
+    if (isVisible && !document.hidden) {
+      setPlayback(true);
+    }
+  };
+  ['pointerdown', 'touchstart', 'scroll', 'wheel', 'click', 'keydown', 'pointerup', 'mousemove'].forEach((evt) => {
+    window.addEventListener(evt, unlockOnInteraction, { once: true, passive: true });
+  });
+
+  // If section is already near viewport on load, activate playback immediately
+  const rect = section.getBoundingClientRect();
+  if (rect.top < window.innerHeight + 300 && rect.bottom > -300) {
+    isVisible = true;
+    section.classList.add('is-reels-active');
+    setPlayback(!document.hidden);
+  }
 
   const onVisibilityChange = () => setPlayback(isVisible && !document.hidden);
   const onResize = () => measure();
@@ -4350,11 +4360,17 @@ function initInstagramReelsPlayer() {
       soundBtn.setAttribute('aria-label', isMuted ? 'Unmute Audio' : 'Mute Audio');
     };
 
-    video.addEventListener('play', () => {
+    const markPlaying = () => {
       card.classList.add('is-playing');
       if (poster) poster.style.opacity = '0';
       updateSoundUI(video.muted);
-    });
+    };
+
+    video.addEventListener('play', markPlaying);
+    video.addEventListener('playing', markPlaying);
+    if (!video.paused && video.currentTime > 0) {
+      markPlaying();
+    }
     video.addEventListener('pause', () => card.classList.remove('is-playing'));
     video.addEventListener('timeupdate', () => {
       if (progressFill && video.duration) progressFill.style.width = `${(video.currentTime / video.duration) * 100}%`;

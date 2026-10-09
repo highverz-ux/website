@@ -118,34 +118,73 @@ export class HighverzIntro {
     };
 
     const isMobile = typeof window !== 'undefined' && (window.innerWidth < 768 || window.matchMedia('(max-width: 768px)').matches);
+    const isHomePage = window.location.pathname === '/' || window.location.pathname.endsWith('/index.html');
 
     // 1. Critical Typography
     const fontTask = (document.fonts && document.fonts.ready)
       ? document.fonts.ready.then(() => setProgress(0.45)).catch(() => {})
       : Promise.resolve();
 
-    // 2. Critical Branding & Hero Reel Posters
-    const criticalImages = isMobile
-      ? [
-          '/assets/highverz-hv-logo.svg',
-          '/assets/creators/reels/clean/posters/reel_1.jpg',
-        ]
+    // 2. Route-aware first-viewport media. The former fixed Home poster list
+    // allowed Work, Team, and creator pages to reveal while their own hero
+    // assets were still decoding. Defer off-screen images and wait only for
+    // what can actually be seen when the curtain lifts.
+    const viewportBottom = window.innerHeight * 1.35;
+    const images = Array.from(document.images || []);
+    const videos = Array.from(document.querySelectorAll('video'));
+    const isInInitialViewport = (element) => {
+      const rect = element.getBoundingClientRect();
+      return rect.bottom > -80 && rect.top < viewportBottom;
+    };
+    const waitForImage = (image) => new Promise((resolve) => {
+      const finish = () => {
+        if (image.decode) image.decode().catch(() => {}).finally(resolve);
+        else resolve();
+      };
+      if (image.complete) {
+        finish();
+      } else {
+        image.addEventListener('load', finish, { once: true });
+        image.addEventListener('error', resolve, { once: true });
+      }
+    });
+    const waitForVideo = (video) => new Promise((resolve) => {
+      if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+        resolve();
+        return;
+      }
+      video.addEventListener('loadeddata', resolve, { once: true });
+      video.addEventListener('error', resolve, { once: true });
+    });
+    const viewportMediaTask = isHomePage ? Promise.resolve() : Promise.all([
+      ...images.map((image) => {
+        if (isInInitialViewport(image)) {
+          image.fetchPriority = 'high';
+          return waitForImage(image);
+        }
+        if (!image.loading) image.loading = 'lazy';
+        return Promise.resolve();
+      }),
+      ...videos.filter(isInInitialViewport).map(waitForVideo)
+    ]).then(() => setProgress(0.70)).catch(() => {});
+
+    // Preserve Home's original, tuned poster preload sequence exactly.
+    const homeMediaTask = isHomePage ? Promise.all((isMobile
+      ? ['/assets/highverz-hv-logo.svg', '/assets/creators/reels/clean/posters/reel_1.jpg']
       : [
           '/assets/highverz-hv-logo.svg',
           '/assets/logo-white.png',
           '/assets/creators/reels/clean/posters/reel_1.jpg',
           '/assets/creators/reels/clean/posters/reel_2.jpg',
-          '/assets/creators/reels/clean/posters/reel_10.jpg',
-        ];
-    const imageTask = Promise.all(
-      criticalImages.map(src => new Promise(resolve => {
-        const img = new Image();
-        img.onload = resolve;
-        img.onerror = resolve;
-        img.src = src;
-        if (img.decode) img.decode().then(resolve).catch(resolve);
-      }))
-    ).then(() => setProgress(0.65)).catch(() => {});
+          '/assets/creators/reels/clean/posters/reel_10.jpg'
+        ]
+    ).map((src) => new Promise((resolve) => {
+      const image = new Image();
+      image.onload = resolve;
+      image.onerror = resolve;
+      image.src = src;
+      if (image.decode) image.decode().then(resolve).catch(resolve);
+    }))).then(() => setProgress(0.65)).catch(() => {}) : Promise.resolve();
 
     // 3. Fluid WebGL Background Preload & Shader Compilation
     const fluidTask = (typeof window.loadFluidBackground === 'function')
@@ -157,12 +196,16 @@ export class HighverzIntro {
       window.__hvUnlockHeroVideos();
     }
 
-    // 5. Polish: deliberate branded animation duration, safety cap for network variability
+    // 5. Reveal only after the first visible page is stable. The cap prevents
+    // an unreachable asset from trapping visitors in the intro indefinitely.
     const minDelay = new Promise(resolve => setTimeout(resolve, isMobile ? 850 : 1100));
-    const maxTimeout = new Promise(resolve => setTimeout(resolve, 2500));
+    const maxTimeout = new Promise(resolve => setTimeout(
+      resolve,
+      isHomePage ? 2500 : (isMobile ? 3200 : 4200)
+    ));
 
     await Promise.race([
-      Promise.all([fontTask, imageTask, fluidTask, minDelay]),
+      Promise.all([fontTask, homeMediaTask, viewportMediaTask, fluidTask, minDelay]),
       maxTimeout
     ]);
 
@@ -297,9 +340,10 @@ export class HighverzIntro {
     document.documentElement.classList.remove('skip-intro');
     document.documentElement.classList.add('intro-pending');
 
+    const isHomePage = window.location.pathname === '/' || window.location.pathname.endsWith('/index.html');
     this.safetyTimer = setTimeout(() => {
       if (!this.isCompleted) this.finishSafely();
-    }, 2000);
+    }, isHomePage ? 2000 : 5000);
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {

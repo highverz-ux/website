@@ -360,122 +360,110 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
     ScrollTrigger.getAll().forEach((t) => t.kill());
     startIncomingMetricCounters(incomingContent);
 
-    // Lightweight, high-performance blur-fade transition
+    // Keep the route handoff on the compositor. Moving and scaling two full
+    // documents while the browser also adds/removes the scrollbar can produce
+    // a visible horizontal/vertical "shake", particularly between Home and
+    // Work. Opacity gives us the same clean handoff without reflow-sensitive
+    // transforms or expensive full-page filters.
     gsap.set(currentContent, {
       opacity: 1,
-      y: 0,
-      scale: 1,
-      filter: 'blur(0px)'
     });
     gsap.set(shell, {
       opacity: 0,
-      y: 14,
-      scale: 0.996,
-      filter: 'blur(10px)'
     });
     gsap.set(glow, { opacity: 0 });
 
-    // 7. Execute the blur focus-shift handoff (380-480ms total)
-    // Outgoing page blurs out, incoming page sharpens in — matching Highverz's kinetic language
+    // 7. Execute a stable crossfade. The incoming shell is fixed to the
+    // viewport, so neither page changes position during the handoff.
     const transitionTimeline = gsap.timeline({
       defaults: { overwrite: 'auto' },
       onComplete: () => {
         // Record timestamp so initializers know we arrived via SPA transition
         window.__hvLastTransitionTime = Date.now();
 
-        // Remove blur from both after animation — prevent permanent filter from sticking
-        gsap.set(shell, { clearProps: 'filter,transform,opacity' });
+        // The incoming document needs one layout pass after it returns to the
+        // normal flow (ScrollTrigger and the reel carousel both measure here).
+        // Keep that work behind a soft blur veil so cards never visibly jump.
+        glow.classList.add('page-transition-settle-veil');
+        gsap.set(glow, { opacity: 1 });
 
-        // Clean up glow & backdrop elements
-        glow.remove();
-        backdrop.remove();
-
-        // Remove old frozen content from DOM
-        currentContent.remove();
-
-        // Promote incoming content into normal document flow
-        incomingContent.removeAttribute('style');
-        shell.insertAdjacentElement('beforebegin', incomingContent);
-        shell.remove();
-
-        // Update body class while preserving essential runtime flags (cursor, theme)
-        const wasCursorActive = document.body.classList.contains('cursor-active');
-        if (targetBodyClass) {
-          document.body.className = targetBodyClass;
-        }
-        document.body.classList.remove('page-is-transitioning');
-        document.documentElement.classList.remove('page-transitioned');
-        if (wasCursorActive || window.innerWidth > 900) {
-          document.body.classList.add('cursor-active');
-        }
-        if (window.__hvEnsureCursorActive) {
-          window.__hvEnsureCursorActive();
-        }
-
-        // Reset scroll position to top
-        window.scrollTo(0, 0);
-        if (window.lenis) {
-          window.lenis.scrollTo(0, { immediate: true });
-          window.lenis.start();
-          window.lenis.resize();
-        }
-
-      // Initialize page scripts synchronously before the next browser paint
-      // This prevents the split-second layout shift / shake caused by ScrollTrigger adding pin-spacers
-      try {
-        if (window.__hvInitPageScripts) {
-          window.__hvInitPageScripts(window.location.pathname, true);
-        }
-
-        window.__hvResetNavbar?.(window.location.pathname);
-        
-        if (window.ScrollTrigger) {
-          ScrollTrigger.refresh();
-        }
-
-        // Repeated frame passes ensure the carousel never gets stuck on 1 reel
-        let passes = 0;
-        const refreshPass = () => {
+        requestAnimationFrame(() => requestAnimationFrame(() => {
           try {
-            window.__hvHeroReelRefresh?.();
-            passes++;
-            if (passes < 4) {
-              requestAnimationFrame(refreshPass);
-            } else {
-              isTransitioning = false;
-              window.clearTimeout(transitionSafetyTimer);
+            gsap.set(shell, { clearProps: 'opacity' });
+            currentContent.remove();
+            incomingContent.removeAttribute('style');
+            shell.insertAdjacentElement('beforebegin', incomingContent);
+            shell.remove();
+
+            // Update body class while preserving essential runtime flags (cursor, theme)
+            const wasCursorActive = document.body.classList.contains('cursor-active');
+            if (targetBodyClass) document.body.className = targetBodyClass;
+            document.body.classList.remove('page-is-transitioning');
+            document.documentElement.classList.remove('page-transitioned');
+            if (wasCursorActive || window.innerWidth > 900) document.body.classList.add('cursor-active');
+            window.__hvEnsureCursorActive?.();
+
+            window.scrollTo(0, 0);
+            if (window.lenis) {
+              window.lenis.scrollTo(0, { immediate: true });
+              window.lenis.start();
+              window.lenis.resize();
             }
+
+            window.__hvInitPageScripts?.(window.location.pathname, true);
+            window.__hvResetNavbar?.(window.location.pathname);
+            if (window.ScrollTrigger) ScrollTrigger.refresh();
+
+            // Let the newly promoted content complete its first measurements,
+            // then dissolve the blur rather than exposing an in-progress layout.
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+              gsap.to(glow, {
+                opacity: 0,
+                duration: 0.22,
+                ease: 'power1.out',
+                onComplete: () => {
+                  glow.remove();
+                  backdrop.remove();
+                },
+              });
+            }));
+
+            let passes = 0;
+            const refreshPass = () => {
+              try {
+                window.__hvHeroReelRefresh?.();
+                passes++;
+                if (passes < 4) requestAnimationFrame(refreshPass);
+                else {
+                  isTransitioning = false;
+                  window.clearTimeout(transitionSafetyTimer);
+                }
+              } catch (err) {
+                console.error('Page runtime refresh failed:', err);
+                isTransitioning = false;
+                window.clearTimeout(transitionSafetyTimer);
+              }
+            };
+            requestAnimationFrame(refreshPass);
           } catch (err) {
-            console.error('Page runtime refresh failed:', err);
+            console.error('Incoming page initialization failed:', err);
+            glow.remove();
+            backdrop.remove();
             isTransitioning = false;
             window.clearTimeout(transitionSafetyTimer);
           }
-        };
-        requestAnimationFrame(refreshPass);
-      } catch (err) {
-        console.error('Incoming page initialization failed:', err);
-        isTransitioning = false;
-        window.clearTimeout(transitionSafetyTimer);
-      }
+        }));
       }
     })
-      // Outgoing: blur out + float up slightly
       .to(currentContent, {
         opacity: 0,
-        y: -12,
-        scale: 0.99,
-        filter: 'blur(8px)',
-        duration: 0.32,
-        ease: 'power2.inOut',
+        duration: 0.2,
+        ease: 'power1.out',
       }, 0)
-      // Incoming: blur-to-sharp reveal — premium kinetic entrance
       .to(shell, {
         opacity: 1,
-        y: 0,
-        scale: 1,
-        filter: 'blur(0px)',
-        duration: 0.52,
-        ease: 'power3.out',
+        duration: 0.28,
+        ease: 'power1.out',
       }, 0.06);
 
   } catch (err) {

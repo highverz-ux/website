@@ -13,7 +13,7 @@ import { initEnquirySystem } from './enquiry/enquiry.js';
 import { initThemeSystem } from './theme.js';
 import './campaigns/campaigns.css';
 import { initCampaignsPage } from './campaigns/campaigns.js';
-import { initPageTransitions, isHomeRoute } from './transitions.js';
+import { isHomeRoute } from './transitions.js';
 import { initHeroWordRoller, prepareHeroWordRoller } from './hero/HeroWordRoller.js';
 // HeroFluidBackground (three.js WebGL) is lazy-loaded after idle — see loadFluidBackground()
 import { inject as injectAnalytics } from '@vercel/analytics';
@@ -102,10 +102,14 @@ window.loadFluidBackground = loadFluidBackground;
 // Keeps initial main-thread work under 300ms so hero LCP paints on frame 1 without delay.
 let belowFoldInitialized = false;
 function initBelowFoldFeatures() {
+  // These sections exist only on Home. Running their timelines after an early
+  // interaction on a dedicated route can attach duplicate observers/tweens to
+  // similarly named content and cause visual glitches.
+  if (!isHomeRoute(window.location.pathname)) return;
   if (belowFoldInitialized) return;
   belowFoldInitialized = true;
 
-  initHeroReelCarousel();
+  if (!window.__hvHeroReelCleanup) initHeroReelCarousel();
   initStatsMarquee();
   initCreatorsSection();
   initGrowthWidgets();
@@ -120,7 +124,6 @@ function initBelowFoldFeatures() {
   initScrollVelocityEffects();
   initServiceFilters();
   initEnquirySystem();
-  initPageTransitions();
   initFooterScatterGrid();
   initVercelTelemetry();
   init3DScene();
@@ -141,7 +144,9 @@ function boot() {
 
   // If user scrolls or taps before idle callback, immediately hydrate below-the-fold
   const onEarlyInteraction = () => {
-    initBelowFoldFeatures();
+    if (isHomeRoute(window.location.pathname)) {
+      initBelowFoldFeatures();
+    }
     window.removeEventListener('scroll', onEarlyInteraction);
     window.removeEventListener('pointerdown', onEarlyInteraction);
   };
@@ -1119,6 +1124,16 @@ export function prepareHeroInitialState() {
 }
 window.prepareHeroInitialState = prepareHeroInitialState;
 
+function finishPageEntry() {
+  const root = document.documentElement;
+  root.classList.remove('page-entering');
+  if (window.__HV_PAGE_ENTRY_FAILSAFE__) {
+    window.clearTimeout(window.__HV_PAGE_ENTRY_FAILSAFE__);
+    window.__HV_PAGE_ENTRY_FAILSAFE__ = null;
+  }
+}
+window.__hvFinishPageEntry = finishPageEntry;
+
 // ==========================================================================
 // ADSCALE FRAMER-STYLE TEXT EFFECTS ENGINE
 // Exact AdScale Framer spring physics (stiffness: 200, damping: 80, delay: 0.05)
@@ -1186,38 +1201,26 @@ export function splitAdscaleWords(element) {
 export function initAdscaleTextEffects(root = document) {
   const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // Headings across all pages that resolve word-by-word with the kinetic AdScale blur-to-focus effect
-  const headingSelectors = [
-    // Homepage headings
-    '.creators-title',
-    '.creators-intro',
-    '.growth-widgets-heading h2',
-    '.portfolio-section-title',
-    '.testimonials-title',
-    '.process-headline',
-    '.faq-heading',
-    '.cta-main-title',
-    // Work page headings
-    '.work-hero-title',
-    '.work-capabilities-title',
-    '.workflow-heading h2',
-    '.services-main-title',
-    '.cta-display-title',
-    // Campaigns page headings
-    '.campaign-hero-headline',
-    // Why Us page headings
-    '.why-hero-title',
-    '.comp-main-title',
-    // Team page headings
-    '.team-hero-title',
-    '.founders-title',
-    '.pillars-title',
-    '.team-quote-text',
-    // Case studies
-    '.case-hero-title',
-    '.case-section-title',
-    '.breakdown-title'
-  ];
+  // Preserve Home's existing text effects. Dedicated pages use only their
+  // hero title so lower sections cannot reset after the route entrance.
+  const headingSelectors = isHomeRoute(window.location.pathname)
+    ? [
+        '.creators-title',
+        '.creators-intro',
+        '.growth-widgets-heading h2',
+        '.portfolio-section-title',
+        '.testimonials-title',
+        '.process-headline',
+        '.faq-heading',
+        '.cta-main-title'
+      ]
+    : [
+        '.work-hero-title',
+        '.campaign-hero-headline',
+        '.why-hero-title',
+        '.team-hero-title',
+        '.case-hero-title'
+      ];
 
   const revealElements = (root || document).querySelectorAll(headingSelectors.join(', '));
   if (!revealElements.length) return;
@@ -1305,7 +1308,9 @@ export function initAdscaleTextEffects(root = document) {
     // If intro screen is still active or pending, hold off revealing until curtain lifts
     const isIntroPending = document.documentElement.classList.contains('intro-pending') ||
                            document.body.classList.contains('intro-active');
-    if (isIntroPending) {
+    const isHeroEntryPending = document.documentElement.classList.contains('page-entering') &&
+      element.matches('.work-hero-title, .campaign-hero-headline, .why-hero-title, .team-hero-title, .case-hero-title');
+    if (isIntroPending || isHeroEntryPending) {
       return;
     }
 
@@ -1338,7 +1343,9 @@ export function initAdscaleTextEffects(root = document) {
 }
 
 function initHeroIntro(immediate = false) {
-  initHeroReelCarousel();
+  // The reel is prepared during Home hydration so its media can buffer behind
+  // the loader. Never rebuild it when the text entrance begins.
+  if (!window.__hvHeroReelCleanup) initHeroReelCarousel();
   initAdscaleTextEffects();
   const heroHeadline = document.getElementById('hero-headline');
   if (!heroHeadline) return;
@@ -2205,7 +2212,6 @@ export function initPageScripts(pathname, isFromTransition = false) {
   initMagneticElements();
   initEnquirySystem();
   initFooterScatterGrid();
-  initAdscaleTextEffects();
   triggerPageHeroEntrance(normPath, isFromTransition);
 
   if (window.ScrollTrigger) {
@@ -2246,60 +2252,129 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
       '.case-kicker-tag, .case-profile-chip-row, .case-hero-media, .case-stats-hud'
     );
     gsap.set(heroElements, { opacity: 1, y: 0, clearProps: 'opacity,transform' });
+    gsap.set(heroHeadings, { opacity: 1, y: 0, filter: 'none', clearProps: 'opacity,transform,filter' });
+    finishPageEntry();
     return;
   }
 
-  // Ensure hero headline gets animated freshly on entrance
+  // Own each dedicated hero once. A second initializer must never reset an
+  // entrance that is already running or has finished.
+  const heroRoot = document.querySelector('.work-hero-section, .team-hero-section, .why-hero-section, .campaign-hero, .case-hero-section');
+  if (!heroRoot || heroRoot.dataset.pageEntryStarted === 'true') return;
   const heroHeadings = document.querySelectorAll(
     '.work-hero-title, .campaign-hero-headline, .why-hero-title, .team-hero-title, .case-hero-title'
   );
-  heroHeadings.forEach((h) => {
-    delete h.dataset.adscaleAnimated;
+  heroHeadings.forEach((heading) => {
+    splitAdscaleWords(heading);
+    heading.dataset.adscaleAnimated = 'true';
   });
 
-  initAdscaleTextEffects();
+  // Dedicated pages use the same word-by-word blur-to-sharp title entrance as
+  // Home. Run it explicitly for the above-the-fold title instead of leaving
+  // it to the general scroll observer, which can be masked by each page's
+  // container entrance animation.
+  const introIsPending = document.documentElement.classList.contains('intro-pending') ||
+    document.body.classList.contains('intro-active');
+  // Dedicated pages initialize their components behind the loader so assets
+  // are ready at reveal. Do not also start their entrance tweens there; the
+  // loader callback invokes this function again once and owns the visible run.
+  if (introIsPending) return;
+  heroRoot.dataset.pageEntryStarted = 'true';
+
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const entryElements = document.querySelectorAll(
+    '.work-hero-tag, .work-hero-desc, .work-hero-cta, .work-hero-metrics-grid, ' +
+    '.team-hero-tag, .team-hero-desc, .team-metrics-grid, .why-hero-subtitle, ' +
+    '.campaign-hero-tag, .campaign-hero-sub, .campaign-hero-pillars, .campaign-search-section, .campaign-featured-label, ' +
+    '.case-kicker-tag, .case-profile-chip-row, .case-hero-desc, .case-hero-media, .case-follower-transform-card, .case-stats-hud'
+  );
+  if (reducedMotion) {
+    gsap.set([...heroHeadings, ...entryElements], { opacity: 1, y: 0, filter: 'none', clearProps: 'all' });
+    finishPageEntry();
+    return;
+  }
+
+  // A route can have a word sequence plus supporting content. Keep the
+  // pre-paint class until every timeline has settled, never after the first.
+  let pendingEntries = 1;
+  const beginEntry = () => { pendingEntries += 1; };
+  const completeEntry = () => {
+    pendingEntries -= 1;
+    if (pendingEntries === 0) {
+      // Remove the hidden CSS state BEFORE clearing any finished tween's
+      // inline styles. Staggered clearProps used to expose opacity:0 again
+      // until the last title word finished, causing the apparent reload.
+      finishPageEntry();
+      gsap.set([...heroHeadings, ...entryElements], {
+        clearProps: 'opacity,transform,filter,willChange'
+      });
+    }
+  };
+
+  const heroWords = Array.from(heroHeadings).flatMap((heading) =>
+    Array.from(heading.querySelectorAll('.adscale-reveal-word'))
+  );
+  gsap.set(heroHeadings, { opacity: 1, y: 0, filter: 'none' });
+  if (heroWords.length) {
+    heroHeadings.forEach((heading) => { heading.dataset.adscaleAnimated = 'true'; });
+    gsap.killTweensOf(heroWords);
+    gsap.set(heroWords, { opacity: 0, y: 25, filter: 'blur(10px)' });
+    beginEntry();
+    gsap.to(heroWords, {
+      opacity: 1,
+      y: 0,
+      filter: 'blur(0px)',
+      duration: 0.7,
+      stagger: 0.07,
+      delay: 0.1,
+      ease: 'power3.out',
+      clearProps: 'filter,willChange',
+      onComplete: completeEntry
+    });
+  }
 
   if (isWork) {
     const workHero = document.querySelector('.work-hero-section');
     if (workHero) {
+      beginEntry();
       gsap.fromTo(workHero.querySelectorAll('.work-hero-tag, .work-hero-desc, .work-hero-cta, .work-hero-metrics-grid'),
-        { opacity: 0, y: 18 },
-        { opacity: 1, y: 0, duration: 0.7, stagger: 0.08, ease: 'power3.out', clearProps: 'transform,opacity' }
+        { opacity: 0, y: 18, filter: 'blur(8px)' },
+        { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.7, stagger: 0.08, ease: 'power3.out', onComplete: completeEntry }
       );
     }
   } else if (isTeam) {
     const teamHero = document.querySelector('.team-hero-section');
     if (teamHero) {
+      beginEntry();
       gsap.fromTo(teamHero.querySelectorAll('.team-hero-tag, .team-hero-desc, .team-metrics-grid'),
-        { opacity: 0, y: 18 },
-        { opacity: 1, y: 0, duration: 0.7, stagger: 0.08, ease: 'power3.out', clearProps: 'transform,opacity' }
+        { opacity: 0, y: 18, filter: 'blur(8px)' },
+        { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.7, stagger: 0.08, ease: 'power3.out', onComplete: completeEntry }
       );
     }
   } else if (isWhy) {
     const whyHero = document.querySelector('.why-hero-section');
     if (whyHero) {
+      beginEntry();
       gsap.fromTo(whyHero.querySelectorAll('.why-hero-subtitle'),
-        { opacity: 0, y: 18 },
-        { opacity: 1, y: 0, duration: 0.7, delay: 0.1, ease: 'power3.out', clearProps: 'transform,opacity' }
+        { opacity: 0, y: 18, filter: 'blur(8px)' },
+        { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.7, delay: 0.1, ease: 'power3.out', onComplete: completeEntry }
       );
     }
   } else if (isCampaigns) {
-    const campaignHero = document.querySelector('.campaign-hero');
-    if (campaignHero) {
-      gsap.fromTo(campaignHero.querySelectorAll('.campaign-hero-tag, .campaign-hero-sub, .campaign-hero-pillars, .campaign-search-section, .campaign-featured-label'),
-        { opacity: 0, y: 18 },
-        { opacity: 1, y: 0, duration: 0.65, stagger: 0.06, ease: 'power3.out', clearProps: 'transform,opacity' }
-      );
-    }
+    beginEntry();
+    window.addEventListener('hv:campaign-hero-entry-complete', completeEntry, { once: true });
+    window.dispatchEvent(new Event('hv:campaign-hero-entry'));
   } else if (isCase) {
     const caseHero = document.querySelector('.case-hero-section');
     if (caseHero) {
-      gsap.fromTo(caseHero.querySelectorAll('.case-kicker-tag, .case-profile-chip-row, .case-hero-media, .case-stats-hud'),
-        { opacity: 0, y: 18 },
-        { opacity: 1, y: 0, duration: 0.7, stagger: 0.07, ease: 'power3.out', clearProps: 'transform,opacity' }
+      beginEntry();
+      gsap.fromTo(caseHero.querySelectorAll('.case-kicker-tag, .case-profile-chip-row, .case-hero-desc, .case-hero-media, .case-follower-transform-card, .case-stats-hud'),
+        { opacity: 0, y: 18, filter: 'blur(8px)' },
+        { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.7, stagger: 0.07, ease: 'power3.out', onComplete: completeEntry }
       );
     }
   }
+  completeEntry();
 }
 window.__hvTriggerPageHeroEntrance = triggerPageHeroEntrance;
 
@@ -2308,9 +2383,7 @@ window.__hvTriggerPageHeroEntrance = triggerPageHeroEntrance;
 // Continuous infinite cylindrical perspective carousel matching ClipCut reference
 // ===========================================================================
 export function initHeroReelCarousel() {
-  if (window.__hvHeroReelCleanup) {
-    window.__hvHeroReelCleanup();
-  }
+  if (window.__hvHeroReelCleanup) return;
 
   const viewport = document.getElementById('heroCarouselViewport') || document.querySelector('.carousel-viewport');
   const track = document.getElementById('heroCarouselTrack') || document.querySelector('.carousel-track');
@@ -2367,10 +2440,12 @@ export function initHeroReelCarousel() {
     video.muted = true;
     video.playsInline = true;
     video.loop = true;
-    video.autoplay = true;
+    video.autoplay = priority === 'high';
     video.setAttribute('playsinline', '');
     video.setAttribute('muted', '');
-    video.setAttribute('autoplay', '');
+    if (priority === 'high') video.setAttribute('autoplay', '');
+    else video.removeAttribute('autoplay');
+    video.preload = priority === 'high' ? 'auto' : 'metadata';
     if (!video.getAttribute('src') && targetSrc) {
       video.setAttribute('src', targetSrc);
       video.preload = 'auto';
@@ -2457,32 +2532,23 @@ export function initHeroReelCarousel() {
 
   const updateVideoPriority = (force = false) => {
     if (!videosUnlocked || !stageStep || !videos.length || !isCarouselVisible) return;
-
+    // Start every reel together as requested. This function is called with
+    // force only on setup, visibility return, or user interaction—not on each
+    // animation frame—so all reels play without redoing video work constantly.
+    if (!force) return;
     videos.forEach((video) => {
       if (!video) return;
       loadVideo(video, 'high');
-      if (video.paused) {
-        playVideo(video);
-      }
+      playVideo(video);
     });
   };
 
-  // Preload and start all carousel cards immediately
-  videos.forEach((video) => {
-    loadVideo(video, 'high');
-    playVideo(video);
-  });
+  // Keep metadata cheap until the carousel is ready to start every reel.
+  videos.forEach((video) => loadVideo(video, 'low'));
 
   // Resume / unlock autoplay on first interaction if browser blocked initial autoplay
   const unlockOnInteraction = () => {
     updateVideoPriority(true);
-    videos.forEach((v) => {
-      if (v) {
-        v.defaultMuted = true;
-        v.muted = true;
-        if (v.paused) v.play().catch(() => {});
-      }
-    });
   };
   ['pointerdown', 'touchstart', 'scroll', 'wheel', 'click', 'keydown', 'pointerup', 'mousemove'].forEach((evt) => {
     window.addEventListener(evt, unlockOnInteraction, { once: true, passive: true });
@@ -2893,7 +2959,6 @@ function initWorkflowSection() {
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduceMotion) {
     gsap.set(cards, { opacity: 1, y: 0 });
-    section.classList.add('is-visible');
     videos.forEach((video) => { try { video.pause(); } catch (_) {} });
     return;
   }
@@ -2920,20 +2985,13 @@ function initWorkflowSection() {
     });
   };
 
-  const reveal = gsap.fromTo(cards,
-    { opacity: 0, y: 28 },
-    { opacity: 1, y: 0, duration: 0.75, stagger: 0.12, ease: 'power3.out', paused: true }
-  );
-  let hasRevealed = false;
+  // The workflow cards contain video and CSS-driven visual states already.
+  // Giving the cards a second scroll entrance caused a competing movement.
+  gsap.set(cards, { opacity: 1, y: 0, clearProps: 'transform,opacity' });
   let sectionVisible = false;
   const observer = new IntersectionObserver(([entry]) => {
     sectionVisible = entry.isIntersecting;
-    section.classList.toggle('is-visible', sectionVisible);
     setWorkflowPlayback(sectionVisible && !document.hidden);
-    if (entry.isIntersecting && !hasRevealed) {
-      hasRevealed = true;
-      reveal.play(0);
-    }
   }, { rootMargin: '150px 0px 150px 0px', threshold: 0 });
   observer.observe(section);
 
@@ -2951,7 +3009,6 @@ function initWorkflowSection() {
 
   window.__hvWorkflowCleanup = () => {
     observer.disconnect();
-    reveal.kill();
     document.removeEventListener('visibilitychange', onVisibilityChange);
     setWorkflowPlayback(false);
   };
@@ -2965,24 +3022,9 @@ function initCapabilityDeck() {
 
   grid.dataset.gridReady = 'true';
   gsap.set(cards, { clearProps: 'all' });
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    grid.classList.add('is-visible');
-    return;
-  }
-
-  gsap.fromTo(cards,
-    { opacity: 0, y: 26 },
-    {
-      opacity: 1,
-      y: 0,
-      duration: 0.7,
-      stagger: 0.08,
-      ease: 'power3.out',
-      clearProps: 'opacity,transform',
-      onComplete: () => grid.classList.add('is-visible'),
-      scrollTrigger: { trigger: grid, start: 'top 82%', once: true }
-    }
-  );
+  // Keep work cards fixed. Their entrance animation was visually competing
+  // with the dense animated illustrations and could look like shaking.
+  grid.classList.add('is-visible');
 }
 
 // ==========================================================================
@@ -3295,125 +3337,23 @@ function initWhyUsAnimations() {
   const pageContent = document.getElementById('page-content');
   if (pageContent?.dataset.whyAnimationsInit === 'true') return;
   if (pageContent) pageContent.dataset.whyAnimationsInit = 'true';
-  const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const isTransitioned = document.documentElement.classList.contains('page-transitioned');
 
-  // 1. Philosophy Cards Grid Stagger Entrance
-  const philGrid = document.querySelector('.section-services .services-cards-grid, .why-philosophy-grid');
-  if (philGrid) {
-    const philCards = philGrid.querySelectorAll('.service-card-item');
-    if (philCards.length > 0) {
-      const rect = philGrid.getBoundingClientRect();
-      const isAlreadyInView = rect.top < (window.innerHeight * 0.96);
-
-      if (isReducedMotion || isTransitioned) {
-        gsap.set(philCards, { opacity: 1, y: 0, clearProps: 'transform,opacity' });
-      } else if (isAlreadyInView) {
-        gsap.fromTo(philCards,
-          { opacity: 0, y: 15 },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.55,
-            stagger: 0.08,
-            ease: 'power2.out',
-            clearProps: 'transform,opacity'
-          }
-        );
-      } else {
-        gsap.fromTo(philCards,
-          { opacity: 0, y: 20 },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.65,
-            stagger: 0.08,
-            ease: 'power2.out',
-            clearProps: 'transform,opacity',
-            scrollTrigger: {
-              trigger: philGrid,
-              start: 'top 90%',
-              toggleActions: 'play none none none'
-            }
-          }
-        );
-      }
-    }
-  }
-
-  // 2. Comparison Section ("What makes us different") Appear Animations
-  const compSection = document.querySelector('.comparison-section');
-  if (!compSection) return;
-
-  const compTitle = compSection.querySelector('.comp-main-title');
-  const compCards = compSection.querySelector('.comp-dual-cards');
-  const cardTrad = compSection.querySelector('.comp-card-traditional');
-  const cardHv = compSection.querySelector('.comp-card-hv');
-  const tradRows = compSection.querySelectorAll('.comp-card-traditional .comp-list-row');
-  const hvRows = compSection.querySelectorAll('.comp-card-hv .comp-list-row');
-  const tradDashes = compSection.querySelectorAll('.comp-card-traditional .val-dash-icon');
-  const hvChecks = compSection.querySelectorAll('.comp-card-hv .val-check-icon');
-  const compCta = compSection.querySelector('.comparison-cta');
-
-  if (isReducedMotion || isTransitioned) {
-    if (compTitle) gsap.set(compTitle, { opacity: 1, y: 0, clearProps: 'transform,opacity' });
-    if (cardTrad) gsap.set(cardTrad, { opacity: 1, x: 0, y: 0, scale: 1, clearProps: 'transform,opacity' });
-    if (cardHv) gsap.set(cardHv, { opacity: 1, x: 0, y: 0, scale: 1, clearProps: 'transform,opacity' });
-    gsap.set([...tradRows, ...hvRows], { opacity: 1, x: 0, y: 0, clearProps: 'transform,opacity' });
-    gsap.set([...tradDashes, ...hvChecks], { opacity: 1, scale: 1, clearProps: 'transform,opacity' });
-    if (compCta) gsap.set(compCta, { opacity: 1, y: 0, clearProps: 'transform,opacity' });
-    return;
-  }
-
-  // Section Header Entrance
-  if (compTitle) {
-    gsap.fromTo(compTitle,
-      { opacity: 0, y: 20 },
-      {
-        opacity: 1,
-        y: 0,
-        duration: 0.6,
-        ease: 'power2.out',
-        clearProps: 'transform,opacity',
-        scrollTrigger: {
-          trigger: compSection,
-          start: 'top 85%',
-          toggleActions: 'play none none none'
-        }
-      }
-    );
-  }
-
-  // Dual Comparison Cards & Rows Orchestrated Entrance
-  if (compCards && cardTrad && cardHv) {
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: compCards,
-        start: 'top 85%',
-        toggleActions: 'play none none none'
-      }
-    });
-
-    tl.fromTo([cardTrad, cardHv],
-      { opacity: 0, y: 20 },
-      {
-        opacity: 1,
-        y: 0,
-        duration: 0.6,
-        stagger: 0.1,
-        ease: 'power2.out',
-        clearProps: 'transform,opacity'
-      }
-    );
-
-    if (compCta) {
-      tl.fromTo(compCta,
-        { opacity: 0, y: 16 },
-        { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', clearProps: 'transform,opacity' },
-        '-=0.2'
-      );
-    }
-  }
+  // Why Us shares service and comparison components with other pages. Its
+  // former second GSAP entrance pass competed with their initial styles,
+  // producing a black flash and a repeated/ghosted content reveal. Keep the
+  // hero's text reveal, but settle the body content immediately.
+  const stableContent = pageContent?.querySelectorAll(
+    '.service-card-item, .comp-card, .comp-list-row, .comparison-cta'
+  ) || [];
+  gsap.killTweensOf(stableContent);
+  gsap.set(stableContent, {
+    opacity: 1,
+    x: 0,
+    y: 0,
+    scale: 1,
+    filter: 'none',
+    clearProps: 'transform,opacity,filter',
+  });
 }
 
 function initServiceFilters() {

@@ -107,6 +107,10 @@ let modalOpen = false;
  * Initialize the campaigns page.
  */
 export function initCampaignsPage() {
+  const pageContent = document.getElementById('page-content');
+  if (pageContent?.dataset.campaignsInitialized === 'true') return;
+  if (pageContent) pageContent.dataset.campaignsInitialized = 'true';
+
   animateHero();
   initSearch();
   initFilters();
@@ -118,6 +122,9 @@ export function initCampaignsPage() {
 // HERO ANIMATIONS
 // ==========================================================================
 function animateHero() {
+  // Reduced-motion pages never schedule a delayed fade after main.js has
+  // already settled their hero.
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const campaignHero = document.querySelector('.campaign-hero');
   if (campaignHero?.dataset.heroAnimated === 'true') {
     if (campaignHero) campaignHero.dataset.heroAnimated = 'true';
@@ -146,31 +153,46 @@ function animateHero() {
     animated = true;
     if (campaignHero) campaignHero.dataset.heroAnimated = 'true';
 
-    gsap.to(heroElements, {
-      opacity: 1,
-      duration: 0.55,
-      stagger: 0.07,
-      ease: 'power2.out',
-      clearProps: 'transform,will-change'
-    });
+    const targets = [...heroElements, ...fixedPositionElements];
+    gsap.killTweensOf(targets);
+    gsap.set(targets, { opacity: 0, y: 18, filter: 'blur(8px)' });
 
-    // The search/filter controls must never translate into place: their
-    // position is part of the page structure and should remain stable after
-    // the hero fonts and content finish loading.
-    gsap.to(fixedPositionElements, {
-      opacity: 1,
-      duration: 0.45,
-      stagger: 0.06,
-      ease: 'power2.out',
-      clearProps: 'transform,will-change'
+    const timeline = gsap.timeline({
+      defaults: { ease: 'power3.out' },
+      onComplete: () => {
+        // Shared entry completion clears these styles only after removing
+        // page-entering; clearing here can hide this content a second time.
+        window.dispatchEvent(new Event('hv:campaign-hero-entry-complete'));
+      }
     });
+    timeline.to(heroElements, {
+      opacity: 1,
+      y: 0,
+      filter: 'blur(0px)',
+      duration: 0.7,
+      stagger: 0.08
+    }, 0.2);
+    timeline.to(fixedPositionElements, {
+      opacity: 1,
+      y: 0,
+      filter: 'blur(0px)',
+      duration: 0.6,
+      stagger: 0.06
+    }, 0.42);
   };
 
-  // Wait for fonts before revealing the hero so late font metrics cannot move it.
-  if (document.fonts?.ready) {
-    document.fonts.ready.then(() => requestAnimationFrame(startAnimation));
+  const requestEntry = () => {
+    // Prepare in the same frame as the title and loader handoff. Deferring
+    // this to another paint can expose the settled support content first.
+    startAnimation();
+  };
+
+  // main.js dispatches this only after the intro curtain has started lifting.
+  // Holding here prevents Campaigns from completing behind the loader.
+  if (document.documentElement.classList.contains('page-entering')) {
+    window.addEventListener('hv:campaign-hero-entry', requestEntry, { once: true });
   } else {
-    requestAnimationFrame(startAnimation);
+    requestEntry();
   }
 }
 
@@ -810,20 +832,20 @@ function renderMovieCards(container, movies) {
   }).join('');
 
   // Animate cards in with subtle, stable reveal
-  gsap.fromTo('.campaign-movie-card', {
+  const cards = container.querySelectorAll('.campaign-movie-card');
+  gsap.killTweensOf(cards);
+  gsap.from(cards, {
     opacity: 0,
-    y: 12
-  }, {
-    opacity: 1,
-    y: 0,
+    y: 12,
     duration: 0.45,
     stagger: 0.03,
     ease: 'power2.out',
-    clearProps: 'transform'
+    clearProps: 'transform,opacity',
+    overwrite: 'auto',
   });
 
   // Attach click handlers
-  container.querySelectorAll('.campaign-movie-card').forEach(card => {
+  cards.forEach(card => {
     card.addEventListener('click', () => {
       const id = parseInt(card.dataset.movieId, 10);
       openMovieModal(id);

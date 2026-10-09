@@ -8053,6 +8053,23 @@ html.js .floating-badge-item {
   color: var(--accent-cyan);
 }
 
+/* Work capability cards are intentionally static: no hover lift, image zoom,
+   or continuously moving illustration elements. */
+.page-work .capability-card,
+.page-work .capability-card:hover {
+  transform: none;
+}
+
+.page-work .capability-card:hover .capability-img {
+  transform: none;
+}
+
+.page-work .capability-visual-wrap *,
+.page-work .capability-visual-wrap::before,
+.page-work .capability-visual-wrap::after {
+  animation: none !important;
+}
+
 .capability-desc {
   font-family: var(--font-body);
   font-size: 0.88rem;
@@ -11052,13 +11069,48 @@ html.js .floating-badge-item {
   }
 }
 
-/* Fire on direct load / hard reload only — NOT during SPA transitions (transition shell owns the animation) */
-.page-work:not(.page-is-transitioning) .work-hero-container,
-.page-team:not(.page-is-transitioning) .team-hero-container,
-.page-why-us:not(.page-is-transitioning) .why-hero-container,
-.case-hero-container,
-html.skip-intro .hero-container {
-  animation: hvBlurFadeIn 0.58s cubic-bezier(0.16, 1, 0.3, 1) both;
+/* Hero entrances are controlled in JavaScript. Applying this full-container
+   CSS animation as well made Work animate twice on navigation. */
+
+/* Pre-paint hero entry state -------------------------------------------------
+   The class is added by the inline head script, before the body is parsed.
+   This prevents a completed dedicated-page hero from flashing for one frame
+   before GSAP can take ownership of its blur-to-sharp entrance. These properties
+   preserve layout, so cards and the page structure never jump. */
+@media (prefers-reduced-motion: no-preference) {
+  html.page-entering .work-hero-title,
+  html.page-entering .campaign-hero-headline,
+  html.page-entering .team-hero-title,
+  html.page-entering .why-hero-title,
+  html.page-entering .case-hero-title {
+    opacity: 0;
+    transform: translateY(25px);
+    filter: blur(10px);
+  }
+
+  html.page-entering .work-hero-tag,
+  html.page-entering .work-hero-desc,
+  html.page-entering .work-hero-cta,
+  html.page-entering .work-hero-metrics-grid,
+  html.page-entering .campaign-hero-tag,
+  html.page-entering .campaign-hero-sub,
+  html.page-entering .campaign-hero-pillars,
+  html.page-entering .campaign-search-section,
+  html.page-entering .campaign-featured-label,
+  html.page-entering .team-hero-tag,
+  html.page-entering .team-hero-desc,
+  html.page-entering .team-metrics-grid,
+  html.page-entering .why-hero-subtitle,
+  html.page-entering .case-kicker-tag,
+  html.page-entering .case-profile-chip-row,
+  html.page-entering .case-hero-desc,
+  html.page-entering .case-hero-media,
+  html.page-entering .case-follower-transform-card,
+  html.page-entering .case-stats-hud {
+    opacity: 0;
+    transform: translateY(18px);
+    filter: blur(8px);
+  }
 }
 
 /* Never fire the CSS entrance when inside the transition shell (GSAP controls the reveal) */
@@ -11073,6 +11125,13 @@ html.skip-intro .hero-container {
 /* Transition shell isolates layout during page swap */
 .page-transition-shell {
   isolation: isolate;
+}
+
+/* Reserve scrollbar space before a transition starts. Without this, locking
+   body scrolling temporarily changes the viewport width and makes fixed route
+   layers appear to jump sideways. */
+html {
+  scrollbar-gutter: stable;
 }
 
 /* ==========================================================================
@@ -11117,6 +11176,19 @@ html.skip-intro .hero-container {
   mix-blend-mode: normal !important;
   transform: translateZ(0);
   will-change: background, opacity;
+}
+
+/* Covers the first layout pass after a route is promoted out of its fixed
+   shell. It preserves the requested blur language while ScrollTrigger and
+   media components settle their final dimensions off-screen. */
+.page-transition-glow.page-transition-settle-veil {
+  background: rgba(5, 11, 16, 0.38);
+  -webkit-backdrop-filter: blur(18px) saturate(108%);
+  backdrop-filter: blur(18px) saturate(108%);
+}
+
+[data-theme="light"] .page-transition-glow.page-transition-settle-veil {
+  background: rgba(248, 249, 250, 0.32);
 }
 
 /* Outgoing frozen viewport state — fills viewport naturally without clipping bottom */
@@ -11214,7 +11286,7 @@ body.page-is-transitioning > #page-content {
 /* Make the route handoff feel like a soft focus shift instead of a plain fade. */
 body.page-is-transitioning > #page-content,
 #page-transition-shell {
-  will-change: opacity, transform, filter;
+  will-change: opacity;
   backface-visibility: hidden;
 }
 
@@ -12739,7 +12811,9 @@ body::after {
 
 [data-theme="dark"] body.page-why-us,
 [data-theme="dark"].page-why-us {
-  background-color: transparent !important;
+  /* Keep the page surface opaque so the shared ambient canvas cannot flash
+     through during navigation or component hydration. */
+  background-color: var(--bg-primary, #07090e) !important;
 }
 
 .page-why-us .why-hero-section {
@@ -13230,9 +13304,16 @@ body::after {
   max-width: 900px;
   margin-bottom: 1.2rem;
   font-size: clamp(2.5rem, 6.2vw, 5.8rem);
-  line-height: 0.98;
+  /* Leave room for descenders after the heading is split into animated word
+     spans; the old compressed line box clipped the “g” in Highverz. */
+  line-height: 1.08;
   letter-spacing: -0.055em;
   text-align: center;
+  overflow: visible;
+}
+
+.cta-main-title .adscale-reveal-word {
+  padding-bottom: 0.1em;
 }
 
 .cta-support-desc {
@@ -13832,4 +13913,3 @@ html::-webkit-scrollbar,
 body::-webkit-scrollbar {
   display: none;
 }
-

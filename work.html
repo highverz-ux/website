@@ -51,6 +51,12 @@
     </style>
     <script>
       document.documentElement.classList.add('js');
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.documentElement.classList.add('page-entering');
+        window.__HV_PAGE_ENTRY_FAILSAFE__ = window.setTimeout(function () {
+          document.documentElement.classList.remove('page-entering');
+        }, 4000);
+      }
 
       var navEntries = (window.performance && window.performance.getEntriesByType)
         ? window.performance.getEntriesByType('navigation')

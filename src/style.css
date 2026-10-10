@@ -8055,8 +8055,7 @@ html.js .floating-badge-item {
   color: var(--accent-cyan);
 }
 
-/* Work capability cards are intentionally static: no hover lift, image zoom,
-   or continuously moving illustration elements. */
+/* Keep the card shells stable while their internal illustrations animate. */
 .page-work .capability-card,
 .page-work .capability-card:hover {
   transform: none;
@@ -8064,12 +8063,6 @@ html.js .floating-badge-item {
 
 .page-work .capability-card:hover .capability-img {
   transform: none;
-}
-
-.page-work .capability-visual-wrap *,
-.page-work .capability-visual-wrap::before,
-.page-work .capability-visual-wrap::after {
-  animation: none !important;
 }
 
 .capability-desc {
@@ -13921,40 +13914,51 @@ body::-webkit-scrollbar {
 }
 
 /* Phone and tablet controls, including short landscape viewports. */
+/* Reserve the logo's full aspect-ratio height plus room above and below it.
+   The Work footer has fewer links, so its content alone was too short. */
+@media (min-width: 721px) {
+  .footer {
+    box-sizing: border-box;
+    min-height: calc(min(650px, 40vw) * 900 / 2415 + 100px);
+    display: flex;
+    align-items: center;
+  }
+}
+
 @media (max-width: 720px) {
-  .footer-home {
+  :is(.footer-home, .footer-compact-mobile) {
     display: flex;
     flex-direction: column;
     padding: 2rem 0 1rem;
     overflow: hidden;
   }
 
-  .footer-home .footer-container { padding-inline: 1.25rem; }
-  .footer-home .footer-row-content {
+  :is(.footer-home, .footer-compact-mobile) .footer-container { padding-inline: 1.25rem; }
+  :is(.footer-home, .footer-compact-mobile) .footer-row-content {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1.5rem 1rem;
     justify-items: stretch;
     text-align: left;
   }
-  .footer-home .footer-left-info {
+  :is(.footer-home, .footer-compact-mobile) .footer-left-info {
     align-items: flex-start;
     gap: 0.75rem;
     margin-bottom: 0;
     min-width: 0;
   }
-  .footer-home .footer-copy { max-width: 32ch; line-height: 1.6; }
-  .footer-home .footer-contact-links {
+  :is(.footer-home, .footer-compact-mobile) .footer-copy { max-width: 32ch; line-height: 1.6; }
+  :is(.footer-home, .footer-compact-mobile) .footer-contact-links {
     align-items: center;
     justify-content: flex-start;
     gap: 0 1rem;
   }
-  .footer-home .footer-link-group,
-  .footer-home .footer-social-links { align-items: flex-start; gap: 0.15rem; }
-  .footer-home .footer-group-title { margin-bottom: 0.35rem; }
-  .footer-home .f-social { min-height: 44px; }
+  :is(.footer-home, .footer-compact-mobile) .footer-link-group,
+  :is(.footer-home, .footer-compact-mobile) .footer-social-links { align-items: flex-start; gap: 0.15rem; }
+  :is(.footer-home, .footer-compact-mobile) .footer-group-title { margin-bottom: 0.35rem; }
+  :is(.footer-home, .footer-compact-mobile) .f-social { min-height: 44px; }
 
   /* Keep the animated mark in its own row, never behind navigation text. */
-  .footer-home .footer-watermark-logo {
+  :is(.footer-home, .footer-compact-mobile) .footer-watermark-logo {
     position: relative;
     order: 2;
     top: auto;

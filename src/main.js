@@ -3012,6 +3012,7 @@ function initWorkflowSection() {
   let sectionVisible = false;
   const observer = new IntersectionObserver(([entry]) => {
     sectionVisible = entry.isIntersecting;
+    section.classList.toggle('is-visible', sectionVisible && !document.hidden);
     setWorkflowPlayback(sectionVisible && !document.hidden);
   }, { rootMargin: '150px 0px 150px 0px', threshold: 0 });
   observer.observe(section);
@@ -3025,11 +3026,15 @@ function initWorkflowSection() {
     window.addEventListener(evt, unlockWorkflowOnInteraction, { once: true, passive: true });
   });
 
-  const onVisibilityChange = () => setWorkflowPlayback(sectionVisible && !document.hidden);
+  const onVisibilityChange = () => {
+    section.classList.toggle('is-visible', sectionVisible && !document.hidden);
+    setWorkflowPlayback(sectionVisible && !document.hidden);
+  };
   document.addEventListener('visibilitychange', onVisibilityChange);
 
   window.__hvWorkflowCleanup = () => {
     observer.disconnect();
+    section.classList.remove('is-visible');
     document.removeEventListener('visibilitychange', onVisibilityChange);
     setWorkflowPlayback(false);
   };

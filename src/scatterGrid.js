@@ -44,6 +44,7 @@ export function initScatterGrid(container, options = {}) {
   let ripples = [];
   let width = 0;
   let height = 0;
+  let renderedDotSize = dotSize;
   let pointerX = -9999;
   let pointerY = -9999;
   let clock = 0;
@@ -82,7 +83,9 @@ export function initScatterGrid(container, options = {}) {
       try {
         const data = mctx.getImageData(0, 0, width, height).data;
         
-        const minStep = Math.max(2, dotSize + dotGap);
+        // Sample the actual logo densely enough to retain the rocket window,
+        // fins and flame. A fixed 6px grid loses those details at footer size.
+        const minStep = Math.max(1, Math.min(dotSize + dotGap, boxW / 320));
         let step = minStep;
         
         const countAt = s => {
@@ -105,6 +108,7 @@ export function initScatterGrid(container, options = {}) {
           guard++;
         }
         
+        renderedDotSize = Math.min(dotSize, step * 0.72);
         const nextDots = [];
         const half = step / 2;
         for (let y = half; y < height; y += step) {
@@ -212,15 +216,13 @@ export function initScatterGrid(container, options = {}) {
       const disp = Math.sqrt(ox * ox + oy * oy);
       
       let level = Math.min(1, disp / 24);
-      let lift = 0;
-      
+      // Shimmer changes color only; keep the logo's stems and baseline straight.
       const s = Math.sin(d.hx * 0.012 - clock * 1.6);
-      lift = s * 1.2;
       level = Math.max(level, Math.max(0, s - 0.86) * 3.2);
       
       const idx = Math.min(STEPS - 1, Math.max(0, Math.round(level * (STEPS - 1))));
       ctx.fillStyle = ramp[idx];
-      ctx.fillRect(Math.round(d.x - dotSize / 2), Math.round(d.y + lift - dotSize / 2), dotSize, dotSize);
+      ctx.fillRect(d.x - renderedDotSize / 2, d.y - renderedDotSize / 2, renderedDotSize, renderedDotSize);
     }
   }
   
@@ -278,8 +280,9 @@ export function initScatterGrid(container, options = {}) {
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    // Track pointer when it is within interaction reach of the watermark grid
-    if (x >= -radius && x <= width + radius && y >= -radius && y <= height + radius) {
+    // Nearby CTA/footer text must not push the first letter out of shape.
+    // Scatter only while the pointer is actually over the logo itself.
+    if (x >= bleed && x <= width - bleed && y >= bleed && y <= height - bleed) {
       pointerX = x;
       pointerY = y;
     } else {
@@ -298,7 +301,7 @@ export function initScatterGrid(container, options = {}) {
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    if (x < -bleed || y < -bleed || x > width + bleed || y > height + bleed) return;
+    if (x < bleed || y < bleed || x > width - bleed || y > height - bleed) return;
     
     if (ripples.length > 2) ripples.shift();
     ripples.push({ x, y, r: 0 });
@@ -308,6 +311,7 @@ export function initScatterGrid(container, options = {}) {
   window.addEventListener("pointermove", handlePointerMove, {passive: true});
   window.addEventListener("pointerdown", handlePointerDown, {passive: true});
   window.addEventListener("pointerleave", handlePointerLeave, {passive: true});
+  window.addEventListener("scroll", handlePointerLeave, {passive: true});
   
   const resizeObserver = new ResizeObserver(() => {
     clearTimeout(resizeTimer);
@@ -325,5 +329,6 @@ export function initScatterGrid(container, options = {}) {
     window.removeEventListener("pointermove", handlePointerMove);
     window.removeEventListener("pointerdown", handlePointerDown);
     window.removeEventListener("pointerleave", handlePointerLeave);
+    window.removeEventListener("scroll", handlePointerLeave);
   };
 }

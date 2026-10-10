@@ -900,7 +900,8 @@ body.page-campaigns {
 
   .campaign-filters-unit {
     justify-content: flex-start;
-    overflow-x: auto;
+    flex-wrap: wrap;
+    overflow: visible;
     padding-bottom: 0.2rem;
     -webkit-overflow-scrolling: touch;
   }
@@ -913,6 +914,13 @@ body.page-campaigns {
     left: 0;
     right: auto;
   }
+
+  .campaign-filters-unit .glass-dropdown { position: static; flex: 1 1 75px; }
+  .campaign-filters-unit .glass-dropdown-trigger { width: 100%; justify-content: center; height: 44px; padding-inline: 0.4rem; }
+  .campaign-filters-unit .glass-dropdown-popover,
+  #sort-dropdown .glass-dropdown-popover { left: 0; right: 0; min-width: 0; max-width: none; }
+  .campaign-search-input { font-size: 16px; }
+  .glass-option-item { min-height: 44px; }
 }
 
 /* ─── Featured Banner ─── */

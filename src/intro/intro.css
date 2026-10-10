@@ -122,7 +122,7 @@ html.intro-pending:not(.skip-intro) body > *:not(#highverz-intro) {
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0;
+  opacity: 1;
   will-change: opacity, transform;
   width: clamp(220px, 30vw, 360px);
   aspect-ratio: 893 / 436;
@@ -148,6 +148,14 @@ html.intro-pending:not(.skip-intro) body > *:not(#highverz-intro) {
   isolation: isolate;
   overflow: visible;
   --hv-logo-mask: url('/assets/highverz-hv-logo.svg');
+}
+
+/* Mask only the decorative layers: a delayed/failed mask must never hide
+   the inline base logo that visitors see while assets are loading. */
+.hv-reveal-glass::before,
+.hv-reveal-edge,
+.hv-reveal-dispersion,
+.hv-reveal-sheen {
   -webkit-mask-image: var(--hv-logo-mask);
   mask-image: var(--hv-logo-mask);
   -webkit-mask-repeat: no-repeat;

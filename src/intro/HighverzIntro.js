@@ -6,11 +6,13 @@
  * Sequence:
  *  0.1s  → Glass HV mark fades + sharpens into focus
  *  0.7s  → Logo fades/scales in
- *  2.5s  → Reveal callback fires (hero starts)
- *  2.5s  → Full-screen loader lifts upward, revealing the page below
+ *  Ready → Reveal callback fires (hero starts)
+ *  Ready → Full-screen loader lifts upward, revealing the page below
  */
 
 import gsap from 'gsap';
+import loaderLogo from '../../public/assets/highverz-hv-logo.svg?raw';
+import { preloadHomeMedia, HOME_MEDIA_TIMEOUT } from './preloadHomeMedia.js';
 
 let activeIntroInstance = null;
 
@@ -38,7 +40,7 @@ export class HighverzIntro {
         <div class="hv-reveal-logo" id="hv-reveal-logo">
           <div class="hv-reveal-mark" aria-hidden="true">
             <div class="hv-reveal-glass">
-              <img class="hv-reveal-glass-base" src="/assets/highverz-hv-logo.svg" alt="" draggable="false" />
+              ${loaderLogo.replace(/<\?xml[^>]*\?>\s*/, '').replace('<svg ', '<svg class="hv-reveal-glass-base" aria-hidden="true" focusable="false" ')}
               <span class="hv-reveal-edge" aria-hidden="true"></span>
               <span class="hv-reveal-dispersion" aria-hidden="true"></span>
               <span class="hv-reveal-sheen" aria-hidden="true"></span>
@@ -99,8 +101,8 @@ export class HighverzIntro {
 
   // ─────────────────────────────────────────────────────────────────────────
   // REAL ASSET PRELOADING COORDINATOR
-  // Actively buffers critical fonts and hero posters in parallel
-  // while the intro is displayed so the website opens instantly with zero lag.
+  // Warm fonts and media in parallel while the intro is displayed.
+  // Home includes all photos, posters, and a playable buffer for every reel.
   // ─────────────────────────────────────────────────────────────────────────
   async startAssetPreload() {
     const progress = this.container?.querySelector('.hv-loader-progress-fill');
@@ -122,7 +124,7 @@ export class HighverzIntro {
 
     // 1. Critical Typography
     const fontTask = (document.fonts && document.fonts.ready)
-      ? document.fonts.ready.then(() => setProgress(0.45)).catch(() => {})
+      ? document.fonts.ready.then(() => { if (!isHomePage) setProgress(0.45); }).catch(() => {})
       : Promise.resolve();
 
     // 2. Route-aware first-viewport media. The former fixed Home poster list
@@ -168,27 +170,14 @@ export class HighverzIntro {
       ...videos.filter(isInInitialViewport).map(waitForVideo)
     ]).then(() => setProgress(0.70)).catch(() => {});
 
-    // Preserve Home's original, tuned poster preload sequence exactly.
-    const homeMediaTask = isHomePage ? Promise.all((isMobile
-      ? ['/assets/highverz-hv-logo.svg', '/assets/creators/reels/clean/posters/reel_1.jpg']
-      : [
-          '/assets/highverz-hv-logo.svg',
-          '/assets/logo-white.png',
-          '/assets/creators/reels/clean/posters/reel_1.jpg',
-          '/assets/creators/reels/clean/posters/reel_2.jpg',
-          '/assets/creators/reels/clean/posters/reel_10.jpg'
-        ]
-    ).map((src) => new Promise((resolve) => {
-      const image = new Image();
-      image.onload = resolve;
-      image.onerror = resolve;
-      image.src = src;
-      if (image.decode) image.decode().then(resolve).catch(resolve);
-    }))).then(() => setProgress(0.65)).catch(() => {}) : Promise.resolve();
+    // Home warms every photo, poster, and reel while the loader is on screen.
+    const homeMediaTask = isHomePage
+      ? preloadHomeMedia(ratio => setProgress(0.25 + ratio * 0.65))
+      : Promise.resolve();
 
     // 3. Fluid WebGL Background Preload & Shader Compilation
     const fluidTask = (typeof window.loadFluidBackground === 'function')
-      ? window.loadFluidBackground().then(() => setProgress(0.85)).catch(() => {})
+      ? window.loadFluidBackground().then(() => { if (!isHomePage) setProgress(0.85); }).catch(() => {})
       : Promise.resolve();
 
     // 4. Unlock hero videos in parallel (non-blocking background stream)
@@ -201,7 +190,7 @@ export class HighverzIntro {
     const minDelay = new Promise(resolve => setTimeout(resolve, isMobile ? 850 : 1100));
     const maxTimeout = new Promise(resolve => setTimeout(
       resolve,
-      isHomePage ? 2500 : (isMobile ? 3200 : 4200)
+      isHomePage ? HOME_MEDIA_TIMEOUT + 250 : (isMobile ? 3200 : 4200)
     ));
 
     await Promise.race([
@@ -343,7 +332,7 @@ export class HighverzIntro {
     const isHomePage = window.location.pathname === '/' || window.location.pathname.endsWith('/index.html');
     this.safetyTimer = setTimeout(() => {
       if (!this.isCompleted) this.finishSafely();
-    }, isHomePage ? 2000 : 5000);
+    }, isHomePage ? HOME_MEDIA_TIMEOUT + 2000 : 5000);
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {

@@ -252,6 +252,7 @@ function boot() {
       onStartReveal: () => {
         if (lenis) lenis.start();
         if (isHomeRoute(window.location.pathname)) {
+          window.__hvUnlockHeroVideos?.();
           initHeroIntro(false);
         } else {
           triggerPageHeroEntrance(window.location.pathname);
@@ -910,7 +911,7 @@ function initMobileNav(navbar) {
     overlay.setAttribute('aria-hidden', 'true');
 
     const pathname = window.location.pathname;
-    const isHome = pathname === '/' || pathname.endsWith('index.html') || (!pathname.includes('work') && !pathname.includes('team') && !pathname.includes('creator'));
+    const isHome = isHomeRoute(pathname);
     const isWork = pathname.includes('work.html');
     const isCampaigns = pathname.includes('campaigns.html');
     const isTeam = pathname.includes('team.html');
@@ -922,6 +923,7 @@ function initMobileNav(navbar) {
         <div class="mobile-nav-header">
           <span class="mobile-nav-label">Navigation</span>
           <span class="mobile-nav-brand">HIGHVERZ</span>
+          <button type="button" class="mobile-nav-close" aria-label="Close navigation">✕</button>
         </div>
         <ul class="mobile-nav-list">
           <li class="mobile-nav-item">
@@ -971,9 +973,19 @@ function initMobileNav(navbar) {
   }
 
   let isOpen = false;
+  overlay.inert = true;
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-label', 'Navigation');
+  overlay.setAttribute('data-lenis-prevent', '');
+  toggleBtn?.setAttribute('aria-controls', overlay.id);
+  toggleBtn?.setAttribute('aria-expanded', 'false');
+  const closeBtn = overlay.querySelector('.mobile-nav-close');
 
   function openMenu() {
     isOpen = true;
+    gsap.killTweensOf(overlay);
+    overlay.inert = false;
     if (toggleBtn) {
       toggleBtn.classList.add('is-active');
       toggleBtn.setAttribute('aria-expanded', 'true');
@@ -982,6 +994,7 @@ function initMobileNav(navbar) {
     overlay.setAttribute('aria-hidden', 'false');
     document.body.classList.add('mobile-menu-active');
     if (window.lenis) window.lenis.stop();
+    closeBtn?.focus({ preventScroll: true });
 
     // Staggered Entrance Animation
     if (typeof gsap !== 'undefined') {
@@ -1003,6 +1016,9 @@ function initMobileNav(navbar) {
   function closeMenu() {
     if (!isOpen) return;
     isOpen = false;
+    gsap.killTweensOf(overlay);
+    overlay.inert = true;
+    toggleBtn?.focus({ preventScroll: true });
     if (toggleBtn) {
       toggleBtn.classList.remove('is-active');
       toggleBtn.setAttribute('aria-expanded', 'false');
@@ -1037,6 +1053,10 @@ function initMobileNav(navbar) {
       }
     });
   }
+  closeBtn?.addEventListener('click', closeMenu);
+  window.matchMedia('(min-width: 901px)').addEventListener('change', (event) => {
+    if (event.matches) closeMenu();
+  });
 
   // Handle all links inside drawer
   overlay.querySelectorAll('a').forEach((link) => {
@@ -1045,18 +1065,7 @@ function initMobileNav(navbar) {
       if (href === '#contact') {
         e.preventDefault();
         closeMenu();
-        const modal = document.getElementById('enquiry-modal');
-        if (modal) {
-          modal.classList.add('is-active');
-          document.body.classList.add('enquiry-modal-open');
-        } else {
-          const contactSec = document.getElementById('contact');
-          if (contactSec) {
-            contactSec.scrollIntoView({ behavior: 'smooth' });
-          } else {
-            window.location.href = '/index.html#contact';
-          }
-        }
+        // The delegated enquiry handler opens the form for this same click.
         return;
       }
       closeMenu();
@@ -1067,6 +1076,15 @@ function initMobileNav(navbar) {
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && isOpen) {
       closeMenu();
+    }
+    if (e.key === 'Tab' && isOpen) {
+      const controls = Array.from(overlay.querySelectorAll('a[href], button:not([disabled])'));
+      const first = controls[0], last = controls.at(-1);
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault(); last?.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault(); first?.focus();
+      }
     }
   });
 
@@ -2440,10 +2458,11 @@ export function initHeroReelCarousel() {
     video.muted = true;
     video.playsInline = true;
     video.loop = true;
-    video.autoplay = priority === 'high';
+    const shouldPlay = priority === 'high' && !document.documentElement.classList.contains('intro-pending');
+    video.autoplay = shouldPlay;
     video.setAttribute('playsinline', '');
     video.setAttribute('muted', '');
-    if (priority === 'high') video.setAttribute('autoplay', '');
+    if (shouldPlay) video.setAttribute('autoplay', '');
     else video.removeAttribute('autoplay');
     video.preload = priority === 'high' ? 'auto' : 'metadata';
     if (!video.getAttribute('src') && targetSrc) {
@@ -2458,6 +2477,8 @@ export function initHeroReelCarousel() {
   const playVideo = (video) => {
     if (!video) return;
     loadVideo(video, 'high');
+    // Buffer behind the loader without spending that buffer on hidden playback.
+    if (document.documentElement.classList.contains('intro-pending')) return;
     video.defaultMuted = true;
     video.muted = true;
     video.playsInline = true;
@@ -3338,10 +3359,7 @@ function initWhyUsAnimations() {
   if (pageContent?.dataset.whyAnimationsInit === 'true') return;
   if (pageContent) pageContent.dataset.whyAnimationsInit = 'true';
 
-  // Why Us shares service and comparison components with other pages. Its
-  // former second GSAP entrance pass competed with their initial styles,
-  // producing a black flash and a repeated/ghosted content reveal. Keep the
-  // hero's text reveal, but settle the body content immediately.
+  // Keep shared service cards stable; only the comparison owns an entrance.
   const stableContent = pageContent?.querySelectorAll(
     '.service-card-item, .comp-card, .comp-list-row, .comparison-cta'
   ) || [];
@@ -3353,6 +3371,48 @@ function initWhyUsAnimations() {
     scale: 1,
     filter: 'none',
     clearProps: 'transform,opacity,filter',
+  });
+
+  const comparison = pageContent?.querySelector('.comp-dual-cards');
+  if (!comparison || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const cards = comparison.querySelectorAll('.comp-card');
+  cards.forEach(card => card.classList.add('is-entering'));
+  gsap.fromTo(cards,
+    { opacity: 0, y: 20 },
+    {
+      opacity: 1,
+      y: 0,
+      duration: 0.6,
+      stagger: 0.1,
+      ease: 'power2.out',
+      clearProps: 'transform,opacity',
+      onComplete: () => cards.forEach(card => card.classList.remove('is-entering')),
+      scrollTrigger: {
+        trigger: comparison,
+        start: 'top 85%',
+        once: true,
+      },
+    }
+  );
+
+  // Reveal each point at its own scroll position, including when the cards
+  // stack vertically on phones. Scrolling back up must not hide it again.
+  comparison.querySelectorAll('.comp-list-row').forEach(row => {
+    gsap.fromTo(row,
+      { opacity: 0, y: 14 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.5,
+        ease: 'power2.out',
+        clearProps: 'transform,opacity',
+        scrollTrigger: {
+          trigger: row,
+          start: 'top 85%',
+          once: true,
+        },
+      }
+    );
   });
 }
 

@@ -351,7 +351,7 @@ body.enquiry-modal-open .admin-leads-close {
   border-radius: 12px;
   color: var(--text-primary, #ffffff);
   font-family: var(--font-body, 'Inter', sans-serif);
-  font-size: 0.95rem;
+  font-size: 1rem;
   outline: none;
   transition: all 0.25s ease;
 }

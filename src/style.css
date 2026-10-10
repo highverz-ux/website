@@ -4725,7 +4725,7 @@ html.js .floating-badge-item {
   grid-template-columns: minmax(0, 1fr);
   gap: 0;
   width: min(640px, calc(100vw - 80px));
-  min-height: 490px;
+  min-height: 300px;
   margin-inline: auto;
   perspective: 1200px;
   cursor: grab;
@@ -4803,7 +4803,9 @@ html.js .floating-badge-item {
 .testimonials-stack .testi-card {
   grid-area: 1 / 1;
   width: 100%;
-  min-height: 490px;
+  min-height: 300px;
+  padding: 2.2rem 2rem 1.5rem;
+  gap: 1.15rem;
   transform-origin: center bottom;
   transition: background 0.45s var(--ease-smooth), border-color 0.45s var(--ease-smooth), box-shadow 0.45s var(--ease-smooth);
 }
@@ -7327,12 +7329,12 @@ html.js .floating-badge-item {
   }
 
   .testimonials-cards-grid.testimonials-stack {
-    min-height: 430px;
+    min-height: 320px;
     width: 100%;
   }
 
   .testimonials-stack .testi-card {
-    min-height: 430px;
+    min-height: 320px;
     padding: 1.7rem 1.35rem;
   }
 
@@ -10550,6 +10552,10 @@ html.js .floating-badge-item {
 
 .comp-card:hover {
   transform: translateY(-4px);
+}
+
+.comparison-section .comp-card.is-entering {
+  transition: none;
 }
 
 /* Left Card: Traditional */
@@ -13912,4 +13918,101 @@ html, body {
 html::-webkit-scrollbar,
 body::-webkit-scrollbar {
   display: none;
+}
+
+/* Phone and tablet controls, including short landscape viewports. */
+@media (max-width: 720px) {
+  .footer-home {
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 0 1rem;
+    overflow: hidden;
+  }
+
+  .footer-home .footer-container { padding-inline: 1.25rem; }
+  .footer-home .footer-row-content {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem 1rem;
+    justify-items: stretch;
+    text-align: left;
+  }
+  .footer-home .footer-left-info {
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0;
+    min-width: 0;
+  }
+  .footer-home .footer-copy { max-width: 32ch; line-height: 1.6; }
+  .footer-home .footer-contact-links {
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0 1rem;
+  }
+  .footer-home .footer-link-group,
+  .footer-home .footer-social-links { align-items: flex-start; gap: 0.15rem; }
+  .footer-home .footer-group-title { margin-bottom: 0.35rem; }
+  .footer-home .f-social { min-height: 44px; }
+
+  /* Keep the animated mark in its own row, never behind navigation text. */
+  .footer-home .footer-watermark-logo {
+    position: relative;
+    order: 2;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    transform: none;
+    width: min(200px, 60vw);
+    margin: 3rem auto 2rem;
+  }
+}
+
+.mobile-nav-close {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 50%;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .nav-actions { gap: 0.4rem; }
+  .mobile-toggle, .theme-switcher { width: 44px; height: 44px; flex-shrink: 0; }
+  .btn-nav-talk { min-height: 44px; }
+  .mobile-nav-overlay {
+    padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1.5rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+  }
+  .mobile-nav-content { height: auto; min-height: 100%; flex-shrink: 0; gap: 1.25rem; }
+  .mobile-nav-header { gap: 0.75rem; }
+  .mobile-nav-brand { margin-left: auto; }
+  .mobile-nav-list { margin: auto 0; }
+  .mobile-nav-link { min-height: 48px; }
+  .mobile-nav-footer-meta { flex-wrap: wrap; gap: 0.75rem; }
+}
+
+@media (max-width: 600px) {
+  .case-hero-grid { grid-template-columns: minmax(0, 1fr); }
+  .case-hero-content, .case-hero-media { min-width: 0; max-width: 100%; }
+  .case-kicker-tag { flex-wrap: wrap; justify-content: center; letter-spacing: 0.08em; }
+  .case-follower-transform-card { width: 100%; gap: 0.5rem; padding: 1rem 0.75rem; }
+  .case-trans-item { min-width: 0; }
+  .case-trans-label { overflow-wrap: anywhere; }
+  .team-metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  .team-metric-item { padding: 1rem 0.5rem; min-width: 0; }
+  .team-metric-val { font-size: clamp(1.4rem, 6vw, 1.85rem); }
+  .team-metric-label { font-size: 0.7rem; overflow-wrap: anywhere; }
+  .team-hero-desc, .why-hero-subtitle { font-size: 1rem; line-height: 1.65; }
+  .why-hero-section { padding: 8rem 0 3rem; }
+  .footer a { display: inline-flex; align-items: center; min-height: 44px; }
+}
+
+@media (max-width: 360px) {
+  .nav-container, .navbar.scrolled .nav-container { padding-inline: 0.65rem; }
+  .btn-nav-talk { padding-inline: 0.6rem; font-size: 0.72rem; }
+  .case-trans-number { font-size: 1.4rem; }
 }

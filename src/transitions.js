@@ -334,7 +334,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
     const backdrop = document.createElement('div');
     backdrop.className = 'page-transition-backdrop';
     backdrop.id = 'page-transition-backdrop';
-    backdrop.style.backgroundColor = getComputedStyle(document.body).backgroundColor || '#050809';
+    backdrop.style.backgroundColor = 'transparent';
 
     // Keep the old glow node for compatibility with the existing transition
     // shell, while the route handoff itself uses a clean synchronized fade.
@@ -360,16 +360,15 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
     ScrollTrigger.getAll().forEach((t) => t.kill());
     startIncomingMetricCounters(incomingContent);
 
-    // Keep the route handoff on the compositor. Moving and scaling two full
-    // documents while the browser also adds/removes the scrollbar can produce
-    // a visible horizontal/vertical "shake", particularly between Home and
-    // Work. Opacity gives us the same clean handoff without reflow-sensitive
-    // transforms or expensive full-page filters.
+    // Paint the incoming page immediately and ease only its blur. Crossfading
+    // two full documents caused the blackout and lag on media-heavy routes.
     gsap.set(currentContent, {
       opacity: 1,
     });
     gsap.set(shell, {
-      opacity: 0,
+      opacity: 1,
+      filter: 'blur(12px)',
+      willChange: 'filter',
     });
     gsap.set(glow, { opacity: 0 });
 
@@ -381,15 +380,9 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
         // Record timestamp so initializers know we arrived via SPA transition
         window.__hvLastTransitionTime = Date.now();
 
-        // The incoming document needs one layout pass after it returns to the
-        // normal flow (ScrollTrigger and the reel carousel both measure here).
-        // Keep that work behind a soft blur veil so cards never visibly jump.
-        glow.classList.add('page-transition-settle-veil');
-        gsap.set(glow, { opacity: 1 });
-
         requestAnimationFrame(() => requestAnimationFrame(() => {
           try {
-            gsap.set(shell, { clearProps: 'opacity' });
+            gsap.set(shell, { clearProps: 'opacity,filter,willChange' });
             currentContent.remove();
             incomingContent.removeAttribute('style');
             shell.insertAdjacentElement('beforebegin', incomingContent);
@@ -414,19 +407,8 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
             window.__hvResetNavbar?.(window.location.pathname);
             if (window.ScrollTrigger) ScrollTrigger.refresh();
 
-            // Let the newly promoted content complete its first measurements,
-            // then dissolve the blur rather than exposing an in-progress layout.
-            requestAnimationFrame(() => requestAnimationFrame(() => {
-              gsap.to(glow, {
-                opacity: 0,
-                duration: 0.22,
-                ease: 'power1.out',
-                onComplete: () => {
-                  glow.remove();
-                  backdrop.remove();
-                },
-              });
-            }));
+            glow.remove();
+            backdrop.remove();
 
             let passes = 0;
             const refreshPass = () => {
@@ -455,16 +437,11 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
         }));
       }
     })
-      .to(currentContent, {
-        opacity: 0,
-        duration: 0.2,
-        ease: 'power1.out',
-      }, 0)
       .to(shell, {
-        opacity: 1,
-        duration: 0.28,
-        ease: 'power1.out',
-      }, 0.06);
+        filter: 'blur(0px)',
+        duration: 0.38,
+        ease: 'power2.out',
+      }, 0);
 
   } catch (err) {
     console.error('Page transition encountered an error:', err);

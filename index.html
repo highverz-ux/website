@@ -55,9 +55,12 @@
     <link rel="stylesheet" href="/src/intro/intro.css" />
     <link rel="stylesheet" href="/src/style.css" />
     <style>
-    /* Prevent FOUC for intro */
-    .hv-intro-hidden { display: none !important; }
-  </style>
+      @view-transition {
+        navigation: auto;
+      }
+      /* Prevent FOUC for intro */
+      .hv-intro-hidden { display: none !important; }
+    </style>
   <script>
     document.documentElement.classList.add('js');
 
@@ -220,7 +223,7 @@
             <img src="/assets/creators/opt/alex-gonzalez.jpg" alt="" />
           </div>
           <span class="hero-trust-copy">Creator growth behind</span>
-          <span class="hero-trust-number" id="stats-counter">0+</span>
+          <span class="hero-trust-number" id="stats-counter">4,500,000,000+</span>
           <span class="hero-trust-label">views</span>
           <span class="hero-trust-chevron" aria-hidden="true">⌄</span>
         </div>

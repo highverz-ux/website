@@ -43,6 +43,9 @@
     <!-- Core Style Bundle -->
     <link rel="stylesheet" href="/src/style.css" />
     <style>
+      @view-transition {
+        navigation: auto;
+      }
       /* Ensure clean initial state before styles finish parsing */
       html.intro-pending body {
         overflow: hidden !important;
@@ -51,12 +54,6 @@
     </style>
     <script>
       document.documentElement.classList.add('js');
-      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        document.documentElement.classList.add('page-entering');
-        window.__HV_PAGE_ENTRY_FAILSAFE__ = window.setTimeout(function () {
-          document.documentElement.classList.remove('page-entering');
-        }, 4000);
-      }
 
       var navEntries = (window.performance && window.performance.getEntriesByType)
         ? window.performance.getEntriesByType('navigation')
@@ -108,8 +105,9 @@
                          navigator.webdriver === true ||
                          isDevToolsMobileAudit;
       var isSkipIntroParam = window.location.search.includes('no-intro') || window.location.search.includes('intro=false') || isLighthouse;
-      if (!isForceIntro && (isSkipIntroParam || isNavigatedInternally)) {
+      if (!isForceIntro) {
         document.documentElement.classList.add('skip-intro');
+        document.documentElement.classList.remove('intro-pending');
         window.__HV_SKIP_INTRO__ = true;
       } else {
         document.documentElement.classList.remove('skip-intro');
@@ -240,6 +238,7 @@
          03. CAPABILITIES GRID (Createable-Inspired 6-Card Architecture)
          ================================================================ -->
     <section class="work-capabilities-section" id="capabilities">
+      <div id="services" style="position:relative;top:-100px;"></div>
       <div class="work-capabilities-container">
         <div class="work-capabilities-header">
           <div class="work-capabilities-tag">SERVICES &amp; SOLUTIONS</div>

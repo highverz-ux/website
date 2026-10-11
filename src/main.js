@@ -206,6 +206,7 @@ function boot() {
                               navigator.webdriver === true ||
                               isDevToolsMobileAudit;
     const skipIntro = !isForceIntro && (
+      isDedicatedPage ||
       window.__HV_SKIP_INTRO__ ||
       isLighthouseAudit ||
       isNavigatedToHome ||
@@ -826,7 +827,22 @@ function initNavbar() {
           }
         } catch (_) {}
       }
+
+      // If leaving subpage to go Home, ensure Home skips the intro
+      try {
+        const linkUrl = new URL(href, window.location.origin);
+        if (isHomeRoute(linkUrl.pathname) && !isHomeRoute(window.location.pathname)) {
+          sessionStorage.setItem('hv_from_subpage', 'true');
+        }
+      } catch (_) {}
     });
+  });
+
+  // Track subpage exits to guarantee Home intro skip
+  window.addEventListener('beforeunload', () => {
+    if (!isHomeRoute(window.location.pathname)) {
+      try { sessionStorage.setItem('hv_from_subpage', 'true'); } catch (_) {}
+    }
   });
 
   // ------------------------------------------------------------------------
@@ -1068,7 +1084,19 @@ function initMobileNav(navbar) {
         // The delegated enquiry handler opens the form for this same click.
         return;
       }
-      closeMenu();
+      // Instantly dismiss overlay before view-transition snapshot to avoid freezing a half-closed drawer
+      isOpen = false;
+      overlay.inert = true;
+      if (toggleBtn) {
+        toggleBtn.classList.remove('is-active');
+        toggleBtn.setAttribute('aria-expanded', 'false');
+      }
+      document.body.classList.remove('mobile-menu-active');
+      overlay.classList.remove('is-open');
+      overlay.setAttribute('aria-hidden', 'true');
+      overlay.style.opacity = '0';
+      overlay.style.pointerEvents = 'none';
+      if (window.lenis) window.lenis.start();
     });
   });
 
@@ -1379,6 +1407,12 @@ function initHeroIntro(immediate = false) {
     });
     if (navbar) gsap.set(navbar, { opacity: 1, y: 0, clearProps: 'opacity,transform,filter' });
     headlineLines.forEach((line) => { line.style.overflow = 'visible'; });
+    const statsNumber = document.getElementById('stats-counter');
+    if (statsNumber) {
+      statsNumber.textContent = '4,500,000,000+';
+      statsNumber.dataset.transitionHydrated = 'true';
+    }
+    window.__hvHeroTrustReadyFired = true;
     window.dispatchEvent(new Event('hv:hero-trust-ready'));
     initHeroWordRoller();
     return;
@@ -1418,7 +1452,10 @@ function initHeroIntro(immediate = false) {
 
   // 0b. Trust badge slides up from blur
   tl.to('.hero-trust-badge-wrap', { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.6, ease: 'power3.out' }, 0.05);
-  tl.call(() => window.dispatchEvent(new Event('hv:hero-trust-ready')), [], 0.08);
+  tl.call(() => {
+    window.__hvHeroTrustReadyFired = true;
+    window.dispatchEvent(new Event('hv:hero-trust-ready'));
+  }, [], 0.08);
 
   // 1. Hero headline words: each slides UP from 25px below with de-blur
   // This continues the loader's motion language into the hero
@@ -1532,10 +1569,16 @@ function initStatsMarquee() {
 
   let activeCounterTween = null;
   const isTransitionHydrated = statsNumber.dataset.transitionHydrated === 'true';
-  let hasCounterPlayed = isTransitionHydrated;
+  const isSkipIntro = document.documentElement.classList.contains('skip-intro') || window.__HV_SKIP_INTRO__;
+  const isAlreadyReady = isTransitionHydrated || isSkipIntro || window.__hvHeroTrustReadyFired === true;
+  let hasCounterPlayed = isAlreadyReady;
 
   function playCounterAnimation() {
-    if (hasCounterPlayed) return;
+    if (hasCounterPlayed) {
+      statsNumber.textContent = '4,500,000,000+';
+      statsNumber.dataset.transitionHydrated = 'true';
+      return;
+    }
     hasCounterPlayed = true;
 
     if (activeCounterTween) {
@@ -1555,6 +1598,7 @@ function initStatsMarquee() {
       },
       onComplete: () => {
         statsNumber.textContent = '4,500,000,000+';
+        statsNumber.dataset.transitionHydrated = 'true';
         gsap.fromTo(statsNumber,
           { filter: 'drop-shadow(0 0 35px rgba(0, 229, 255, 0.85))' },
           { filter: 'drop-shadow(0 0 20px rgba(0, 229, 255, 0.4))', duration: 0.9, ease: 'power2.out' }
@@ -1565,14 +1609,17 @@ function initStatsMarquee() {
   }
 
   if (statsNumber.classList.contains('hero-trust-number')) {
-    if (isTransitionHydrated) {
+    if (isAlreadyReady) {
       statsNumber.textContent = '4,500,000,000+';
+      statsNumber.dataset.transitionHydrated = 'true';
     } else {
       window.addEventListener('hv:hero-trust-ready', playCounterAnimation, { once: true });
     }
     window.__hvStatsCleanup = () => {
       if (activeCounterTween) activeCounterTween.kill();
       window.removeEventListener('hv:hero-trust-ready', playCounterAnimation);
+      statsNumber.textContent = '4,500,000,000+';
+      statsNumber.dataset.transitionHydrated = 'true';
     };
     return;
   }
@@ -2246,9 +2293,23 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
   const isCampaigns = normPath.includes('campaigns');
   const isCase = normPath.includes('creator-');
 
-  // If entering via smooth SPA blur transition, elements were already smoothly revealed
-  // by the transition shell. Do NOT reset opacity to 0 or jerk the hero elements!
-  const isRecentTransition = isFromTransition || (window.__hvLastTransitionTime && (Date.now() - window.__hvLastTransitionTime < 2500));
+  // Cross-document View Transitions already provide the visible blur reveal.
+  // Do not run the dedicated hero blur underneath that snapshot: when the
+  // snapshot disappears the still-running hero timeline looks like a second
+  // reveal and makes navigation feel as if it has stalled.
+  let isInternalDocumentNavigation = window.isNavigatedInternally === true;
+  if (!isInternalDocumentNavigation && document.referrer) {
+    try {
+      const previousUrl = new URL(document.referrer);
+      const previousPath = previousUrl.pathname.replace(/\/+$/, '') || '/';
+      const currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
+      isInternalDocumentNavigation = previousUrl.origin === window.location.origin && previousPath !== currentPath;
+    } catch (_) {}
+  }
+
+  const isRecentTransition = isFromTransition ||
+    isInternalDocumentNavigation ||
+    (window.__hvLastTransitionTime && (Date.now() - window.__hvLastTransitionTime < 2500));
   if (isRecentTransition) {
     const heroHeadings = document.querySelectorAll(
       '.work-hero-title, .campaign-hero-headline, .why-hero-title, .team-hero-title, .case-hero-title'

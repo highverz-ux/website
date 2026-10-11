@@ -64,6 +64,15 @@
   <script>
     document.documentElement.classList.add('js');
 
+    window.__hvActiveTransition = null;
+    if ('onpagereveal' in window) {
+      window.addEventListener('pagereveal', function(e) {
+        if (e.viewTransition) {
+          window.__hvActiveTransition = e.viewTransition;
+        }
+      });
+    }
+
     // Detect navigation type (reload vs link navigation)
     var navEntries = (window.performance && window.performance.getEntriesByType)
       ? window.performance.getEntriesByType('navigation')
@@ -101,7 +110,7 @@
 
     // Intro ONLY plays on reload / hard reload or first clean visit, never on navigation from subpages
     var isNavigatedToHome = !isReload && (isFromInternalSubpage || internalNavFlag || navType === 'back_forward');
-    var isForceIntro = window.location.search.includes('intro=true') || window.location.search.includes('intro=force');
+    var isForceIntro = /(?:^|[?&])intro=(?:true|force)(?:&|$)/.test(window.location.search) && !window.location.search.includes('no-intro');
     var ua = navigator.userAgent || '';
     var isDevToolsMobileAudit = (
       (ua.includes('Macintosh') || ua.includes('Windows NT')) &&

@@ -1,18 +1,40 @@
 /**
- * HIGHVERZ — Page Transition Engine
- * Recreates the Framer diagonal wipe transition from the reference recording.
- *
- * SPECIFICATION:
- * - Angle: 315° (135° in CSS linear-gradient coordinates, top-left to bottom-right)
- * - Feather / Softness Width: 30%
- * - Duration: 0.8s
- * - Easing: cubic-bezier(0.27, 0, 0.51, 1)
- *
- * Internal HTML routes use the same fade transition, including Home.
+ * HIGHVERZ — Cinematic Page Transition Engine
+ * 
+ * Optical Defocus-and-Refocus Page Transitions
+ * Lifecycle: IDLE → NAVIGATING → OUTGOING_BLUR → INCOMING_REFOCUS → HERO_WORD_REVEAL → IDLE
  */
 
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+/**
+ * Transition Lifecycle States
+ */
+export const TransitionState = {
+  IDLE: 'IDLE',
+  NAVIGATING: 'NAVIGATING',
+  OUTGOING_BLUR: 'OUTGOING_BLUR',
+  INCOMING_REFOCUS: 'INCOMING_REFOCUS',
+  HERO_WORD_REVEAL: 'HERO_WORD_REVEAL',
+  // Aliases for compatibility
+  BLURRING: 'OUTGOING_BLUR',
+  SHARP: 'INCOMING_REFOCUS',
+};
+
+let currentTransitionState = TransitionState.IDLE;
+
+export function getTransitionState() {
+  return currentTransitionState;
+}
+
+export function setTransitionState(state) {
+  currentTransitionState = state;
+  window.__hvTransitionState = state;
+  window.dispatchEvent(new CustomEvent('hv:transition-state', { detail: { state } }));
+}
+window.__hvSetTransitionState = setTransitionState;
+window.__hvGetTransitionState = getTransitionState;
 
 /**
  * Normalizes a URL or path string to a canonical route identifier (e.g. '/why-us', '/').
@@ -66,24 +88,20 @@ export function canTransition(currentPath, targetUrl) {
   return true;
 }
 
+/**
+ * HTML Cache with TTL (3 minutes) to guarantee instantaneous transitions
+ */
+const HTML_CACHE_TTL = 3 * 60 * 1000;
 const htmlCache = new Map();
 
-// Start only the incoming hero counters underneath the route fade. The rest
-// of the hero remains static so the page reveal and number animation stay in
-// sync without introducing a second entrance sequence.
+/**
+ * Start incoming metric counters underneath the route blur handoff.
+ */
 function startIncomingMetricCounters(content) {
-  // The home-page counter is below the hero and is not re-initialized by the
-  // dedicated-page dispatcher during an internal route swap. Hydrate it with
-  // its stable value immediately so returning home can never expose the
-  // source placeholder (0+) during the blur handoff.
   const incomingHomeStats = content.querySelector('#stats-counter');
   if (incomingHomeStats) {
     incomingHomeStats.textContent = '4,500,000,000+';
     incomingHomeStats.dataset.transitionHydrated = 'true';
-
-    // The home initializer owns its ScrollTriggers after promotion. Keeping
-    // this value final during the handoff avoids a competing trigger resetting
-    // it back to 0 after the old page's triggers are destroyed.
   }
 
   const incomingCreators = content.querySelector('.section-creators');
@@ -159,18 +177,26 @@ function startIncomingMetricCounters(content) {
 }
 
 /**
- * Prefetches target HTML for instantaneous transition response
+ * Prefetches target HTML with TTL caching
  */
 export async function prefetchPage(urlStr) {
+  const normUrl = urlStr.split('#')[0];
+  const now = Date.now();
+  if (htmlCache.has(normUrl)) {
+    const entry = htmlCache.get(normUrl);
+    if (now - entry.timestamp < HTML_CACHE_TTL) {
+      return entry.text;
+    }
+    htmlCache.delete(normUrl);
+  }
+
   const controller = new AbortController();
-  const timeoutId = window.setTimeout(() => controller.abort(), 8000);
+  const timeoutId = window.setTimeout(() => controller.abort(), 6000);
   try {
-    const normUrl = urlStr.split('#')[0];
-    if (htmlCache.has(normUrl)) return htmlCache.get(normUrl);
     const res = await fetch(normUrl, { signal: controller.signal });
     if (!res.ok) return null;
     const text = await res.text();
-    htmlCache.set(normUrl, text);
+    htmlCache.set(normUrl, { text, timestamp: Date.now() });
     return text;
   } catch (e) {
     return null;
@@ -179,13 +205,19 @@ export async function prefetchPage(urlStr) {
   }
 }
 
-let isTransitioning = false;
+let activeFetchController = null;
+let transitionSafetyTimer = null;
+let activeTransitionTimeline = null;
 
 /**
  * Core Page Transition Choreographer
+ * Lifecycle: IDLE → NAVIGATING → OUTGOING_BLUR → INCOMING_REFOCUS → HERO_WORD_REVEAL → IDLE
  */
 export async function navigateWithTransition(targetHref, isPopState = false) {
-  if (isTransitioning) return;
+  // Reject re-entrant clicks during the active visual blur swap (450ms) to protect DOM stability
+  if (currentTransitionState === TransitionState.OUTGOING_BLUR || currentTransitionState === TransitionState.INCOMING_REFOCUS) {
+    return;
+  }
 
   const currentPath = window.location.pathname;
   let targetUrl;
@@ -196,7 +228,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
     return;
   }
 
-  // Double-check route eligibility before taking over browser navigation.
+  // Route eligibility check
   if (!canTransition(currentPath, targetUrl)) {
     if (!isPopState) {
       window.location.href = targetHref;
@@ -206,29 +238,57 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
     return;
   }
 
-  isTransitioning = true;
-  // A failed page initializer must never leave navigation permanently locked.
-  // The normal handoff completes in under a second; this is only a last-resort
-  // native navigation fallback for a stalled fetch, animation, or initializer.
-  let transitionSafetyTimer = window.setTimeout(() => {
-    if (!isTransitioning) return;
-    console.warn('Page transition timed out; falling back to native navigation.');
-    isTransitioning = false;
-    window.location.href = targetHref;
-  }, 2600);
+  // If a previous fetch was in progress, abort it and switch to the new target
+  if (currentTransitionState === TransitionState.NAVIGATING && activeFetchController) {
+    activeFetchController.abort();
+    activeFetchController = null;
+  }
+
+  // If in HERO_WORD_REVEAL, kill running hero animations immediately to start new route transition
+  if (currentTransitionState === TransitionState.HERO_WORD_REVEAL) {
+    gsap.killTweensOf('.adscale-reveal-word, .hl-word, .hero-headline-connector, .hero-word-roller, .work-hero-tag, .team-hero-tag, .why-hero-subtitle');
+  }
+
+  setTransitionState(TransitionState.NAVIGATING);
+
+  // Safety fallback timer to prevent permanently stuck states
+  if (transitionSafetyTimer) window.clearTimeout(transitionSafetyTimer);
+  transitionSafetyTimer = window.setTimeout(() => {
+    if (currentTransitionState !== TransitionState.IDLE) {
+      console.warn('Page transition safety timeout reached; resetting to IDLE.');
+      setTransitionState(TransitionState.IDLE);
+      document.body.classList.remove('page-is-transitioning');
+      document.documentElement.classList.remove('page-transitioned', 'page-entering');
+      const orphanLayer = document.getElementById('page-transition-layer');
+      if (orphanLayer) orphanLayer.remove();
+    }
+  }, 3200);
 
   try {
     // 1. Retrieve target document HTML (from memory cache or network)
-    let htmlText = htmlCache.get(targetUrl.href.split('#')[0]);
-    if (!htmlText) {
-      htmlText = await prefetchPage(targetUrl.href);
+    const normUrl = targetUrl.href.split('#')[0];
+    let htmlText = null;
+    if (htmlCache.has(normUrl)) {
+      const entry = htmlCache.get(normUrl);
+      if (Date.now() - entry.timestamp < HTML_CACHE_TTL) {
+        htmlText = entry.text;
+      } else {
+        htmlCache.delete(normUrl);
+      }
     }
+
     if (!htmlText) {
-      // Fallback to native navigation if fetch fails
-      window.location.href = targetHref;
-      isTransitioning = false;
-      return;
+      activeFetchController = new AbortController();
+      const res = await fetch(normUrl, { signal: activeFetchController.signal });
+      if (!res.ok) {
+        window.location.href = targetHref;
+        setTransitionState(TransitionState.IDLE);
+        return;
+      }
+      htmlText = await res.text();
+      htmlCache.set(normUrl, { text: htmlText, timestamp: Date.now() });
     }
+    activeFetchController = null;
 
     const parser = new DOMParser();
     const newDoc = parser.parseFromString(htmlText, 'text/html');
@@ -239,215 +299,289 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
 
     if (!currentContent || !incomingContent) {
       window.location.href = targetHref;
-      isTransitioning = false;
+      setTransitionState(TransitionState.IDLE);
       return;
     }
 
     const targetTitle = newDoc.title;
     const targetBodyClass = newDoc.body.className;
 
-    // 2. Update Browser History & Document Title
-    if (!isPopState) {
-      window.history.pushState({ path: targetHref }, '', targetHref);
-    }
-    window.__hvSetSpeedInsightsRoute?.(targetUrl.pathname);
-    if (targetTitle) {
-      document.title = targetTitle;
+    // Check prefers-reduced-motion
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      if (window.__hvDisposePageRuntime) window.__hvDisposePageRuntime();
+      ScrollTrigger.getAll().forEach((t) => t.kill());
+      currentContent.replaceWith(incomingContent);
+      if (targetBodyClass) document.body.className = targetBodyClass;
+      window.scrollTo(0, 0);
+      if (window.lenis) {
+        window.lenis.scrollTo(0, { immediate: true });
+        window.lenis.start();
+        window.lenis.resize();
+      }
+      if (!isPopState) {
+        window.history.pushState({ path: targetHref }, '', targetHref);
+      }
+      if (targetTitle) document.title = targetTitle;
+      window.__hvUpdateNavbar?.(window.location.pathname);
+      window.__hvResetNavbar?.(window.location.pathname);
+      if (window.ScrollTrigger) ScrollTrigger.refresh();
+      window.__hvInitPageScripts?.(window.location.pathname, true);
+      setTransitionState(TransitionState.IDLE);
+      window.clearTimeout(transitionSafetyTimer);
+      return;
     }
 
-    // 3. Update Navbar active states and slide indicator immediately
-    if (window.__hvUpdateNavbar) {
-      window.__hvUpdateNavbar(window.location.pathname);
-    }
-
-    // Close mobile menu if active
-    document.body.classList.remove('mobile-menu-active');
-    const mobileToggle = document.getElementById('mobile-toggle');
-    if (mobileToggle) mobileToggle.classList.remove('is-active');
-
-    // Keep cursor active and clear any stuck click/magnetic states
-    if (window.__hvEnsureCursorActive) {
-      window.__hvEnsureCursorActive();
-    }
-
-    // 4. Freeze Lenis scrolling during transition to prevent scroll/layout thrashing
+    // Freeze Lenis scrolling during transition
     if (window.lenis) {
       window.lenis.stop();
     }
 
-    // 5. Freeze current content in visual viewport (preserves exact visual frame without bottom cut-off)
+    // Freeze current content in visual viewport (prevents scroll jumps)
     const currentScrollY = window.scrollY || window.pageYOffset || 0;
     currentContent.classList.add('page-outgoing-frozen');
     currentContent.style.top = `-${currentScrollY}px`;
 
-    // Immediately reset document scroll while outgoing content is pinned at -scrollY
-    // This completely eliminates scroll-jump and bottom/top layout gaps when swapping pages
-    window.scrollTo(0, 0);
-    if (window.lenis) {
-      window.lenis.scrollTo(0, { immediate: true });
-    }
+    // Pre-tokenize incoming headings and hold text ready for hero reveal
+    try {
+      const heroHeadings = incomingContent.querySelectorAll(
+        '.work-hero-title, .campaign-hero-headline, .why-hero-title, .team-hero-title, .case-hero-title'
+      );
+      heroHeadings.forEach((heading) => {
+        if (window.splitAdscaleWords) window.splitAdscaleWords(heading);
+      });
+      // Pre-tokenize incoming headings and hold headline words ready for kinetic de-blur reveal
+      incomingContent.querySelectorAll('.adscale-reveal-word').forEach((w) => {
+        w.style.opacity = '0';
+        w.style.transform = 'translateY(25px)';
+        w.style.filter = 'blur(10px)';
+      });
+      // Hold home screen incoming headline words ready for kinetic de-blur reveal
+      incomingContent.querySelectorAll('.hl-word, .hero-headline-connector, .hero-word-roller').forEach((w) => {
+        w.style.opacity = '0';
+        w.style.transform = 'translateY(25px)';
+        w.style.filter = 'blur(10px)';
+      });
+      // All other page components (tags, descriptions, CTAs, cards, grids, media) remain 100% visible and complete!
+    } catch (_) {}
 
-    // 6. Mount incoming content inside an isolated 100vw x 100vh viewport shell
-    const shell = document.createElement('div');
-    shell.className = `page-transition-shell ${targetBodyClass || ''}`.trim();
-    shell.id = 'page-transition-shell';
-
-    document.documentElement.classList.add('page-transitioned');
-
-    // Pre-set metric counters in incoming content to 0 so they never flash target values before animating
-    incomingContent.querySelectorAll('.work-metric-val').forEach((el) => {
-      const target = parseFloat(el.getAttribute('data-metric-target'));
-      const prefix = el.getAttribute('data-metric-prefix') || '';
-      const suffix = el.getAttribute('data-metric-suffix') || '';
-      if (!isNaN(target)) {
-        const isFloat = target % 1 !== 0;
-        el.textContent = `${prefix}${isFloat ? (0).toFixed(1) : 0}${suffix}`;
-      }
-    });
-    incomingContent.querySelectorAll('.team-metric-val').forEach((el) => {
-      const format = el.getAttribute('data-metric-format');
-      if (format === 'billion') el.textContent = '0.0B+';
-      else if (format === 'days') el.textContent = '0 Days';
-      else if (format === 'percent') el.textContent = '0.0%';
-    });
+    // Mount incoming content inside transparent transition layer
+    const transitionLayer = document.createElement('div');
+    transitionLayer.className = `page-transition-layer ${targetBodyClass || ''}`.trim();
+    transitionLayer.id = 'page-transition-layer';
 
     incomingContent.style.position = 'relative';
     incomingContent.style.width = '100%';
     incomingContent.style.minHeight = '100vh';
     incomingContent.style.pointerEvents = 'none';
-    shell.appendChild(incomingContent);
+    transitionLayer.appendChild(incomingContent);
 
-    // Pre-tokenize headings inside incoming shell so text mask is clean & unmasked before blur transition
-    try {
-      if (window.initAdscaleTextEffects) {
-        window.initAdscaleTextEffects(shell);
-      }
-      shell.querySelectorAll('.adscale-reveal-word').forEach((w) => {
-        w.style.opacity = '1';
-        w.style.filter = 'none';
-        w.style.transform = 'none';
-      });
-    } catch (_) {}
-
-    // Hold the current page background underneath both fades. This prevents
-    // the body/ambient layer from flashing through while content crossfades.
-    const backdrop = document.createElement('div');
-    backdrop.className = 'page-transition-backdrop';
-    backdrop.id = 'page-transition-backdrop';
-    backdrop.style.backgroundColor = 'transparent';
-
-    // Keep the old glow node for compatibility with the existing transition
-    // shell, while the route handoff itself uses a clean synchronized fade.
-    const glow = document.createElement('div');
-    glow.className = 'page-transition-glow';
-    glow.id = 'page-transition-glow';
-
-    document.body.appendChild(backdrop);
-    document.body.appendChild(shell);
-    document.body.appendChild(glow);
-    // Add transition state class
-
+    document.body.appendChild(transitionLayer);
     document.body.classList.add('page-is-transitioning');
 
-    // Stop observers, RAF loops, media, and counter tweens bound to the old
-    // page before removing it. ScrollTrigger alone cannot clean those up.
+    // Dispose old page runtime & ScrollTriggers
     if (window.__hvDisposePageRuntime) {
       window.__hvDisposePageRuntime();
     }
-
-    // Move the incoming page's choreography into the transition window. Old
-    // triggers are removed first so only the incoming document is animated.
     ScrollTrigger.getAll().forEach((t) => t.kill());
+
+    // Hydrate incoming counters
     startIncomingMetricCounters(incomingContent);
 
-    // Paint the incoming page immediately and ease only its blur. Crossfading
-    // two full documents caused the blackout and lag on media-heavy routes.
+    const navbar = document.getElementById('navbar');
+
+    // Cinematic optical rack-focus parameters: 28px bokeh with anamorphic bloom & saturation
+    const PEAK_BLUR = 'blur(28px) brightness(1.12) saturate(120%)';
+    const CRISP_FOCUS = 'blur(0px) brightness(1) saturate(100%)';
+
+    // Initial visual states:
+    // Outgoing page is at normal 1.0 focus
     gsap.set(currentContent, {
       opacity: 1,
+      filter: CRISP_FOCUS,
+      scale: 1,
+      y: 0,
+      transformOrigin: '50% 30%',
+      willChange: 'filter, opacity, transform',
     });
-    gsap.set(shell, {
-      opacity: 1,
-      filter: 'blur(12px)',
-      willChange: 'filter',
-    });
-    gsap.set(glow, { opacity: 0 });
 
-    // 7. Execute a stable crossfade. The incoming shell is fixed to the
-    // viewport, so neither page changes position during the handoff.
-    const transitionTimeline = gsap.timeline({
-      defaults: { overwrite: 'auto' },
-      onComplete: () => {
-        // Record timestamp so initializers know we arrived via SPA transition
-        window.__hvLastTransitionTime = Date.now();
-
-        requestAnimationFrame(() => requestAnimationFrame(() => {
-          try {
-            gsap.set(shell, { clearProps: 'opacity,filter,willChange' });
-            currentContent.remove();
-            incomingContent.removeAttribute('style');
-            shell.insertAdjacentElement('beforebegin', incomingContent);
-            shell.remove();
-
-            // Update body class while preserving essential runtime flags (cursor, theme)
-            const wasCursorActive = document.body.classList.contains('cursor-active');
-            if (targetBodyClass) document.body.className = targetBodyClass;
-            document.body.classList.remove('page-is-transitioning');
-            document.documentElement.classList.remove('page-transitioned');
-            if (wasCursorActive || window.innerWidth > 900) document.body.classList.add('cursor-active');
-            window.__hvEnsureCursorActive?.();
-
-            window.scrollTo(0, 0);
-            if (window.lenis) {
-              window.lenis.scrollTo(0, { immediate: true });
-              window.lenis.start();
-              window.lenis.resize();
-            }
-
-            window.__hvInitPageScripts?.(window.location.pathname, true);
-            window.__hvResetNavbar?.(window.location.pathname);
-            if (window.ScrollTrigger) ScrollTrigger.refresh();
-
-            glow.remove();
-            backdrop.remove();
-
-            let passes = 0;
-            const refreshPass = () => {
-              try {
-                window.__hvHeroReelRefresh?.();
-                passes++;
-                if (passes < 4) requestAnimationFrame(refreshPass);
-                else {
-                  isTransitioning = false;
-                  window.clearTimeout(transitionSafetyTimer);
-                }
-              } catch (err) {
-                console.error('Page runtime refresh failed:', err);
-                isTransitioning = false;
-                window.clearTimeout(transitionSafetyTimer);
-              }
-            };
-            requestAnimationFrame(refreshPass);
-          } catch (err) {
-            console.error('Incoming page initialization failed:', err);
-            glow.remove();
-            backdrop.remove();
-            isTransitioning = false;
-            window.clearTimeout(transitionSafetyTimer);
-          }
-        }));
-      }
-    })
-      .to(shell, {
+    if (navbar) {
+      gsap.set(navbar, {
         filter: 'blur(0px)',
-        duration: 0.38,
-        ease: 'power2.out',
+        y: 0,
+        willChange: 'filter',
+      });
+    }
+
+    // Incoming page starts deeply blurred, slightly pushed into background depth
+    // with scale 1.04 to guarantee 0px border bleed during 28px blur
+    gsap.set(transitionLayer, {
+      opacity: 0,
+      filter: PEAK_BLUR,
+      scale: 1.04,
+      transformOrigin: '50% 30%',
+      willChange: 'filter, opacity, transform',
+    });
+
+    // 1. Enter OUTGOING_BLUR state: camera focal plane pulls away from outgoing page
+    setTransitionState(TransitionState.OUTGOING_BLUR);
+
+    activeTransitionTimeline = gsap.timeline({
+      defaults: { overwrite: 'auto' },
+    });
+
+    // Phase 1: Outgoing page smoothly racks out of focus over 0.36s with forward lens breathing
+    activeTransitionTimeline.to(currentContent, {
+      filter: PEAK_BLUR,
+      scale: 1.025,
+      y: -6,
+      duration: 0.36,
+      ease: 'power2.inOut',
+    }, 0);
+
+    // Navbar stays stably anchored as navigation HUD with subtle optical softening
+    if (navbar) {
+      activeTransitionTimeline.to(navbar, {
+        filter: 'blur(3.5px)',
+        duration: 0.22,
+        ease: 'power2.inOut',
       }, 0);
+      activeTransitionTimeline.to(navbar, {
+        filter: 'blur(0px)',
+        duration: 0.30,
+        ease: 'power2.out',
+      }, 0.22);
+    }
+
+    // Phase 2: Organic Aperture Cross-Dissolve (0.16s to 0.36s = 200ms smooth crossover)
+    // While both pages are immersed in deep bokeh, they seamlessly blend into each other
+    activeTransitionTimeline.to(transitionLayer, {
+      opacity: 1,
+      duration: 0.20,
+      ease: 'power1.inOut',
+    }, 0.16);
+
+    activeTransitionTimeline.to(currentContent, {
+      opacity: 0,
+      duration: 0.20,
+      ease: 'power1.inOut',
+    }, 0.16);
+
+    // Incoming cards & kicker badges prepared for subtle physical depth settling
+    const incomingCards = incomingContent.querySelectorAll(
+      '.work-hero-metrics-grid, .team-metrics-grid, .why-comparison-table, .hero-trust-badge-wrap, .carousel-viewport, .case-stats-hud, .case-follower-transform-card, .campaign-hero-pillars, .campaign-search-section, .campaign-featured-label'
+    );
+    const incomingKickers = incomingContent.querySelectorAll(
+      '.work-hero-tag, .team-hero-tag, .why-hero-tag, .campaign-hero-tag, .case-kicker-tag'
+    );
+    if (incomingCards.length) {
+      gsap.set(incomingCards, { y: 14, scale: 0.985 });
+    }
+    if (incomingKickers.length) {
+      gsap.set(incomingKickers, { y: 8 });
+    }
+
+    // At 0.34s: Old page is completely transparent in deep bokeh; advance state to INCOMING_REFOCUS
+    activeTransitionTimeline.call(() => {
+      setTransitionState(TransitionState.INCOMING_REFOCUS);
+      currentContent.remove();
+      window.__hvUpdateNavbar?.(targetUrl.pathname);
+    }, null, 0.34);
+
+    // Phase 3: Whole incoming page smoothly refocusses from 28px bokeh to crystal clarity (0.22s to 0.62s)
+    activeTransitionTimeline.to(transitionLayer, {
+      filter: CRISP_FOCUS,
+      scale: 1.0,
+      duration: 0.40,
+      ease: 'power3.out',
+    }, 0.22);
+
+    // Components settle into position with physical spring mass
+    if (incomingCards.length) {
+      activeTransitionTimeline.to(incomingCards, {
+        y: 0,
+        scale: 1.0,
+        duration: 0.42,
+        ease: 'power3.out',
+        clearProps: 'transform',
+      }, 0.26);
+    }
+
+    if (incomingKickers.length) {
+      activeTransitionTimeline.to(incomingKickers, {
+        y: 0,
+        duration: 0.40,
+        ease: 'power3.out',
+        clearProps: 'transform',
+      }, 0.26);
+    }
+
+    // When refocus completes: Destination is completely sharp!
+    activeTransitionTimeline.eventCallback('onComplete', () => {
+      try {
+        // Clear blur and promote incomingContent into the live document
+        gsap.set(transitionLayer, { clearProps: 'opacity,filter,willChange' });
+        incomingContent.removeAttribute('style');
+        transitionLayer.insertAdjacentElement('beforebegin', incomingContent);
+        transitionLayer.remove();
+
+        gsap.set(incomingContent, { clearProps: 'filter,willChange' });
+        if (navbar) gsap.set(navbar, { clearProps: 'filter,willChange' });
+
+        if (targetBodyClass) document.body.className = targetBodyClass;
+        document.body.classList.remove('page-is-transitioning');
+        document.documentElement.classList.remove('page-transitioned', 'page-entering');
+        window.__hvEnsureCursorActive?.();
+
+        // Reset scroll position to top
+        window.scrollTo(0, 0);
+        if (window.lenis) {
+          window.lenis.scrollTo(0, { immediate: true });
+          window.lenis.start();
+          window.lenis.resize();
+        }
+
+        // Update URL and document title
+        if (!isPopState) {
+          window.history.pushState({ path: targetHref }, '', targetHref);
+        }
+        if (targetTitle) {
+          document.title = targetTitle;
+        }
+
+        window.__hvUpdateNavbar?.(window.location.pathname);
+        window.__hvResetNavbar?.(window.location.pathname);
+        if (window.ScrollTrigger) ScrollTrigger.refresh();
+
+        // Advance state to HERO_WORD_REVEAL!
+        setTransitionState(TransitionState.HERO_WORD_REVEAL);
+
+        // Run destination page scripts & start the word-by-word reveal!
+        window.__hvInitPageScripts?.(window.location.pathname, true);
+
+        // Fail-safe timeout to ensure state returns to IDLE if page has no reveal
+        window.setTimeout(() => {
+          if (currentTransitionState === TransitionState.HERO_WORD_REVEAL) {
+            setTransitionState(TransitionState.IDLE);
+          }
+          window.clearTimeout(transitionSafetyTimer);
+        }, 1200);
+
+      } catch (err) {
+        console.error('Incoming page initialization failed:', err);
+        setTransitionState(TransitionState.IDLE);
+        window.clearTimeout(transitionSafetyTimer);
+      }
+    });
 
   } catch (err) {
+    if (err && err.name === 'AbortError') {
+      return;
+    }
     console.error('Page transition encountered an error:', err);
     window.clearTimeout(transitionSafetyTimer);
     window.location.href = targetHref;
-    isTransitioning = false;
+    setTransitionState(TransitionState.IDLE);
   }
 }
 
@@ -455,10 +589,13 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
  * Initializes global click and popstate listeners
  */
 export function initPageTransitions() {
-  // Pre-cache all dedicated non-Home pages in memory so transition starts in 0ms without waiting for fetch
+  if (window.__hvPageTransitionsInitialized) return;
+  window.__hvPageTransitionsInitialized = true;
+
+  // Pre-cache primary routes in memory
   const targetRoutes = ['/index.html', '/work.html', '/campaigns.html', '/team.html', '/why-us.html'];
   setTimeout(() => {
-    targetRoutes.forEach(r => {
+    targetRoutes.forEach((r) => {
       if (r !== window.location.pathname) {
         prefetchPage(r);
       }
@@ -475,10 +612,7 @@ export function initPageTransitions() {
     const link = e.target.closest('a');
     if (!link) return;
 
-    // Check if link specifies target="_blank"
     if (link.target && link.target !== '_self') return;
-
-    // Check if link has download or data-no-transition
     if (link.hasAttribute('download') || link.dataset.noTransition === 'true') return;
 
     const href = link.getAttribute('href');
@@ -493,12 +627,12 @@ export function initPageTransitions() {
       return;
     }
 
-    // If destination is same route, scroll smoothly to top without re-triggering transition
+    // Same route navigation: smooth scroll to top if not a hash link
     if (isSameRoute(window.location.pathname, url)) {
       if (!url.hash) {
         e.preventDefault();
         if (window.lenis) {
-          window.lenis.scrollTo(0, { duration: 0.8 });
+          window.lenis.scrollTo(0, { duration: 0.6 });
         } else {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -506,21 +640,18 @@ export function initPageTransitions() {
       return;
     }
 
-    // If navigating to Home from any subpage, flag it in sessionStorage to skip intro screen
     if (isHomeRoute(url) && !isHomeRoute(window.location.pathname)) {
       try {
         sessionStorage.setItem('hv_from_subpage', 'true');
       } catch (_) {}
     }
 
-    // Check if this navigation is between non-Home pages
     if (canTransition(window.location.pathname, url)) {
       e.preventDefault();
       navigateWithTransition(url.href, false);
     }
   });
 
-  // Track subpage exit
   window.addEventListener('beforeunload', () => {
     if (!isHomeRoute(window.location.pathname)) {
       try {
@@ -540,17 +671,11 @@ export function initPageTransitions() {
       if (canTransition(window.location.pathname, url)) {
         prefetchPage(url.href);
       }
-    } catch (err) {}
+    } catch (_) {}
   }, { passive: true });
 
   // Handle browser back and forward
   window.addEventListener('popstate', () => {
-    const currentPath = window.location.pathname;
-    if (isHomeRoute(currentPath)) {
-      // Navigating back/forward to Home: reload natively
-      window.location.reload();
-      return;
-    }
     navigateWithTransition(window.location.href, true);
   });
 }

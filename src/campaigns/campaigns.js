@@ -106,12 +106,12 @@ let modalOpen = false;
 /**
  * Initialize the campaigns page.
  */
-export function initCampaignsPage() {
+export function initCampaignsPage(isFromTransition = false) {
   const pageContent = document.getElementById('page-content');
   if (pageContent?.dataset.campaignsInitialized === 'true') return;
   if (pageContent) pageContent.dataset.campaignsInitialized = 'true';
 
-  animateHero();
+  animateHero(isFromTransition);
   initSearch();
   initFilters();
   loadMovies();
@@ -121,20 +121,23 @@ export function initCampaignsPage() {
 // ==========================================================================
 // HERO ANIMATIONS
 // ==========================================================================
-function animateHero() {
-  // Reduced-motion pages never schedule a delayed fade after main.js has
-  // already settled their hero.
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+function animateHero(isFromTransition = false) {
   const campaignHero = document.querySelector('.campaign-hero');
-  if (campaignHero?.dataset.heroAnimated === 'true') {
-    if (campaignHero) campaignHero.dataset.heroAnimated = 'true';
-    const allHeroEls = document.querySelectorAll(
-      '.campaign-hero-tag, .campaign-hero-sub, .campaign-hero-pillars, .campaign-search-section, .campaign-featured-label'
-    );
-    allHeroEls.forEach((el) => {
-      el.style.opacity = '1';
-      el.style.transform = 'none';
-    });
+  if (!campaignHero) return;
+
+  const allHeroEls = document.querySelectorAll(
+    '.campaign-hero-tag, .campaign-hero-sub, .campaign-hero-pillars, .campaign-search-section, .campaign-featured-label'
+  );
+
+  // On route transitions or reduced motion, components are 100% complete and visible from frame 1
+  if (isFromTransition || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    campaignHero.dataset.heroAnimated = 'true';
+    gsap.set(allHeroEls, { opacity: 1, y: 0, filter: 'none', clearProps: 'all' });
+    return;
+  }
+
+  if (campaignHero.dataset.heroAnimated === 'true') {
+    gsap.set(allHeroEls, { opacity: 1, y: 0, filter: 'none', clearProps: 'all' });
     return;
   }
   const heroElements = [
@@ -696,8 +699,10 @@ async function loadMovies(scrollToGrid = false) {
   state.isLoading = true;
   if (spinner) spinner.classList.add('active');
 
-  // Show skeletons for the limit
-  renderSkeletons(grid, state.limit);
+  // Only show skeletons on initial empty load to avoid jarring card flashes
+  if (grid.querySelectorAll('.campaign-movie-card, .campaign-card').length === 0) {
+    renderSkeletons(grid, state.limit);
+  }
 
   if (state.query) {
     if (label) label.innerHTML = `Searching for <span>"${escapeHtml(state.query)}"</span>${escapeHtml(getFilterContextText())}...`;

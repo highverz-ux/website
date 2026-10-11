@@ -55,6 +55,15 @@
     <script>
       document.documentElement.classList.add('js');
 
+      window.__hvActiveTransition = null;
+      if ('onpagereveal' in window) {
+        window.addEventListener('pagereveal', function(e) {
+          if (e.viewTransition) {
+            window.__hvActiveTransition = e.viewTransition;
+          }
+        });
+      }
+
       var navEntries = (window.performance && window.performance.getEntriesByType)
         ? window.performance.getEntriesByType('navigation')
         : [];
@@ -90,7 +99,15 @@
       } catch (_) {}
 
       var isNavigatedInternally = !isReload && (isFromInternalPage || internalNavFlag || navType === 'back_forward');
-      var isForceIntro = window.location.search.includes('intro=true') || window.location.search.includes('intro=force');
+      var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (isNavigatedInternally && !reducedMotion) {
+        document.documentElement.classList.add('page-entering');
+        window.__HV_PAGE_ENTRY_FAILSAFE__ = window.setTimeout(function() {
+          document.documentElement.classList.remove('page-entering');
+        }, 500);
+      }
+
+      var isForceIntro = /(?:^|[?&])intro=(?:true|force)(?:&|$)/.test(window.location.search) && !window.location.search.includes('no-intro');
       var ua = navigator.userAgent || '';
       var isDevToolsMobileAudit = (
         (ua.includes('Macintosh') || ua.includes('Windows NT')) &&

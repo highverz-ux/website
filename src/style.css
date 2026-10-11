@@ -1609,7 +1609,6 @@ body.mobile-menu-active {
    sequence matching Framer physics (stiffness 200, damping 80). */
 .adscale-reveal-word {
   display: inline-block;
-  will-change: opacity, transform, filter;
   transform-origin: 50% 100%;
   margin-right: 0.04em;
   background-image: var(--hero-headline-gradient);
@@ -11072,8 +11071,8 @@ html.js .floating-badge-item {
    CSS animation as well made Work animate twice on navigation. */
 
 /* Pre-paint hero entry state -------------------------------------------------
-   Native view transitions manage cross-document reveals seamlessly.
-   Elements render fully to allow crisp, artifact-free snapshot captures. */
+/* Pre-paint hero entry state -------------------------------------------------
+/* Incoming page components remain complete and visible during whole-page optical transitions */
 
 /* Never fire the CSS entrance when inside the transition shell (GSAP controls the reveal) */
 .page-transition-shell .work-hero-container,
@@ -11107,8 +11106,10 @@ html {
   background-color: var(--bg-primary, #07090e);
 }
 
-/* Viewport isolation shell for incoming page content during diagonal wipe */
-.page-transition-shell {
+/* Viewport isolation shell for incoming page content during optical transitions */
+.page-transition-shell,
+.page-transition-layer,
+#page-transition-layer {
   position: fixed !important;
   inset: 0 !important;
   width: 100% !important;
@@ -11116,14 +11117,7 @@ html {
   overflow: hidden !important;
   pointer-events: none !important;
   z-index: 800 !important;
-  contain: strict;
-  transform: translateZ(0);
-  background-color: var(--bg-primary, #07090e);
-  -webkit-mask-size: 100% 100%;
-  mask-size: 100% 100%;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  will-change: -webkit-mask-image, mask-image;
+  background: transparent !important;
 }
 
 /* Smooth black shadow band traveling along the diagonal wipe wavefront */
@@ -11171,8 +11165,10 @@ html {
 }
 
 /* Light mode overrides for clean contrast and zero washout */
-[data-theme="light"] .page-transition-shell {
-  background-color: #F8F9FA !important;
+[data-theme="light"] .page-transition-shell,
+[data-theme="light"] .page-transition-layer,
+[data-theme="light"] #page-transition-layer {
+  background: transparent !important;
 }
 
 [data-theme="light"] .page-transition-glow {
@@ -11226,11 +11222,10 @@ body.page-is-transitioning .ambient-glow {
   transition: none !important;
 }
 
-/* Freeze atmospheric decoration during the handoff; only page content fades. */
+/* Atmospheric decoration remains stable during route transitions to prevent flash or flicker */
 body.page-is-transitioning .ambient-glow,
 body.page-is-transitioning .grain-overlay,
 body.page-is-transitioning .hero-bg-accent {
-  opacity: 0 !important;
   transition: none !important;
   animation: none !important;
 }
@@ -11248,7 +11243,6 @@ body.page-is-transitioning .hero-bg-accent {
 }
 
 body.page-is-transitioning > #page-content {
-  filter: blur(0);
   transform-origin: 50% 35%;
 }
 
@@ -13892,7 +13886,7 @@ body::after {
   background-color: #F8F9FA;
 }
 
-/* Stable Header during transitions */
+/* Stable Header during transitions — rock solid, no blink or dim */
 .navbar {
   view-transition-name: main-navbar;
 }
@@ -13909,11 +13903,17 @@ body::after {
 }
 
 ::view-transition-old(main-navbar) {
-  animation: route-nav-fade-out 0.24s ease-out both;
+  animation: none;
+  opacity: 1;
 }
 
 ::view-transition-new(main-navbar) {
-  animation: route-nav-fade-in 0.3s ease-out both;
+  animation: route-nav-crossfade 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes route-nav-crossfade {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* Exclude dynamic overlays and cursor from transition capture */
@@ -13929,6 +13929,10 @@ body::after {
   animation: none;
 }
 
+::view-transition-image-pair(root) {
+  isolation: isolate;
+}
+
 ::view-transition-old(root),
 ::view-transition-new(root) {
   mix-blend-mode: normal;
@@ -13939,58 +13943,81 @@ body::after {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   transform-origin: 50% 50%;
+  transform: none !important;
   opacity: 1;
   will-change: opacity, filter;
-  background-color: var(--bg-primary, #07090e);
 }
 
 [data-theme="light"] ::view-transition-old(root),
 [data-theme="light"] ::view-transition-new(root) {
-  background-color: #f8f9fa;
+  background-color: transparent;
 }
 
-/* Lightweight focus transition. Only the incoming snapshot is filtered; this
-   keeps the blur readable while avoiding two full-page GPU blur operations. */
+/* Pure, velvety optical camera blur transition.
+   Precisely calibrated 0.34s duration eliminates stuck/frozen delays and
+   delivers pure, uncluttered optical blur without artificial zoom scaling. */
 ::view-transition-old(root) {
   z-index: 1;
-  animation: route-page-out 0.24s ease-out both;
+  animation: route-page-blur-out 0.28s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 ::view-transition-new(root) {
   z-index: 2;
-  animation: route-page-in 0.32s cubic-bezier(0.22, 0.8, 0.24, 1) both;
+  animation: route-page-blur-in 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-@keyframes route-page-out {
-  from { opacity: 1; }
-  to { opacity: 0; }
+@keyframes route-page-blur-out {
+  0% {
+    opacity: 1;
+    filter: blur(0px);
+  }
+  100% {
+    opacity: 0;
+    filter: blur(20px);
+  }
 }
 
-@keyframes route-page-in {
-  0% { opacity: 0.12; filter: blur(9px); }
-  55% { opacity: 0.78; filter: blur(3px); }
-  100% { opacity: 1; filter: blur(0); }
-}
-
-@keyframes route-nav-fade-out {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
-
-@keyframes route-nav-fade-in {
-  from { opacity: 0.25; }
-  to { opacity: 1; }
+@keyframes route-page-blur-in {
+  0% {
+    opacity: 0;
+    filter: blur(22px);
+  }
+  35% {
+    opacity: 0.85;
+    filter: blur(12px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0px);
+  }
 }
 
 @media (max-width: 720px) {
-  ::view-transition-old(root) { animation-duration: 0.2s; }
-  ::view-transition-new(root) { animation-duration: 0.26s; }
-  ::view-transition-old(main-navbar) { animation-duration: 0.2s; }
-  ::view-transition-new(main-navbar) { animation-duration: 0.26s; }
-  @keyframes route-page-in {
-    0% { opacity: 0.14; filter: blur(7px); }
-    55% { opacity: 0.8; filter: blur(2px); }
-    100% { opacity: 1; filter: blur(0); }
+  ::view-transition-old(root) {
+    animation-duration: 0.24s;
+  }
+  ::view-transition-new(root) {
+    animation-duration: 0.30s;
+  }
+  @keyframes route-page-blur-out {
+    0% {
+      opacity: 1;
+      filter: blur(0px);
+    }
+    100% {
+      opacity: 0;
+      filter: blur(16px);
+    }
+  }
+  @keyframes route-page-blur-in {
+    0% {
+      opacity: 0;
+      filter: blur(18px);
+    }
+    100% {
+      opacity: 1;
+      filter: blur(0px);
+    }
   }
 }
 

@@ -13,7 +13,7 @@ import { initEnquirySystem } from './enquiry/enquiry.js';
 import { initThemeSystem } from './theme.js';
 import './campaigns/campaigns.css';
 import { initCampaignsPage } from './campaigns/campaigns.js';
-import { isHomeRoute } from './transitions.js';
+import { isHomeRoute, initPageTransitions } from './transitions.js';
 import { initHeroWordRoller, prepareHeroWordRoller } from './hero/HeroWordRoller.js';
 // HeroFluidBackground (three.js WebGL) is lazy-loaded after idle — see loadFluidBackground()
 import { inject as injectAnalytics } from '@vercel/analytics';
@@ -21,6 +21,15 @@ import { injectSpeedInsights } from '@vercel/speed-insights';
 import { initScatterGrid } from './scatterGrid.js';
 
 gsap.registerPlugin(ScrollTrigger);
+
+// Capture cross-document view transition early if supported
+if ('onpagereveal' in window) {
+  window.addEventListener('pagereveal', (e) => {
+    if (e.viewTransition) {
+      window.__hvActiveTransition = e.viewTransition;
+    }
+  });
+}
 
 // ==========================================================================
 // LENIS SMOOTH SCROLL SETUP
@@ -141,6 +150,7 @@ function boot() {
   initLenis();
   initCustomCursor();
   loadFluidBackground();
+  initPageTransitions();
 
   // If user scrolls or taps before idle callback, immediately hydrate below-the-fold
   const onEarlyInteraction = () => {
@@ -191,7 +201,8 @@ function boot() {
     // Intro ONLY plays on reload / hard reload or first clean visit, never on navigation from subpages
     const isNavigatedToHome = !isReload && (isFromInternalSubpage || internalNavFlag || navType === 'back_forward');
 
-    const isForceIntro = window.location.search.includes('intro=true') || window.location.search.includes('intro=force');
+    const searchParams = new URLSearchParams(window.location.search);
+    const isForceIntro = (searchParams.get('intro') === 'true' || searchParams.get('intro') === 'force') && !searchParams.has('no-intro');
     const ua = navigator.userAgent || '';
     const isDevToolsMobileAudit = (
       (ua.includes('Macintosh') || ua.includes('Windows NT')) &&
@@ -1243,6 +1254,7 @@ export function splitAdscaleWords(element) {
     textNode.replaceWith(fragment);
   });
 }
+window.splitAdscaleWords = splitAdscaleWords;
 
 export function initAdscaleTextEffects(root = document) {
   const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -2144,15 +2156,13 @@ function initServicesReveal() {
 // ==========================================================================
 // 07a. PAGE SCRIPT DISPATCHER (RE-INITIALIZES DEDICATED PAGES ON ROUTE TRANSITION)
 // ==========================================================================
-function restoreHomeStableState() {
+function restoreHomeStableState(isFromTransition = false) {
   const hero = document.querySelector('.hero-section');
   if (!hero) return;
 
-  // Incoming home markup contains intentional animation start states. A route
-  // swap must reveal the settled version immediately; otherwise a killed
-  // outgoing timeline can leave the new hero or persistent navbar hidden.
-  const visibleHeroParts = hero.querySelectorAll([
-    '.hl-word',
+  // Settle background and supporting widgets. On route transitions, leave the
+  // headline words blurred and ready for the word-by-word reveal!
+  const partsToSettle = [
     '#hero-platform-icons',
     '.platform-chip',
     '#hero-desc',
@@ -2161,7 +2171,12 @@ function restoreHomeStableState() {
     '.carousel-viewport',
     '.hero-tag-bar',
     '.section-trusted',
-  ].join(','));
+  ];
+  if (!isFromTransition) {
+    partsToSettle.unshift('.hl-word', '.hero-headline-connector', '.hero-word-roller');
+  }
+
+  const visibleHeroParts = hero.querySelectorAll(partsToSettle.join(','));
   gsap.killTweensOf(visibleHeroParts);
   gsap.set(visibleHeroParts, {
     opacity: 1,
@@ -2201,8 +2216,8 @@ function restoreHomeStableState() {
   window.__hvResetNavbar?.(window.location.pathname);
 }
 
-function initHomePageScripts() {
-  restoreHomeStableState();
+function initHomePageScripts(isFromTransition = false) {
+  restoreHomeStableState(isFromTransition);
   initAdscaleTextEffects();
   init3DScene();
   initHeroReelCarousel();
@@ -2262,12 +2277,12 @@ export function initPageScripts(pathname, isFromTransition = false) {
     initCTAReveal();
   } else if (isCampaignsPage) {
     loadFluidBackground();
-    initCampaignsPage();
+    initCampaignsPage(isFromTransition);
   } else if (isCaseStudyPage) {
     // Case-study media is initialized below. Do not run homepage scroll
     // choreography against a creator profile after a route transition.
   } else {
-    initHomePageScripts();
+    initHomePageScripts(isFromTransition);
   }
 
   if (isCaseStudyPage || document.querySelectorAll('.ig-reel-card').length > 0) {
@@ -2293,53 +2308,20 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
   const isCampaigns = normPath.includes('campaigns');
   const isCase = normPath.includes('creator-');
 
-  // Cross-document View Transitions already provide the visible blur reveal.
-  // Do not run the dedicated hero blur underneath that snapshot: when the
-  // snapshot disappears the still-running hero timeline looks like a second
-  // reveal and makes navigation feel as if it has stalled.
-  let isInternalDocumentNavigation = window.isNavigatedInternally === true;
-  if (!isInternalDocumentNavigation && document.referrer) {
-    try {
-      const previousUrl = new URL(document.referrer);
-      const previousPath = previousUrl.pathname.replace(/\/+$/, '') || '/';
-      const currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
-      isInternalDocumentNavigation = previousUrl.origin === window.location.origin && previousPath !== currentPath;
-    } catch (_) {}
-  }
-
-  const isRecentTransition = isFromTransition ||
-    isInternalDocumentNavigation ||
-    (window.__hvLastTransitionTime && (Date.now() - window.__hvLastTransitionTime < 2500));
-  if (isRecentTransition) {
-    const heroHeadings = document.querySelectorAll(
-      '.work-hero-title, .campaign-hero-headline, .why-hero-title, .team-hero-title, .case-hero-title'
-    );
-    heroHeadings.forEach((h) => {
-      h.dataset.adscaleWordsReady = 'true';
-      h.dataset.adscaleAnimated = 'true';
-      const words = h.querySelectorAll('.adscale-reveal-word');
-      if (words.length) {
-        gsap.set(words, { opacity: 1, y: 0, filter: 'none', clearProps: 'all' });
-      }
-    });
-
-    // Ensure all hero elements in the incoming view are settled cleanly with zero layout shift
-    const heroElements = document.querySelectorAll(
-      '.work-hero-tag, .work-hero-desc, .work-hero-cta, .work-hero-metrics-grid, ' +
-      '.team-hero-tag, .team-hero-desc, .team-metrics-grid, ' +
-      '.why-hero-subtitle, .campaign-hero-tag, .campaign-hero-sub, .campaign-hero-pillars, ' +
-      '.case-kicker-tag, .case-profile-chip-row, .case-hero-media, .case-stats-hud'
-    );
-    gsap.set(heroElements, { opacity: 1, y: 0, clearProps: 'opacity,transform' });
-    gsap.set(heroHeadings, { opacity: 1, y: 0, filter: 'none', clearProps: 'opacity,transform,filter' });
-    finishPageEntry();
+  // Own each dedicated hero once. A transition resets this to guarantee entrance executes
+  const heroRoot = document.querySelector('.hero-section, .work-hero-section, .team-hero-section, .why-hero-section, .campaign-hero, .case-hero-section');
+  if (!heroRoot) {
+    if (window.__hvSetTransitionState) window.__hvSetTransitionState('IDLE');
     return;
   }
 
-  // Own each dedicated hero once. A second initializer must never reset an
-  // entrance that is already running or has finished.
-  const heroRoot = document.querySelector('.work-hero-section, .team-hero-section, .why-hero-section, .campaign-hero, .case-hero-section');
-  if (!heroRoot || heroRoot.dataset.pageEntryStarted === 'true') return;
+  if (isFromTransition) {
+    delete heroRoot.dataset.pageEntryStarted;
+  } else if (heroRoot.dataset.pageEntryStarted === 'true') {
+    return;
+  }
+  heroRoot.dataset.pageEntryStarted = 'true';
+
   const heroHeadings = document.querySelectorAll(
     '.work-hero-title, .campaign-hero-headline, .why-hero-title, .team-hero-title, .case-hero-title'
   );
@@ -2348,17 +2330,9 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
     heading.dataset.adscaleAnimated = 'true';
   });
 
-  // Dedicated pages use the same word-by-word blur-to-sharp title entrance as
-  // Home. Run it explicitly for the above-the-fold title instead of leaving
-  // it to the general scroll observer, which can be masked by each page's
-  // container entrance animation.
   const introIsPending = document.documentElement.classList.contains('intro-pending') ||
     document.body.classList.contains('intro-active');
-  // Dedicated pages initialize their components behind the loader so assets
-  // are ready at reveal. Do not also start their entrance tweens there; the
-  // loader callback invokes this function again once and owns the visible run.
-  if (introIsPending) return;
-  heroRoot.dataset.pageEntryStarted = 'true';
+  if (introIsPending && !isFromTransition) return;
 
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const entryElements = document.querySelectorAll(
@@ -2367,93 +2341,164 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
     '.campaign-hero-tag, .campaign-hero-sub, .campaign-hero-pillars, .campaign-search-section, .campaign-featured-label, ' +
     '.case-kicker-tag, .case-profile-chip-row, .case-hero-desc, .case-hero-media, .case-follower-transform-card, .case-stats-hud'
   );
-  if (reducedMotion) {
-    gsap.set([...heroHeadings, ...entryElements], { opacity: 1, y: 0, filter: 'none', clearProps: 'all' });
-    finishPageEntry();
-    return;
-  }
-
-  // A route can have a word sequence plus supporting content. Keep the
-  // pre-paint class until every timeline has settled, never after the first.
-  let pendingEntries = 1;
-  const beginEntry = () => { pendingEntries += 1; };
-  const completeEntry = () => {
-    pendingEntries -= 1;
-    if (pendingEntries === 0) {
-      // Remove the hidden CSS state BEFORE clearing any finished tween's
-      // inline styles. Staggered clearProps used to expose opacity:0 again
-      // until the last title word finished, causing the apparent reload.
-      finishPageEntry();
-      gsap.set([...heroHeadings, ...entryElements], {
-        clearProps: 'opacity,transform,filter,willChange'
-      });
-    }
-  };
-
   const heroWords = Array.from(heroHeadings).flatMap((heading) =>
     Array.from(heading.querySelectorAll('.adscale-reveal-word'))
   );
-  gsap.set(heroHeadings, { opacity: 1, y: 0, filter: 'none' });
-  if (heroWords.length) {
-    heroHeadings.forEach((heading) => { heading.dataset.adscaleAnimated = 'true'; });
-    gsap.killTweensOf(heroWords);
-    gsap.set(heroWords, { opacity: 0, y: 25, filter: 'blur(10px)' });
-    beginEntry();
-    gsap.to(heroWords, {
-      opacity: 1,
-      y: 0,
-      filter: 'blur(0px)',
-      duration: 0.7,
-      stagger: 0.07,
-      delay: 0.1,
-      ease: 'power3.out',
-      clearProps: 'filter,willChange',
-      onComplete: completeEntry
-    });
+
+  if (reducedMotion) {
+    gsap.set([...heroHeadings, ...entryElements, ...heroWords], { opacity: 1, y: 0, filter: 'none', clearProps: 'all' });
+    finishPageEntry();
+    if (window.__hvSetTransitionState) {
+      window.__hvSetTransitionState('IDLE');
+    }
+    return;
   }
 
-  if (isWork) {
-    const workHero = document.querySelector('.work-hero-section');
-    if (workHero) {
-      beginEntry();
-      gsap.fromTo(workHero.querySelectorAll('.work-hero-tag, .work-hero-desc, .work-hero-cta, .work-hero-metrics-grid'),
-        { opacity: 0, y: 18, filter: 'blur(8px)' },
-        { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.7, stagger: 0.08, ease: 'power3.out', onComplete: completeEntry }
+  const isPageEntering = document.documentElement.classList.contains('page-entering');
+  const activeVt = window.__hvActiveTransition;
+
+  const executeEntrance = () => {
+    // Release the pre-paint suppression so GSAP has full unhindered control
+    finishPageEntry();
+
+    let pendingEntries = 1;
+    const beginEntry = () => { pendingEntries += 1; };
+    const completeEntry = () => {
+      pendingEntries -= 1;
+      if (pendingEntries === 0) {
+        finishPageEntry();
+        gsap.set([...heroHeadings, ...entryElements, ...heroWords], {
+          clearProps: 'opacity,transform,filter,willChange'
+        });
+        if (window.__hvSetTransitionState) {
+          window.__hvSetTransitionState('IDLE');
+        }
+      }
+    };
+
+    gsap.set(heroHeadings, { opacity: 1, y: 0, filter: 'none' });
+
+    // Collect all target words: subpage hero words and/or home headline words
+    const allTargetWords = [...heroWords];
+    const homeHeadline = document.getElementById('hero-headline');
+    if (homeHeadline) {
+      const homeWords = Array.from(
+        homeHeadline.querySelectorAll('.hl-word, .hero-headline-connector, .hero-word-roller')
       );
+      allTargetWords.push(...homeWords);
     }
-  } else if (isTeam) {
-    const teamHero = document.querySelector('.team-hero-section');
-    if (teamHero) {
+
+    if (allTargetWords.length) {
+      heroHeadings.forEach((heading) => { heading.dataset.adscaleAnimated = 'true'; });
+      gsap.killTweensOf(allTargetWords);
+      gsap.set(allTargetWords, {
+        opacity: 0,
+        y: 22,
+        scale: 0.96,
+        filter: 'blur(10px) brightness(1.15)',
+        transformOrigin: '50% 100%',
+        willChange: 'opacity, transform, filter',
+      });
       beginEntry();
-      gsap.fromTo(teamHero.querySelectorAll('.team-hero-tag, .team-hero-desc, .team-metrics-grid'),
-        { opacity: 0, y: 18, filter: 'blur(8px)' },
-        { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.7, stagger: 0.08, ease: 'power3.out', onComplete: completeEntry }
-      );
+      gsap.to(allTargetWords, {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        filter: 'blur(0px) brightness(1)',
+        duration: 0.78,
+        stagger: 0.072,
+        ease: 'power3.out',
+        clearProps: 'filter,transform,willChange',
+        onComplete: () => {
+          completeEntry();
+          if (homeHeadline) initHeroWordRoller();
+        },
+      });
     }
-  } else if (isWhy) {
-    const whyHero = document.querySelector('.why-hero-section');
-    if (whyHero) {
-      beginEntry();
-      gsap.fromTo(whyHero.querySelectorAll('.why-hero-subtitle'),
-        { opacity: 0, y: 18, filter: 'blur(8px)' },
-        { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.7, delay: 0.1, ease: 'power3.out', onComplete: completeEntry }
-      );
+
+    // On route transitions, all page components are already complete and rendered.
+    // Only animate supporting elements from opacity: 0 on initial direct page loads.
+    if (!isFromTransition) {
+      if (isWork) {
+        const workHero = document.querySelector('.work-hero-section');
+        if (workHero) {
+          beginEntry();
+          gsap.fromTo(workHero.querySelectorAll('.work-hero-tag, .work-hero-desc, .work-hero-cta'),
+            { opacity: 0, y: 12, filter: 'none' },
+            { opacity: 1, y: 0, duration: 0.42, stagger: 0.05, delay: 0.18, ease: 'power2.out', clearProps: 'opacity,transform,willChange', onComplete: completeEntry }
+          );
+        }
+      } else if (isTeam) {
+        const teamHero = document.querySelector('.team-hero-section');
+        if (teamHero) {
+          beginEntry();
+          gsap.fromTo(teamHero.querySelectorAll('.team-hero-tag, .team-hero-desc'),
+            { opacity: 0, y: 12, filter: 'none' },
+            { opacity: 1, y: 0, duration: 0.42, stagger: 0.05, delay: 0.18, ease: 'power2.out', clearProps: 'opacity,transform,willChange', onComplete: completeEntry }
+          );
+        }
+      } else if (isWhy) {
+        const whyHero = document.querySelector('.why-hero-section');
+        if (whyHero) {
+          beginEntry();
+          gsap.fromTo(whyHero.querySelectorAll('.why-hero-subtitle'),
+            { opacity: 0, y: 12, filter: 'none' },
+            { opacity: 1, y: 0, duration: 0.42, delay: 0.18, ease: 'power2.out', clearProps: 'opacity,transform,willChange', onComplete: completeEntry }
+          );
+        }
+      } else if (isCampaigns) {
+        const campaignHero = document.querySelector('.campaign-hero');
+        if (campaignHero) {
+          beginEntry();
+          gsap.fromTo(document.querySelectorAll('.campaign-hero-tag, .campaign-hero-sub, .campaign-hero-pillars, .campaign-search-section, .campaign-featured-label'),
+            { opacity: 0, y: 12, filter: 'none' },
+            { opacity: 1, y: 0, duration: 0.42, stagger: 0.05, delay: 0.18, ease: 'power2.out', clearProps: 'opacity,transform,willChange', onComplete: completeEntry }
+          );
+        }
+      } else if (isCase) {
+        const caseHero = document.querySelector('.case-hero-section');
+        if (caseHero) {
+          beginEntry();
+          gsap.fromTo(caseHero.querySelectorAll('.case-kicker-tag, .case-profile-chip-row, .case-hero-desc'),
+            { opacity: 0, y: 12, filter: 'none' },
+            { opacity: 1, y: 0, duration: 0.42, stagger: 0.05, delay: 0.18, ease: 'power2.out', clearProps: 'opacity,transform,willChange', onComplete: completeEntry }
+          );
+        }
+      }
     }
-  } else if (isCampaigns) {
-    beginEntry();
-    window.addEventListener('hv:campaign-hero-entry-complete', completeEntry, { once: true });
-    window.dispatchEvent(new Event('hv:campaign-hero-entry'));
-  } else if (isCase) {
-    const caseHero = document.querySelector('.case-hero-section');
-    if (caseHero) {
-      beginEntry();
-      gsap.fromTo(caseHero.querySelectorAll('.case-kicker-tag, .case-profile-chip-row, .case-hero-desc, .case-hero-media, .case-follower-transform-card, .case-stats-hud'),
-        { opacity: 0, y: 18, filter: 'blur(8px)' },
-        { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.7, stagger: 0.07, ease: 'power3.out', onComplete: completeEntry }
-      );
+    completeEntry();
+  };
+
+  // SEQUENCE: Wait for the blur view transition to complete FIRST, then start text reveal!
+  const runAfterBlur = () => {
+    requestAnimationFrame(executeEntrance);
+  };
+
+  if (activeVt && activeVt.finished) {
+    activeVt.finished.then(runAfterBlur).catch(executeEntrance);
+  } else if (isFromTransition) {
+    // When navigated via SPA transition, blur has already completed: reveal text immediately!
+    executeEntrance();
+  } else if (isPageEntering) {
+    let handled = false;
+    const safeTrigger = () => {
+      if (handled) return;
+      handled = true;
+      runAfterBlur();
+    };
+
+    if ('onpagereveal' in window && !activeVt) {
+      window.addEventListener('pagereveal', (e) => {
+        if (e.viewTransition && e.viewTransition.finished) {
+          e.viewTransition.finished.then(safeTrigger).catch(safeTrigger);
+        }
+      }, { once: true });
     }
+
+    setTimeout(safeTrigger, 340);
+  } else {
+    executeEntrance();
   }
-  completeEntry();
 }
 window.__hvTriggerPageHeroEntrance = triggerPageHeroEntrance;
 

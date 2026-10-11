@@ -11,7 +11,7 @@
  */
 
 import gsap from 'gsap';
-import loaderLogo from '../../public/assets/highverz-hv-logo.svg?raw';
+import loaderLogo from '../assets/highverz-hv-logo.svg?raw';
 import { preloadHomeMedia, HOME_MEDIA_TIMEOUT } from './preloadHomeMedia.js';
 
 let activeIntroInstance = null;

@@ -6,4 +6,5 @@ dist/
 *.log
 scratch/
 server/leads.json
+server/.cache/
 

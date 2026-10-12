@@ -2093,12 +2093,13 @@ function initStatementParallax() {
 // ==========================================================================
 // 07. SERVICES CARDS STAGGER REVEAL
 // ==========================================================================
-function initServicesReveal() {
+function initServicesReveal(isFromTransition = false) {
   // Why Us owns its philosophy-card choreography; running the homepage
   // service reveal here as well makes Data-Driven Creativity animate twice.
   if (document.body.classList.contains('page-why-us')) return;
   const cards = document.querySelectorAll('.service-card-item');
   if (!cards.length) return;
+  if (isFromTransition || window.__hvGetTransitionState?.() !== 'IDLE') return;
 
   // Header reveal
   gsap.fromTo('.services-header-row',
@@ -2210,10 +2211,12 @@ function restoreHomeStableState(isFromTransition = false) {
     });
   }
 
-  document.querySelectorAll('.adscale-reveal-word').forEach((w) => {
-    gsap.set(w, { opacity: 1, y: 0, filter: 'none', clearProps: 'all' });
-  });
-  initAdscaleTextEffects();
+  if (!isFromTransition && window.__hvGetTransitionState?.() === 'IDLE') {
+    document.querySelectorAll('.adscale-reveal-word').forEach((w) => {
+      gsap.set(w, { opacity: 1, y: 0, filter: 'none', clearProps: 'all' });
+    });
+    initAdscaleTextEffects();
+  }
   window.__hvResetNavbar?.(window.location.pathname);
 }
 
@@ -2226,7 +2229,7 @@ function initHomePageScripts(isFromTransition = false) {
   initCreatorsSection();
   initGrowthWidgets();
   initStatementParallax();
-  initServicesReveal();
+  initServicesReveal(isFromTransition);
   initPortfolioGrid();
   initTestimonialsReveal();
   initProcessScrollDraw();
@@ -2264,9 +2267,9 @@ export function initPageScripts(pathname, isFromTransition = false) {
 
   if (isWorkPage) {
     initWorkHeroIntro(isFromTransition);
-    initCapabilityDeck();
+    initCapabilityDeck(isFromTransition);
     initWorkflowSection();
-    initServicesReveal();
+    initServicesReveal(isFromTransition);
     initServiceFilters();
     initProcessScrollDraw();
     initCTAReveal();
@@ -2274,7 +2277,7 @@ export function initPageScripts(pathname, isFromTransition = false) {
     initTeamPageAnimations(isFromTransition);
     initCTAReveal();
   } else if (isWhyUs) {
-    initWhyUsAnimations();
+    initWhyUsAnimations(isFromTransition);
     initCTAReveal();
   } else if (isCampaignsPage) {
     loadFluidBackground();
@@ -2295,7 +2298,7 @@ export function initPageScripts(pathname, isFromTransition = false) {
   initFooterScatterGrid();
   triggerPageHeroEntrance(normPath, isFromTransition);
 
-  if (window.ScrollTrigger) {
+  if (window.ScrollTrigger && !isFromTransition) {
     ScrollTrigger.refresh();
   }
 }
@@ -2352,18 +2355,19 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
   ].join(', ');
   const heroLineElements = Array.from(document.querySelectorAll(heroLineSelectors));
 
-  // 2. Next section header and cards
+  // 2. Next section header and individual cards
   const nextSectionSelectors = [
     // Work page: capabilities header & 6 cards
-    '.work-capabilities-header', '.work-capabilities-section .section-tag', '.work-capabilities-title', '.capability-card',
-    // Why-us page: philosophy section header & 3 cards
-    '.why-philosophy-section .services-header-row', '.why-philosophy-section .services-label-box', '.why-philosophy-section .section-tag', '.why-philosophy-section .services-main-title', '.why-philosophy-grid .service-card-item',
+    '.work-capabilities-header', '.capability-card',
+    // Why-us page: philosophy section header & 3 cards + comparison cards
+    '.why-philosophy-section .services-header-row', '.why-philosophy-grid .service-card-item',
+    '.comp-header-centered', '.comp-card',
     // Campaigns page: search bar and cards
-    '.campaign-search-section', '.campaign-featured-label', '#campaign-grid', '.campaign-movie-card',
+    '.campaign-search-section', '.campaign-featured-label', '.campaign-movie-card',
     // Team page: leadership and member cards
     '.team-grid .founder-card', '.team-member-card',
     // Home page: creators carousel
-    '.section-creators', '.carousel-viewport',
+    '.section-creators',
     // Case study: media & hud
     '.case-hero-media', '.case-follower-transform-card', '.case-stats-hud'
   ].join(', ');
@@ -2418,15 +2422,15 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
 
     gsap.set(heroHeadings, { opacity: 1, y: 0, filter: 'none' });
 
-    // 1. HERO HEADLINE WORDS ANIMATE FIRST (0.0s)
+    // 1. HERO HEADLINE WORDS ANIMATE FIRST (0.0s) — STRICTLY ONE BY ONE
     if (allTargetWords.length) {
       heroHeadings.forEach((heading) => { heading.dataset.adscaleAnimated = 'true'; });
       gsap.killTweensOf(allTargetWords);
       gsap.set(allTargetWords, {
         opacity: 0,
-        y: 22,
-        scale: 0.96,
-        filter: 'blur(10px) brightness(1.15)',
+        y: 28,
+        scale: 0.94,
+        filter: 'blur(12px) brightness(1.2)',
         transformOrigin: '50% 100%',
         willChange: 'opacity, transform, filter',
       });
@@ -2436,8 +2440,8 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
         y: 0,
         scale: 1,
         filter: 'blur(0px) brightness(1)',
-        duration: 0.70,
-        stagger: 0.055,
+        duration: 0.65,
+        stagger: 0.085, // Distinct, visible one-by-one pacing!
         ease: 'power3.out',
         clearProps: 'filter,transform,willChange',
         onComplete: () => {
@@ -2447,13 +2451,12 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
       });
     }
 
-    // 2. HERO NEXT LINES & METRICS ANIMATE SECOND (delay: 0.32s)
-    // Synchronized with the hero headline completion, metrics start count-up onStart
+    // 2. HERO NEXT LINES & METRICS ANIMATE SECOND (delay: 0.38s)
     if (heroLineElements.length) {
       gsap.killTweensOf(heroLineElements);
       gsap.set(heroLineElements, {
         opacity: 0,
-        y: 18,
+        y: 20,
         filter: 'blur(6px)',
         willChange: 'opacity, transform, filter',
       });
@@ -2463,8 +2466,8 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
         y: 0,
         filter: 'blur(0px)',
         duration: 0.52,
-        stagger: 0.05,
-        delay: 0.32,
+        stagger: 0.055,
+        delay: 0.38,
         ease: 'power2.out',
         clearProps: 'opacity,transform,filter,willChange',
         onStart: () => {
@@ -2478,14 +2481,13 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
       });
     }
 
-    // 3. NEXT SECTION HEADER & CARDS ANIMATE THIRD (delay: 0.48s)
-    // Synchronously cascades in smoothly underneath, completing the full page symphony
+    // 3. NEXT SECTION HEADER & CARDS ANIMATE THIRD (delay: 0.68s) — SEQUENTIAL CASCADE
     if (nextSectionElements.length) {
       gsap.killTweensOf(nextSectionElements);
       gsap.set(nextSectionElements, {
         opacity: 0,
-        y: 20,
-        filter: 'blur(6px)',
+        y: 28,
+        filter: 'blur(8px)',
         willChange: 'opacity, transform, filter',
       });
       beginEntry();
@@ -2494,8 +2496,8 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
         y: 0,
         filter: 'blur(0px)',
         duration: 0.55,
-        stagger: 0.06,
-        delay: 0.48,
+        stagger: 0.08, // Sequential cascade!
+        delay: 0.68,
         ease: 'power2.out',
         clearProps: 'opacity,transform,filter,willChange',
         onComplete: completeEntry,
@@ -3184,16 +3186,18 @@ function initWorkflowSection() {
 }
 
 // Six-card Work capabilities grid.
-function initCapabilityDeck() {
+function initCapabilityDeck(isFromTransition = false) {
   const grid = document.querySelector('.work-capabilities-grid');
   const cards = Array.from(document.querySelectorAll('.capability-card'));
   if (!grid || !cards.length || grid.dataset.gridReady === 'true') return;
 
   grid.dataset.gridReady = 'true';
-  gsap.set(cards, { clearProps: 'all' });
-  // Keep work cards fixed. Their entrance animation was visually competing
-  // with the dense animated illustrations and could look like shaking.
   grid.classList.add('is-visible');
+  // If we arrived via route transition, the transition timeline animates cards in sequence.
+  // Never clear props prematurely, which would pop cards onto screen immediately!
+  if (!isFromTransition && window.__hvGetTransitionState?.() === 'IDLE') {
+    gsap.set(cards, { clearProps: 'all' });
+  }
 }
 
 // ==========================================================================
@@ -3502,7 +3506,7 @@ function initTeamPageAnimations(isFromTransition = false) {
 // ==========================================================================
 // WHY US & COMPARISON SECTION APPEAR ANIMATIONS
 // ==========================================================================
-function initWhyUsAnimations() {
+function initWhyUsAnimations(isFromTransition = false) {
   const pageContent = document.getElementById('page-content');
   if (pageContent?.dataset.whyAnimationsInit === 'true') return;
   if (pageContent) pageContent.dataset.whyAnimationsInit = 'true';
@@ -3511,6 +3515,11 @@ function initWhyUsAnimations() {
   if (!comparison || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const cards = comparison.querySelectorAll('.comp-card');
   cards.forEach(card => card.classList.add('is-entering'));
+
+  // If called during route transition, the transition timeline animates cards in sequence
+  if (isFromTransition || window.__hvGetTransitionState?.() !== 'IDLE') {
+    return;
+  }
   gsap.fromTo(cards,
     { opacity: 0, y: 20 },
     {

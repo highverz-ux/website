@@ -275,8 +275,6 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       document.documentElement.classList.remove('page-transitioned', 'page-entering');
       const orphanLayer = document.getElementById('page-transition-layer');
       if (orphanLayer) orphanLayer.remove();
-      const orphanGlow = document.getElementById('page-transition-glow');
-      if (orphanGlow) orphanGlow.remove();
       const orphanBackdrop = document.getElementById('page-transition-backdrop');
       if (orphanBackdrop) orphanBackdrop.remove();
       const orphanShell = document.getElementById('page-transition-shell');
@@ -286,6 +284,10 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
         curr.classList.remove('page-outgoing-frozen');
         curr.style.removeProperty('top');
         gsap.set(curr, { clearProps: 'all' });
+      }
+      const nav = document.getElementById('navbar') || document.querySelector('.navbar');
+      if (nav) {
+        gsap.set(nav, { clearProps: 'all' });
       }
     }
   }, 3200);
@@ -298,63 +300,53 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
 
   // 2. ENGAGE OPTICAL BLUR TRANSITION IMMEDIATELY ON CLICK (0ms transition start!)
   const currentContent = document.getElementById('page-content') || document.querySelector('main.page-content');
-  let glow = null;
+  const navbar = document.getElementById('navbar') || document.querySelector('.navbar');
 
-  if (currentContent && !prefersReducedMotion) {
-    const currentScrollY = window.scrollY || window.pageYOffset || 0;
-    if (!currentContent.classList.contains('page-outgoing-frozen')) {
-      currentContent.classList.add('page-outgoing-frozen');
-      currentContent.style.top = `-${currentScrollY}px`;
-    }
-    if (window.lenis) {
-      window.lenis.stop();
-    }
-
-    const transitionScrollbarWidth = Math.max(
-      0,
-      window.innerWidth - document.documentElement.clientWidth
-    );
-    document.body.style.setProperty(
-      '--transition-scrollbar-width',
-      `${transitionScrollbarWidth}px`
-    );
-    document.body.classList.add('page-is-transitioning');
-
-    if (!isMobile) {
-      // DESKTOP: Instantly mount blur veil and bloom it over the current page
-      glow = document.getElementById('page-transition-glow');
-      if (!glow) {
-        glow = document.createElement('div');
-        glow.className = 'page-transition-glow';
-        glow.id = 'page-transition-glow';
-        glow.style.zIndex = '25';
-        document.body.appendChild(glow);
-      }
-      gsap.killTweensOf(glow);
-      gsap.to(glow, {
-        opacity: 0.98,
-        duration: 0.22,
-        ease: 'power2.out',
-      });
-      gsap.killTweensOf(currentContent);
-      gsap.to(currentContent, {
-        opacity: 0.35,
-        scale: 0.988,
-        duration: 0.24,
-        ease: 'power2.out',
-      });
-    } else {
-      // MOBILE: Fast, lightweight crossfade
-      gsap.killTweensOf(currentContent);
-      gsap.to(currentContent, {
-        opacity: 0.2,
-        y: -6,
-        duration: 0.18,
+  if (!prefersReducedMotion) {
+    // Optical defocus of the navbar in sync with full-page defocus
+    if (navbar) {
+      gsap.killTweensOf(navbar);
+      gsap.to(navbar, {
+        filter: isMobile ? 'blur(10px)' : 'blur(14px)',
+        opacity: isMobile ? 0.55 : 0.45,
+        scale: isMobile ? 0.99 : 0.985,
+        duration: isMobile ? 0.14 : 0.18,
         ease: 'power2.inOut',
       });
     }
 
-    setTransitionState(TransitionState.OUTGOING_BLUR);
+    if (currentContent) {
+      const currentScrollY = window.scrollY || window.pageYOffset || 0;
+      if (!currentContent.classList.contains('page-outgoing-frozen')) {
+        currentContent.classList.add('page-outgoing-frozen');
+        currentContent.style.top = `-${currentScrollY}px`;
+      }
+      if (window.lenis) {
+        window.lenis.stop();
+      }
+
+      const transitionScrollbarWidth = Math.max(
+        0,
+        window.innerWidth - document.documentElement.clientWidth
+      );
+      document.body.style.setProperty(
+        '--transition-scrollbar-width',
+        `${transitionScrollbarWidth}px`
+      );
+      document.body.classList.add('page-is-transitioning');
+
+      // Optical defocus of the active page directly on DOM content
+      gsap.killTweensOf(currentContent);
+      gsap.to(currentContent, {
+        filter: isMobile ? 'blur(14px)' : 'blur(18px)',
+        opacity: 0.1,
+        scale: isMobile ? 0.992 : 0.988,
+        duration: isMobile ? 0.16 : 0.20,
+        ease: 'power2.inOut',
+      });
+
+      setTransitionState(TransitionState.OUTGOING_BLUR);
+    }
   }
 
   try {
@@ -398,7 +390,6 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
     const targetBodyClass = newDoc.body.className;
 
     if (prefersReducedMotion) {
-      if (glow) glow.remove();
       if (window.__hvDisposePageRuntime) window.__hvDisposePageRuntime();
       ScrollTrigger.getAll().forEach((t) => t.kill());
       currentContent.replaceWith(incomingContent);
@@ -521,6 +512,15 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
     incomingContent.style.pointerEvents = 'none';
     shell.appendChild(incomingContent);
 
+    // Initial state: incoming shell starts blurred and transparent, ready for smooth optical refocus
+    gsap.set(shell, {
+      filter: isMobile ? 'blur(14px)' : 'blur(18px)',
+      opacity: 0,
+      scale: isMobile ? 1.008 : 1.015,
+      y: isMobile ? 4 : 8,
+      willChange: 'filter, opacity, transform',
+    });
+
     // Hold current page background underneath both fades to prevent ambient layer flashing
     let backdrop = document.getElementById('page-transition-backdrop');
     if (!backdrop) {
@@ -533,20 +533,6 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
     }
 
     document.body.appendChild(shell);
-
-    // Ensure glow exists on desktop
-    if (!isMobile) {
-      if (!glow) {
-        glow = document.getElementById('page-transition-glow');
-        if (!glow) {
-          glow = document.createElement('div');
-          glow.className = 'page-transition-glow';
-          glow.id = 'page-transition-glow';
-          glow.style.zIndex = '25';
-          document.body.appendChild(glow);
-        }
-      }
-    }
 
     // Dispose old page runtime & ScrollTriggers
     if (window.__hvDisposePageRuntime) {
@@ -563,12 +549,10 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       shellPromoted = true;
 
       try {
-        const activeGlow = document.getElementById('page-transition-glow');
-        if (activeGlow) activeGlow.remove();
         const activeBackdrop = document.getElementById('page-transition-backdrop');
         if (activeBackdrop) activeBackdrop.remove();
 
-        // Remove old frozen content from DOM once crossfade is complete
+        // Remove old frozen content from DOM once optical refocus is complete
         if (currentContent && currentContent.parentNode) {
           currentContent.remove();
         }
@@ -603,6 +587,11 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
           document.title = targetTitle;
         }
 
+        if (navbar) {
+          navbar.classList.remove('nav-hidden');
+          gsap.set(navbar, { clearProps: 'all' });
+        }
+
         window.__hvUpdateNavbar?.(window.location.pathname);
         window.__hvResetNavbar?.(window.location.pathname);
 
@@ -621,53 +610,64 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
 
     if (isMobile) {
       // =========================================================================
-      // FAST, CRISP, LIGHTWEIGHT MOBILE TRANSITION (NO HEAVY BLUR, FAST & CLEAR)
+      // SNAPPY OPTICAL BLUR RE-FOCUS (MOBILE — 60FPS COMPOSITOR PERFORMANCE)
       // =========================================================================
 
-      // 1. Incoming page appears with clean, snappy fade-in over 0.18s
-      activeTransitionTimeline.fromTo(shell,
-        { opacity: 0, y: 8 },
-        {
+      // 1. Incoming page refocused smoothly from blur(14px) to crystal clear blur(0px)
+      activeTransitionTimeline.to(shell, {
+        filter: 'blur(0px)',
+        opacity: 1,
+        scale: 1,
+        y: 0,
+        duration: 0.18,
+        ease: 'power2.out',
+        clearProps: 'filter,transform,willChange',
+      }, 0.08);
+
+      // 2. Navbar smoothly refocused in sync with incoming page
+      if (navbar) {
+        activeTransitionTimeline.to(navbar, {
+          filter: 'blur(0px)',
           opacity: 1,
-          y: 0,
-          duration: 0.18,
+          scale: 1,
+          duration: 0.16,
           ease: 'power2.out',
-          clearProps: 'transform,willChange',
-        },
-        0
-      );
+          clearProps: 'all',
+        }, 0.10);
+      }
 
       // Outgoing page finishes fade
       if (currentContent) {
         activeTransitionTimeline.to(currentContent, {
           opacity: 0,
-          y: -6,
-          duration: 0.16,
-          ease: 'power2.inOut',
+          filter: 'blur(16px)',
+          y: -4,
+          duration: 0.14,
+          ease: 'power2.in',
         }, 0);
       }
 
       // Advance state to INCOMING_REFOCUS
       activeTransitionTimeline.call(() => {
         setTransitionState(TransitionState.INCOMING_REFOCUS);
-      }, null, 0.16);
+      }, null, 0.20);
 
-      // Promote destination into live document promptly at 0.18s
-      activeTransitionTimeline.call(promoteIncomingPage, null, 0.18);
+      // Promote destination into live document promptly at 0.26s
+      activeTransitionTimeline.call(promoteIncomingPage, null, 0.26);
 
       // 4. AND THEN THE TEXT REVEALS ONE BY ONE (Word-by-Word Kinetic Reveal)
       if (headlineWords.length) {
         activeTransitionTimeline.call(() => {
           setTransitionState(TransitionState.HERO_WORD_REVEAL);
-        }, null, 0.20);
+        }, null, 0.28);
 
         activeTransitionTimeline.to(headlineWords, {
           opacity: 1,
           y: 0,
           scale: 1,
           filter: 'none',
-          duration: 0.44,
-          stagger: 0.055, // Snappy one-by-one pacing!
+          duration: 0.40,
+          stagger: 0.05,
           ease: 'power3.out',
           clearProps: 'all',
           onComplete: () => {
@@ -675,7 +675,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
               window.initHeroWordRoller();
             }
           },
-        }, 0.20);
+        }, 0.28);
       }
 
       // 5. AND THEN THE COMPONENTS REVEAL (Hero Lines, Subtitles, Tags, Metrics)
@@ -684,8 +684,8 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
           opacity: 1,
           y: 0,
           filter: 'none',
-          duration: 0.38,
-          stagger: 0.045,
+          duration: 0.36,
+          stagger: 0.04,
           ease: 'power2.out',
           clearProps: 'all',
           onStart: () => {
@@ -700,11 +700,11 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
           opacity: 1,
           y: 0,
           filter: 'none',
-          duration: 0.44,
-          stagger: 0.065, // Sequential cascade preserved!
+          duration: 0.40,
+          stagger: 0.055,
           ease: 'power2.out',
           clearProps: 'all',
-        }, 0.46);
+        }, 0.44);
       }
 
     } else {
@@ -712,54 +712,54 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       // CINEMATIC OPTICAL BLUR TRANSITION (DESKTOP WEB — BUTTERY SMOOTH 60FPS)
       // =========================================================================
 
-      // 1. Incoming page lands smoothly underneath the blur veil (0.0s -> 0.24s)
-      activeTransitionTimeline.fromTo(shell,
-        { opacity: 0, scale: 1.018, y: 8 },
-        {
+      // 1. Incoming page refocused smoothly from blur(18px) to crystal clear blur(0px)
+      activeTransitionTimeline.to(shell, {
+        filter: 'blur(0px)',
+        opacity: 1,
+        scale: 1,
+        y: 0,
+        duration: 0.24,
+        ease: 'power2.out',
+        clearProps: 'filter,transform,willChange',
+      }, 0.10);
+
+      // 2. Navbar smoothly refocused in sync with incoming page
+      if (navbar) {
+        activeTransitionTimeline.to(navbar, {
+          filter: 'blur(0px)',
           opacity: 1,
           scale: 1,
-          y: 0,
-          duration: 0.24,
+          duration: 0.22,
           ease: 'power2.out',
-          clearProps: 'transform,willChange',
-        },
-        0
-      );
+          clearProps: 'all',
+        }, 0.12);
+      }
 
       // Outgoing page finishes fade
       if (currentContent) {
         activeTransitionTimeline.to(currentContent, {
           opacity: 0,
-          y: -10,
+          filter: 'blur(20px)',
+          y: -8,
           scale: 0.985,
-          duration: 0.20,
+          duration: 0.18,
           ease: 'power2.in',
         }, 0);
-      }
-
-      // 2. Optical blur veil smoothly melts away into crystal-clear focus (0.16s -> 0.46s)
-      if (glow) {
-        activeTransitionTimeline.to(glow, {
-          opacity: 0,
-          duration: 0.30,
-          ease: 'power2.out',
-        }, 0.16);
       }
 
       // Advance state to INCOMING_REFOCUS
       activeTransitionTimeline.call(() => {
         setTransitionState(TransitionState.INCOMING_REFOCUS);
-      }, null, 0.22);
+      }, null, 0.26);
 
-      // Promote destination into live document promptly at 0.40s
-      activeTransitionTimeline.call(promoteIncomingPage, null, 0.40);
+      // Promote destination into live document promptly at 0.34s
+      activeTransitionTimeline.call(promoteIncomingPage, null, 0.34);
 
       // 3. AND THEN THE TEXT REVEALS ONE BY ONE (Beat 3: Word-by-Word Kinetic Reveal)
-      // Starts right as blur melts into clarity (at 0.42s). Zero text blur, 100% sharp!
       if (headlineWords.length) {
         activeTransitionTimeline.call(() => {
           setTransitionState(TransitionState.HERO_WORD_REVEAL);
-        }, null, 0.42);
+        }, null, 0.36);
 
         activeTransitionTimeline.to(headlineWords, {
           opacity: 1,
@@ -767,7 +767,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
           scale: 1,
           filter: 'none',
           duration: 0.46,
-          stagger: 0.065, // Distinct, visible one-by-one cadence!
+          stagger: 0.065,
           ease: 'power3.out',
           clearProps: 'all',
           onComplete: () => {
@@ -775,7 +775,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
               window.initHeroWordRoller();
             }
           },
-        }, 0.42);
+        }, 0.36);
       }
 
       // 4. AND THEN THE COMPONENTS REVEAL (Beat 4: Hero Lines, Subtitles, Tags, Metrics)
@@ -791,7 +791,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
           onStart: () => {
             animateIncomingMetrics(incomingContent);
           },
-        }, 0.56);
+        }, 0.48);
       }
 
       // 5. AND THEN THE CARDS REVEAL SEQUENTIALLY (Beat 5: Capability & Philosophy & Comparison Cards)
@@ -801,10 +801,10 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
           y: 0,
           filter: 'none',
           duration: 0.46,
-          stagger: 0.065, // Sequential cascade fully preserved!
+          stagger: 0.065,
           ease: 'power2.out',
           clearProps: 'all',
-        }, 0.70);
+        }, 0.60);
       }
     }
 
@@ -819,6 +819,9 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
         '.work-metric-item, .team-metric-item'
       );
       gsap.set(allRevealed, { opacity: 1, filter: 'none', clearProps: 'all' });
+      if (navbar) {
+        gsap.set(navbar, { clearProps: 'all' });
+      }
       if (window.ScrollTrigger) ScrollTrigger.refresh();
       window.clearTimeout(transitionSafetyTimer);
     });
@@ -836,8 +839,6 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       return;
     }
     console.error('Page transition encountered an error:', err);
-    const activeGlow = document.getElementById('page-transition-glow');
-    if (activeGlow) activeGlow.remove();
     const activeBackdrop = document.getElementById('page-transition-backdrop');
     if (activeBackdrop) activeBackdrop.remove();
     const activeShell = document.getElementById('page-transition-shell');
@@ -846,6 +847,9 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       currentContent.classList.remove('page-outgoing-frozen');
       currentContent.style.removeProperty('top');
       gsap.set(currentContent, { clearProps: 'all' });
+    }
+    if (navbar) {
+      gsap.set(navbar, { clearProps: 'all' });
     }
     document.body.classList.remove('page-is-transitioning');
     window.clearTimeout(transitionSafetyTimer);

@@ -11120,61 +11120,8 @@ html {
   pointer-events: none !important;
   z-index: 20 !important;
   background: transparent !important;
-}
-
-/* Deep optical blur veil active across the full page during route transitions */
-.page-transition-glow {
-  position: fixed !important;
-  inset: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  pointer-events: none !important;
-  z-index: 25 !important;
-  opacity: 0;
-  mix-blend-mode: normal !important;
   transform: translateZ(0);
-  -webkit-backdrop-filter: blur(28px) saturate(140%);
-  backdrop-filter: blur(28px) saturate(140%);
-  background: radial-gradient(ellipse at 50% 35%, rgba(35, 199, 216, 0.08), rgba(4, 7, 12, 0.28) 80%);
-  will-change: opacity;
-}
-
-[data-theme="light"] .page-transition-glow {
-  background: radial-gradient(ellipse at 50% 35%, rgba(35, 199, 216, 0.06), rgba(245, 247, 250, 0.35) 80%);
-  -webkit-backdrop-filter: blur(28px) saturate(140%);
-  backdrop-filter: blur(28px) saturate(140%);
-}
-
-.page-transition-glow.page-transition-blur-veil {
-  background: transparent !important;
-  -webkit-backdrop-filter: blur(24px);
-  backdrop-filter: blur(24px);
-  will-change: backdrop-filter;
-}
-
-@media (max-width: 768px) {
-  .page-transition-glow,
-  [data-theme="light"] .page-transition-glow,
-  .page-transition-glow.page-transition-blur-veil,
-  .page-transition-glow.page-transition-settle-veil {
-    -webkit-backdrop-filter: none !important;
-    backdrop-filter: none !important;
-    background: transparent !important;
-    will-change: opacity;
-  }
-}
-
-/* Covers the first layout pass after a route is promoted out of its fixed
-   shell. It preserves the requested blur language while ScrollTrigger and
-   media components settle their final dimensions off-screen. */
-.page-transition-glow.page-transition-settle-veil {
-  background: rgba(5, 11, 16, 0.38);
-  -webkit-backdrop-filter: blur(18px) saturate(108%);
-  backdrop-filter: blur(18px) saturate(108%);
-}
-
-[data-theme="light"] .page-transition-glow.page-transition-settle-veil {
-  background: rgba(248, 249, 250, 0.32);
+  will-change: filter, opacity, transform;
 }
 
 /* Outgoing frozen viewport state — fills viewport naturally without clipping bottom */
@@ -11185,6 +11132,7 @@ html {
   pointer-events: none !important;
   z-index: 10 !important;
   transform: translateZ(0);
+  will-change: filter, opacity, transform;
 }
 
 /* Light mode overrides for clean contrast and zero washout */
@@ -11192,10 +11140,6 @@ html {
 [data-theme="light"] .page-transition-layer,
 [data-theme="light"] #page-transition-layer {
   background: transparent !important;
-}
-
-[data-theme="light"] .page-transition-glow {
-  mix-blend-mode: normal !important;
 }
 
 /* Lock scroll and interactions during transition */
@@ -11253,14 +11197,6 @@ body.page-is-transitioning .hero-bg-accent {
   animation: none !important;
 }
 
-.page-transition-shell::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(circle at 50% 35%, rgba(35, 199, 216, 0.05), transparent 44%);
-}
-
 .page-nav-outgoing {
   z-index: 1001 !important;
 }
@@ -11269,11 +11205,17 @@ body.page-is-transitioning > #page-content {
   transform-origin: 50% 35%;
 }
 
-/* Make the route handoff feel like a soft focus shift instead of a plain fade. */
+/* Make the route handoff feel like a pure optical focus shift instead of a plain fade. */
 body.page-is-transitioning > #page-content,
+body.page-is-transitioning .navbar,
 #page-transition-shell {
-  will-change: opacity;
+  will-change: filter, opacity, transform;
   backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+body.page-is-transitioning .navbar {
+  transition: none !important;
 }
 
 /* Clear, low-contrast section rhythm. These lines sit behind the content and

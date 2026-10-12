@@ -2642,7 +2642,10 @@ export function initHeroReelCarousel() {
   // Load reel sources with priority and preload
   const loadVideo = (video, priority = 'low') => {
     if (!video) return;
-    const targetSrc = video.dataset.src || video.getAttribute('src');
+    const useMobileSource = window.innerWidth <= 768;
+    const targetSrc = (useMobileSource && video.dataset.mobileSrc)
+      || video.dataset.src
+      || video.getAttribute('src');
     video.defaultMuted = true;
     video.muted = true;
     video.playsInline = true;
@@ -2722,7 +2725,14 @@ export function initHeroReelCarousel() {
     cachedViewportWidth = getViewportWidth();
     const width = cachedViewportWidth;
     if (width < 640) {
-      stageStep = Math.max(120, Math.min(150, width * 0.28));
+      // Keep the carousel spacing tied to the actual phone width. A fixed
+      // step made cards overlap on small phones and spread too far on larger
+      // ones.
+      const cardWidth = cardPositions[0]?.offsetWidth || width * 0.30;
+      // Three compact cards should fit side-by-side without clipping on a
+      // narrow phone. Keep the slot just under the card width so the center
+      // reel remains readable while its neighbors stay visible.
+      stageStep = Math.max(cardWidth * 0.88, Math.min(cardWidth * 1.02, width * 0.30));
     } else if (width < 1024) {
       stageStep = Math.max(150, Math.min(185, width * 0.17));
     } else {
@@ -2755,6 +2765,9 @@ export function initHeroReelCarousel() {
         if (!video) return;
         let dist = Math.abs(idx - centerIdx);
         if (dist > count / 2) dist = count - dist;
+        // Keep the centered reel and its two visible neighbors playing. The
+        // remaining reels stay paused so mobile never creates ten playback
+        // pipelines at once.
         if (dist <= 1) {
           loadVideo(video, 'high');
           playVideo(video);
@@ -2773,8 +2786,12 @@ export function initHeroReelCarousel() {
     }
   };
 
-  // Keep metadata cheap until the carousel is ready to start
-  videos.forEach((video) => loadVideo(video, 'low'));
+  // Desktop can afford metadata warm-up. On phones, only the three visible
+  // reels receive sources; poster images keep the other cards lightweight.
+  const isMobileViewport = cachedViewportWidth <= 768;
+  if (!isMobileViewport) {
+    videos.forEach((video) => loadVideo(video, 'low'));
+  }
 
   // Resume / unlock autoplay on first interaction if browser blocked initial autoplay
   const unlockOnInteraction = () => {
@@ -2847,7 +2864,7 @@ export function initHeroReelCarousel() {
 
         const norm = Math.min(1.0, absU / 2.2);
         const screenX = x * (1.0 + Math.pow(norm, 1.2) * 0.08);
-        const scale = 0.86 + Math.pow(norm, 1.2) * 0.28;
+        const scale = 0.92 + Math.pow(norm, 1.2) * 0.20;
         const maxRotY = 22;
         const rotationY = -sign * Math.pow(norm, 0.75) * maxRotY;
         const baseZ = -30;

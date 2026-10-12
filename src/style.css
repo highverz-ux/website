@@ -4017,18 +4017,18 @@ html.js .floating-badge-item {
   }
 
   .carousel-track {
-    height: 380px;
+    height: clamp(275px, 82vw, 340px);
   }
 
   .card-position {
-    width: 154px;
-    height: 274px;
+    width: clamp(104px, 30vw, 136px);
+    height: clamp(185px, 53.3vw, 242px);
     top: 50%;
     bottom: auto;
   }
 
   .video-card {
-    border-radius: 14px;
+    border-radius: 11px;
   }
 }
 

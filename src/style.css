@@ -1612,12 +1612,16 @@ body.mobile-menu-active {
 .adscale-reveal-word {
   display: inline-block;
   transform-origin: 50% 100%;
-  margin-right: 0.04em;
+  margin-right: 0.28em;
   background-image: var(--hero-headline-gradient);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
+}
+
+.adscale-reveal-word:last-child {
+  margin-right: 0;
 }
 
 [data-theme="light"] .adscale-reveal-word:not(.highlight-cyan) {
@@ -1642,7 +1646,13 @@ body.mobile-menu-active {
   filter: drop-shadow(0 0 16px rgba(0, 229, 255, 0.4));
   animation: cyanTextSheen 5s ease-in-out infinite;
   display: inline-block;
-  padding-right: 0.15em;
+  padding-right: 0.06em;
+  margin-right: 0.28em;
+}
+
+.adscale-reveal-word.highlight-cyan:last-child,
+.highlight-cyan .adscale-reveal-word:last-child {
+  margin-right: 0;
 }
 
 [data-theme="light"] .adscale-reveal-word.highlight-cyan,
@@ -12795,6 +12805,53 @@ body::after {
   border-radius: 50%;
   background: radial-gradient(ellipse, rgba(0, 229, 255, 0.045), transparent 68%);
   filter: blur(28px);
+}
+
+/* Why Us Philosophy Section — Centered Layout Protection */
+.why-philosophy-section {
+  padding-top: 2rem !important;
+  padding-bottom: 6rem !important;
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+.why-philosophy-section .services-container {
+  max-width: 1100px !important;
+  margin: 0 auto !important;
+  padding: 0 var(--container-pad) !important;
+}
+
+.why-philosophy-section .services-header-row {
+  display: flex !important;
+  text-align: center !important;
+  justify-content: center !important;
+  align-items: center !important;
+  margin-bottom: 3rem !important;
+}
+
+.why-philosophy-section .services-label-box {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center !important;
+  margin: 0 auto !important;
+  width: 100% !important;
+}
+
+.why-philosophy-section .services-main-title {
+  text-align: center !important;
+  margin: 0 auto !important;
+}
+
+.why-philosophy-section .section-tag {
+  margin: 0 auto 0.75rem auto !important;
+  display: inline-block !important;
+}
+
+.why-philosophy-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+  gap: 1.5rem !important;
 }
 
 .page-why-us .service-card-item,

@@ -307,8 +307,8 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
     if (navbar) {
       gsap.killTweensOf(navbar);
       gsap.to(navbar, {
-        filter: isMobile ? 'blur(10px)' : 'blur(14px)',
-        opacity: isMobile ? 0.55 : 0.45,
+        filter: isMobile ? 'blur(16px)' : 'blur(20px)',
+        opacity: isMobile ? 0.50 : 0.40,
         scale: isMobile ? 0.99 : 0.985,
         duration: isMobile ? 0.14 : 0.18,
         ease: 'power2.inOut',
@@ -338,8 +338,8 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       // Optical defocus of the active page directly on DOM content
       gsap.killTweensOf(currentContent);
       gsap.to(currentContent, {
-        filter: isMobile ? 'blur(14px)' : 'blur(18px)',
-        opacity: 0.1,
+        filter: isMobile ? 'blur(20px)' : 'blur(28px)',
+        opacity: 0.08,
         scale: isMobile ? 0.992 : 0.988,
         duration: isMobile ? 0.16 : 0.20,
         ease: 'power2.inOut',
@@ -514,7 +514,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
 
     // Initial state: incoming shell starts blurred and transparent, ready for smooth optical refocus
     gsap.set(shell, {
-      filter: isMobile ? 'blur(14px)' : 'blur(18px)',
+      filter: isMobile ? 'blur(20px)' : 'blur(28px)',
       opacity: 0,
       scale: isMobile ? 1.008 : 1.015,
       y: isMobile ? 4 : 8,
@@ -640,7 +640,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       if (currentContent) {
         activeTransitionTimeline.to(currentContent, {
           opacity: 0,
-          filter: 'blur(16px)',
+          filter: 'blur(24px)',
           y: -4,
           duration: 0.14,
           ease: 'power2.in',
@@ -703,7 +703,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
           duration: 0.40,
           stagger: 0.055,
           ease: 'power2.out',
-          clearProps: 'all',
+          clearProps: 'opacity,transform,filter,visibility',
         }, 0.44);
       }
 
@@ -739,7 +739,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       if (currentContent) {
         activeTransitionTimeline.to(currentContent, {
           opacity: 0,
-          filter: 'blur(20px)',
+          filter: 'blur(32px)',
           y: -8,
           scale: 0.985,
           duration: 0.18,
@@ -803,7 +803,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
           duration: 0.46,
           stagger: 0.065,
           ease: 'power2.out',
-          clearProps: 'all',
+          clearProps: 'opacity,transform,filter,visibility',
         }, 0.60);
       }
     }
@@ -818,7 +818,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
         '.campaign-movie-card, .creator-card, .founder-accord-card, .pillar-card, ' +
         '.work-metric-item, .team-metric-item'
       );
-      gsap.set(allRevealed, { opacity: 1, filter: 'none', clearProps: 'all' });
+      gsap.set(allRevealed, { opacity: 1, filter: 'none', clearProps: 'opacity,transform,filter,visibility' });
       if (navbar) {
         gsap.set(navbar, { clearProps: 'all' });
       }

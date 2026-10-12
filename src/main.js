@@ -1236,21 +1236,22 @@ export function splitAdscaleWords(element) {
       parentSpan.style.filter = 'none';
       parentSpan.style.animation = 'none';
     }
+    const rawText = textNode.nodeValue;
+    const words = rawText.trim().split(/\s+/).filter(Boolean);
+    if (!words.length) return;
+
     const fragment = document.createDocumentFragment();
-
-    textNode.nodeValue.split(/(\s+)/).forEach((part) => {
-      if (!part) return;
-      if (/\s+/.test(part)) {
-        fragment.appendChild(document.createTextNode(part));
-        return;
-      }
-
+    words.forEach((wordText, idx) => {
       const word = document.createElement('span');
       word.className = 'adscale-reveal-word';
       if (isHighlight) word.classList.add('highlight-cyan');
       if (isBoldItalic) word.classList.add('font-bold-italic');
-      word.textContent = part;
+      word.textContent = wordText;
       fragment.appendChild(word);
+
+      if (idx < words.length - 1) {
+        fragment.appendChild(document.createTextNode(' '));
+      }
     });
     textNode.replaceWith(fragment);
   });

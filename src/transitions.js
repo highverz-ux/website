@@ -290,7 +290,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
         gsap.set(nav, { clearProps: 'all' });
       }
     }
-  }, 4800);
+  }, 3200);
 
   const isMobile = window.innerWidth <= 768 || window.matchMedia('(max-width: 768px)').matches;
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -308,10 +308,10 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       gsap.killTweensOf(navbar);
       gsap.to(navbar, {
         filter: isMobile ? 'blur(16px)' : 'blur(20px)',
-        opacity: isMobile ? 0.40 : 0.32,
-        scale: isMobile ? 0.985 : 0.98,
-        duration: isMobile ? 0.38 : 0.46,
-        ease: 'power2.out',
+        opacity: isMobile ? 0.50 : 0.40,
+        scale: isMobile ? 0.99 : 0.985,
+        duration: isMobile ? 0.14 : 0.18,
+        ease: 'power2.inOut',
       });
     }
 
@@ -338,11 +338,11 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       // Optical defocus of the active page directly on DOM content
       gsap.killTweensOf(currentContent);
       gsap.to(currentContent, {
-        filter: isMobile ? 'blur(22px)' : 'blur(28px)',
-        opacity: 0.05,
-        scale: isMobile ? 0.99 : 0.985,
-        duration: isMobile ? 0.40 : 0.48,
-        ease: 'power2.out',
+        filter: isMobile ? 'blur(20px)' : 'blur(28px)',
+        opacity: 0.08,
+        scale: isMobile ? 0.992 : 0.988,
+        duration: isMobile ? 0.16 : 0.20,
+        ease: 'power2.inOut',
       });
 
       setTransitionState(TransitionState.OUTGOING_BLUR);
@@ -613,16 +613,16 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       // SNAPPY OPTICAL BLUR RE-FOCUS (MOBILE — 60FPS COMPOSITOR PERFORMANCE)
       // =========================================================================
 
-      // 1. Incoming page refocused smoothly from blur(20px) to crystal clear blur(0px)
+      // 1. Incoming page refocused smoothly from blur(14px) to crystal clear blur(0px)
       activeTransitionTimeline.to(shell, {
         filter: 'blur(0px)',
         opacity: 1,
         scale: 1,
         y: 0,
-        duration: 0.44,
+        duration: 0.18,
         ease: 'power2.out',
         clearProps: 'filter,transform,willChange',
-      }, 0.28);
+      }, 0.08);
 
       // 2. Navbar smoothly refocused in sync with incoming page
       if (navbar) {
@@ -630,19 +630,19 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
           filter: 'blur(0px)',
           opacity: 1,
           scale: 1,
-          duration: 0.40,
+          duration: 0.16,
           ease: 'power2.out',
           clearProps: 'all',
-        }, 0.30);
+        }, 0.10);
       }
 
       // Outgoing page finishes fade
       if (currentContent) {
         activeTransitionTimeline.to(currentContent, {
           opacity: 0,
-          filter: 'blur(28px)',
-          y: -6,
-          duration: 0.36,
+          filter: 'blur(24px)',
+          y: -4,
+          duration: 0.14,
           ease: 'power2.in',
         }, 0);
       }
@@ -650,23 +650,23 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       // Advance state to INCOMING_REFOCUS
       activeTransitionTimeline.call(() => {
         setTransitionState(TransitionState.INCOMING_REFOCUS);
-      }, null, 0.48);
+      }, null, 0.20);
 
-      // Promote destination into live document promptly at 0.70s
-      activeTransitionTimeline.call(promoteIncomingPage, null, 0.70);
+      // Promote destination into live document promptly at 0.26s
+      activeTransitionTimeline.call(promoteIncomingPage, null, 0.26);
 
       // 4. AND THEN THE TEXT REVEALS ONE BY ONE (Word-by-Word Kinetic Reveal)
       if (headlineWords.length) {
         activeTransitionTimeline.call(() => {
           setTransitionState(TransitionState.HERO_WORD_REVEAL);
-        }, null, 0.74);
+        }, null, 0.28);
 
         activeTransitionTimeline.to(headlineWords, {
           opacity: 1,
           y: 0,
           scale: 1,
           filter: 'none',
-          duration: 0.44,
+          duration: 0.40,
           stagger: 0.05,
           ease: 'power3.out',
           clearProps: 'all',
@@ -675,7 +675,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
               window.initHeroWordRoller();
             }
           },
-        }, 0.74);
+        }, 0.28);
       }
 
       // 5. AND THEN THE COMPONENTS REVEAL (Hero Lines, Subtitles, Tags, Metrics)
@@ -684,14 +684,14 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
           opacity: 1,
           y: 0,
           filter: 'none',
-          duration: 0.38,
+          duration: 0.36,
           stagger: 0.04,
           ease: 'power2.out',
           clearProps: 'all',
           onStart: () => {
             animateIncomingMetrics(incomingContent);
           },
-        }, 0.90);
+        }, 0.34);
       }
 
       // 6. AND THEN THE CARDS REVEAL (Sequential Cascade)
@@ -700,11 +700,11 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
           opacity: 1,
           y: 0,
           filter: 'none',
-          duration: 0.42,
+          duration: 0.40,
           stagger: 0.055,
           ease: 'power2.out',
           clearProps: 'opacity,transform,filter,visibility',
-        }, 1.08);
+        }, 0.44);
       }
 
     } else {
@@ -712,37 +712,37 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       // CINEMATIC OPTICAL BLUR TRANSITION (DESKTOP WEB — BUTTERY SMOOTH 60FPS)
       // =========================================================================
 
-      // 1. Incoming page refocused smoothly and visibly from blur(28px) to crystal clear blur(0px)
+      // 1. Incoming page refocused smoothly from blur(18px) to crystal clear blur(0px)
       activeTransitionTimeline.to(shell, {
         filter: 'blur(0px)',
         opacity: 1,
         scale: 1,
         y: 0,
-        duration: 0.52,
+        duration: 0.24,
         ease: 'power2.out',
         clearProps: 'filter,transform,willChange',
-      }, 0.32);
+      }, 0.10);
 
-      // 2. Navbar smoothly refocused in sync with incoming page from blur(20px) to crystal clear
+      // 2. Navbar smoothly refocused in sync with incoming page
       if (navbar) {
         activeTransitionTimeline.to(navbar, {
           filter: 'blur(0px)',
           opacity: 1,
           scale: 1,
-          duration: 0.48,
+          duration: 0.22,
           ease: 'power2.out',
           clearProps: 'all',
-        }, 0.34);
+        }, 0.12);
       }
 
       // Outgoing page finishes fade
       if (currentContent) {
         activeTransitionTimeline.to(currentContent, {
           opacity: 0,
-          filter: 'blur(36px)',
-          y: -12,
-          scale: 0.98,
-          duration: 0.44,
+          filter: 'blur(32px)',
+          y: -8,
+          scale: 0.985,
+          duration: 0.18,
           ease: 'power2.in',
         }, 0);
       }
@@ -750,23 +750,23 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       // Advance state to INCOMING_REFOCUS
       activeTransitionTimeline.call(() => {
         setTransitionState(TransitionState.INCOMING_REFOCUS);
-      }, null, 0.55);
+      }, null, 0.26);
 
-      // Promote destination into live document promptly at 0.80s
-      activeTransitionTimeline.call(promoteIncomingPage, null, 0.80);
+      // Promote destination into live document promptly at 0.34s
+      activeTransitionTimeline.call(promoteIncomingPage, null, 0.34);
 
       // 3. AND THEN THE TEXT REVEALS ONE BY ONE (Beat 3: Word-by-Word Kinetic Reveal)
       if (headlineWords.length) {
         activeTransitionTimeline.call(() => {
           setTransitionState(TransitionState.HERO_WORD_REVEAL);
-        }, null, 0.84);
+        }, null, 0.36);
 
         activeTransitionTimeline.to(headlineWords, {
           opacity: 1,
           y: 0,
           scale: 1,
           filter: 'none',
-          duration: 0.50,
+          duration: 0.46,
           stagger: 0.065,
           ease: 'power3.out',
           clearProps: 'all',
@@ -775,7 +775,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
               window.initHeroWordRoller();
             }
           },
-        }, 0.84);
+        }, 0.36);
       }
 
       // 4. AND THEN THE COMPONENTS REVEAL (Beat 4: Hero Lines, Subtitles, Tags, Metrics)
@@ -784,14 +784,14 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
           opacity: 1,
           y: 0,
           filter: 'none',
-          duration: 0.44,
+          duration: 0.40,
           stagger: 0.045,
           ease: 'power2.out',
           clearProps: 'all',
           onStart: () => {
             animateIncomingMetrics(incomingContent);
           },
-        }, 1.04);
+        }, 0.48);
       }
 
       // 5. AND THEN THE CARDS REVEAL SEQUENTIALLY (Beat 5: Capability & Philosophy & Comparison Cards)
@@ -800,11 +800,11 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
           opacity: 1,
           y: 0,
           filter: 'none',
-          duration: 0.48,
+          duration: 0.46,
           stagger: 0.065,
           ease: 'power2.out',
           clearProps: 'opacity,transform,filter,visibility',
-        }, 1.24);
+        }, 0.60);
       }
     }
 

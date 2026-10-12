@@ -2159,6 +2159,7 @@ function initServicesReveal() {
 function restoreHomeStableState(isFromTransition = false) {
   const hero = document.querySelector('.hero-section');
   if (!hero) return;
+  if (isFromTransition && hero.dataset.pageEntryStarted === 'true') return;
 
   // Settle background and supporting widgets. On route transitions, leave the
   // headline words blurred and ready for the word-by-word reveal!
@@ -2262,7 +2263,7 @@ export function initPageScripts(pathname, isFromTransition = false) {
   const isCampaignsPage = normPath.includes('campaigns') || !!document.querySelector('.page-campaigns');
 
   if (isWorkPage) {
-    initWorkHeroIntro();
+    initWorkHeroIntro(isFromTransition);
     initCapabilityDeck();
     initWorkflowSection();
     initServicesReveal();
@@ -2270,7 +2271,7 @@ export function initPageScripts(pathname, isFromTransition = false) {
     initProcessScrollDraw();
     initCTAReveal();
   } else if (isTeamPage) {
-    initTeamPageAnimations();
+    initTeamPageAnimations(isFromTransition);
     initCTAReveal();
   } else if (isWhyUs) {
     initWhyUsAnimations();
@@ -2315,9 +2316,7 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
     return;
   }
 
-  if (isFromTransition) {
-    delete heroRoot.dataset.pageEntryStarted;
-  } else if (heroRoot.dataset.pageEntryStarted === 'true') {
+  if (isFromTransition && heroRoot.dataset.pageEntryStarted === 'true') {
     return;
   }
   heroRoot.dataset.pageEntryStarted = 'true';
@@ -2335,18 +2334,59 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
   if (introIsPending && !isFromTransition) return;
 
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const entryElements = document.querySelectorAll(
-    '.work-hero-tag, .work-hero-desc, .work-hero-cta, .work-hero-metrics-grid, ' +
-    '.team-hero-tag, .team-hero-desc, .team-metrics-grid, .why-hero-subtitle, ' +
-    '.campaign-hero-tag, .campaign-hero-sub, .campaign-hero-pillars, .campaign-search-section, .campaign-featured-label, ' +
-    '.case-kicker-tag, .case-profile-chip-row, .case-hero-desc, .case-hero-media, .case-follower-transform-card, .case-stats-hud'
-  );
+
+  // 1. Next lines of the hero section
+  const heroLineSelectors = [
+    // Work page
+    '.work-hero-tag', '.work-hero-desc', '.work-hero-cta', '.work-hero-metrics-grid', '.work-metric-item',
+    // Campaigns page
+    '.campaign-hero-tag', '.campaign-hero-sub', '.campaign-hero-pillars',
+    // Team page
+    '.team-hero-tag', '.team-hero-desc', '.team-metrics-grid', '.team-metric-item',
+    // Why-us page
+    '.why-hero-subtitle',
+    // Home page
+    '.hero-trust-badge-wrap', '#hero-desc', '#hero-actions',
+    // Case study
+    '.case-kicker-tag', '.case-profile-chip-row', '.case-hero-desc'
+  ].join(', ');
+  const heroLineElements = Array.from(document.querySelectorAll(heroLineSelectors));
+
+  // 2. Next section header and cards
+  const nextSectionSelectors = [
+    // Work page: capabilities header & 6 cards
+    '.work-capabilities-header', '.work-capabilities-section .section-tag', '.work-capabilities-title', '.capability-card',
+    // Why-us page: philosophy section header & 3 cards
+    '.why-philosophy-section .services-header-row', '.why-philosophy-section .services-label-box', '.why-philosophy-section .section-tag', '.why-philosophy-section .services-main-title', '.why-philosophy-grid .service-card-item',
+    // Campaigns page: search bar and cards
+    '.campaign-search-section', '.campaign-featured-label', '#campaign-grid', '.campaign-movie-card',
+    // Team page: leadership and member cards
+    '.team-grid .founder-card', '.team-member-card',
+    // Home page: creators carousel
+    '.section-creators', '.carousel-viewport',
+    // Case study: media & hud
+    '.case-hero-media', '.case-follower-transform-card', '.case-stats-hud'
+  ].join(', ');
+  const nextSectionElements = Array.from(document.querySelectorAll(nextSectionSelectors));
+
+  const allSupportingElements = [...heroLineElements, ...nextSectionElements];
+
   const heroWords = Array.from(heroHeadings).flatMap((heading) =>
     Array.from(heading.querySelectorAll('.adscale-reveal-word'))
   );
 
+  // Collect all target words: subpage hero words and/or home headline words
+  const allTargetWords = [...heroWords];
+  const homeHeadline = document.getElementById('hero-headline');
+  if (homeHeadline) {
+    const homeWords = Array.from(
+      homeHeadline.querySelectorAll('.hl-word, .hero-headline-connector, .hero-word-roller')
+    );
+    allTargetWords.push(...homeWords);
+  }
+
   if (reducedMotion) {
-    gsap.set([...heroHeadings, ...entryElements, ...heroWords], { opacity: 1, y: 0, filter: 'none', clearProps: 'all' });
+    gsap.set([...heroHeadings, ...allSupportingElements, ...allTargetWords], { opacity: 1, y: 0, filter: 'none', clearProps: 'all' });
     finishPageEntry();
     if (window.__hvSetTransitionState) {
       window.__hvSetTransitionState('IDLE');
@@ -2365,9 +2405,9 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
     const beginEntry = () => { pendingEntries += 1; };
     const completeEntry = () => {
       pendingEntries -= 1;
-      if (pendingEntries === 0) {
+      if (pendingEntries <= 0) {
         finishPageEntry();
-        gsap.set([...heroHeadings, ...entryElements, ...heroWords], {
+        gsap.set([...heroHeadings, ...allSupportingElements, ...allTargetWords], {
           clearProps: 'opacity,transform,filter,willChange'
         });
         if (window.__hvSetTransitionState) {
@@ -2378,16 +2418,7 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
 
     gsap.set(heroHeadings, { opacity: 1, y: 0, filter: 'none' });
 
-    // Collect all target words: subpage hero words and/or home headline words
-    const allTargetWords = [...heroWords];
-    const homeHeadline = document.getElementById('hero-headline');
-    if (homeHeadline) {
-      const homeWords = Array.from(
-        homeHeadline.querySelectorAll('.hl-word, .hero-headline-connector, .hero-word-roller')
-      );
-      allTargetWords.push(...homeWords);
-    }
-
+    // 1. HERO HEADLINE WORDS ANIMATE FIRST (0.0s)
     if (allTargetWords.length) {
       heroHeadings.forEach((heading) => { heading.dataset.adscaleAnimated = 'true'; });
       gsap.killTweensOf(allTargetWords);
@@ -2405,8 +2436,8 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
         y: 0,
         scale: 1,
         filter: 'blur(0px) brightness(1)',
-        duration: 0.78,
-        stagger: 0.072,
+        duration: 0.70,
+        stagger: 0.055,
         ease: 'power3.out',
         clearProps: 'filter,transform,willChange',
         onComplete: () => {
@@ -2416,56 +2447,61 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
       });
     }
 
-    // On route transitions, all page components are already complete and rendered.
-    // Only animate supporting elements from opacity: 0 on initial direct page loads.
-    if (!isFromTransition) {
-      if (isWork) {
-        const workHero = document.querySelector('.work-hero-section');
-        if (workHero) {
-          beginEntry();
-          gsap.fromTo(workHero.querySelectorAll('.work-hero-tag, .work-hero-desc, .work-hero-cta'),
-            { opacity: 0, y: 12, filter: 'none' },
-            { opacity: 1, y: 0, duration: 0.42, stagger: 0.05, delay: 0.18, ease: 'power2.out', clearProps: 'opacity,transform,willChange', onComplete: completeEntry }
-          );
-        }
-      } else if (isTeam) {
-        const teamHero = document.querySelector('.team-hero-section');
-        if (teamHero) {
-          beginEntry();
-          gsap.fromTo(teamHero.querySelectorAll('.team-hero-tag, .team-hero-desc'),
-            { opacity: 0, y: 12, filter: 'none' },
-            { opacity: 1, y: 0, duration: 0.42, stagger: 0.05, delay: 0.18, ease: 'power2.out', clearProps: 'opacity,transform,willChange', onComplete: completeEntry }
-          );
-        }
-      } else if (isWhy) {
-        const whyHero = document.querySelector('.why-hero-section');
-        if (whyHero) {
-          beginEntry();
-          gsap.fromTo(whyHero.querySelectorAll('.why-hero-subtitle'),
-            { opacity: 0, y: 12, filter: 'none' },
-            { opacity: 1, y: 0, duration: 0.42, delay: 0.18, ease: 'power2.out', clearProps: 'opacity,transform,willChange', onComplete: completeEntry }
-          );
-        }
-      } else if (isCampaigns) {
-        const campaignHero = document.querySelector('.campaign-hero');
-        if (campaignHero) {
-          beginEntry();
-          gsap.fromTo(document.querySelectorAll('.campaign-hero-tag, .campaign-hero-sub, .campaign-hero-pillars, .campaign-search-section, .campaign-featured-label'),
-            { opacity: 0, y: 12, filter: 'none' },
-            { opacity: 1, y: 0, duration: 0.42, stagger: 0.05, delay: 0.18, ease: 'power2.out', clearProps: 'opacity,transform,willChange', onComplete: completeEntry }
-          );
-        }
-      } else if (isCase) {
-        const caseHero = document.querySelector('.case-hero-section');
-        if (caseHero) {
-          beginEntry();
-          gsap.fromTo(caseHero.querySelectorAll('.case-kicker-tag, .case-profile-chip-row, .case-hero-desc'),
-            { opacity: 0, y: 12, filter: 'none' },
-            { opacity: 1, y: 0, duration: 0.42, stagger: 0.05, delay: 0.18, ease: 'power2.out', clearProps: 'opacity,transform,willChange', onComplete: completeEntry }
-          );
-        }
-      }
+    // 2. HERO NEXT LINES & METRICS ANIMATE SECOND (delay: 0.32s)
+    // Synchronized with the hero headline completion, metrics start count-up onStart
+    if (heroLineElements.length) {
+      gsap.killTweensOf(heroLineElements);
+      gsap.set(heroLineElements, {
+        opacity: 0,
+        y: 18,
+        filter: 'blur(6px)',
+        willChange: 'opacity, transform, filter',
+      });
+      beginEntry();
+      gsap.to(heroLineElements, {
+        opacity: 1,
+        y: 0,
+        filter: 'blur(0px)',
+        duration: 0.52,
+        stagger: 0.05,
+        delay: 0.32,
+        ease: 'power2.out',
+        clearProps: 'opacity,transform,filter,willChange',
+        onStart: () => {
+          if (isWork) {
+            window.__hvAnimateWorkMetrics?.();
+          } else if (isTeam) {
+            window.__hvAnimateTeamMetrics?.();
+          }
+        },
+        onComplete: completeEntry,
+      });
     }
+
+    // 3. NEXT SECTION HEADER & CARDS ANIMATE THIRD (delay: 0.48s)
+    // Synchronously cascades in smoothly underneath, completing the full page symphony
+    if (nextSectionElements.length) {
+      gsap.killTweensOf(nextSectionElements);
+      gsap.set(nextSectionElements, {
+        opacity: 0,
+        y: 20,
+        filter: 'blur(6px)',
+        willChange: 'opacity, transform, filter',
+      });
+      beginEntry();
+      gsap.to(nextSectionElements, {
+        opacity: 1,
+        y: 0,
+        filter: 'blur(0px)',
+        duration: 0.55,
+        stagger: 0.06,
+        delay: 0.48,
+        ease: 'power2.out',
+        clearProps: 'opacity,transform,filter,willChange',
+        onComplete: completeEntry,
+      });
+    }
+
     completeEntry();
   };
 
@@ -2501,6 +2537,7 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
   }
 }
 window.__hvTriggerPageHeroEntrance = triggerPageHeroEntrance;
+window.initHeroWordRoller = initHeroWordRoller;
 
 // ===========================================================================
 // HOME HERO — 3D CYLINDRICAL REEL WALL CAROUSEL
@@ -3162,7 +3199,7 @@ function initCapabilityDeck() {
 // ==========================================================================
 // 07b. WORK HERO & SERVICE FILTERS (DEDICATED WORK PAGE)
 // ==========================================================================
-function initWorkHeroIntro() {
+function initWorkHeroIntro(isFromTransition = false) {
   const workHero = document.querySelector('.work-hero-section');
   if (!workHero) return;
 
@@ -3212,9 +3249,9 @@ function initWorkHeroIntro() {
     });
   }
 
-  // Counters are the only animated part of this hero. When a route transition
-  // already started them under the fade, do not reset them after the swap.
-  if (workHero.dataset.transitionMetricsStarted !== 'true') {
+  window.__hvAnimateWorkMetrics = animateWorkMetrics;
+  // Counters are triggered in sync with supporting elements entrance in triggerPageHeroEntrance
+  if (workHero.dataset.transitionMetricsStarted !== 'true' && !isFromTransition) {
     animateWorkMetrics();
   }
 }
@@ -3222,7 +3259,7 @@ function initWorkHeroIntro() {
 // ==========================================================================
 // 07c. TEAM & FOUNDERS SECTION ANIMATIONS
 // ==========================================================================
-function initTeamPageAnimations() {
+function initTeamPageAnimations(isFromTransition = false) {
   const teamHero = document.querySelector('.team-hero-section');
   if (!teamHero) return;
 
@@ -3309,8 +3346,8 @@ function initTeamPageAnimations() {
     });
   }
 
-  // Keep the hero static; only the values count up during the route fade.
-  if (teamHero.dataset.transitionMetricsStarted !== 'true') {
+  window.__hvAnimateTeamMetrics = animateMetrics;
+  if (teamHero.dataset.transitionMetricsStarted !== 'true' && !isFromTransition) {
     animateMetrics();
   }
 
@@ -3469,20 +3506,6 @@ function initWhyUsAnimations() {
   const pageContent = document.getElementById('page-content');
   if (pageContent?.dataset.whyAnimationsInit === 'true') return;
   if (pageContent) pageContent.dataset.whyAnimationsInit = 'true';
-
-  // Keep shared service cards stable; only the comparison owns an entrance.
-  const stableContent = pageContent?.querySelectorAll(
-    '.service-card-item, .comp-card, .comp-list-row, .comparison-cta'
-  ) || [];
-  gsap.killTweensOf(stableContent);
-  gsap.set(stableContent, {
-    opacity: 1,
-    x: 0,
-    y: 0,
-    scale: 1,
-    filter: 'none',
-    clearProps: 'transform,opacity,filter',
-  });
 
   const comparison = pageContent?.querySelector('.comp-dual-cards');
   if (!comparison || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;

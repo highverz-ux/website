@@ -124,79 +124,10 @@ export function initCampaignsPage(isFromTransition = false) {
 function animateHero(isFromTransition = false) {
   const campaignHero = document.querySelector('.campaign-hero');
   if (!campaignHero) return;
-
-  const allHeroEls = document.querySelectorAll(
-    '.campaign-hero-tag, .campaign-hero-sub, .campaign-hero-pillars, .campaign-search-section, .campaign-featured-label'
-  );
-
-  // On route transitions or reduced motion, components are 100% complete and visible from frame 1
-  if (isFromTransition || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    campaignHero.dataset.heroAnimated = 'true';
-    gsap.set(allHeroEls, { opacity: 1, y: 0, filter: 'none', clearProps: 'all' });
-    return;
-  }
-
-  if (campaignHero.dataset.heroAnimated === 'true') {
-    gsap.set(allHeroEls, { opacity: 1, y: 0, filter: 'none', clearProps: 'all' });
-    return;
-  }
-  const heroElements = [
-    '.campaign-hero-tag',
-    '.campaign-hero-sub',
-    '.campaign-hero-pillars'
-  ];
-  const fixedPositionElements = [
-    '.campaign-search-section',
-    '.campaign-featured-label'
-  ];
-
-  let animated = false;
-  const startAnimation = () => {
-    if (animated) return;
-    animated = true;
-    if (campaignHero) campaignHero.dataset.heroAnimated = 'true';
-
-    const targets = [...heroElements, ...fixedPositionElements];
-    gsap.killTweensOf(targets);
-    gsap.set(targets, { opacity: 0, y: 18, filter: 'blur(8px)' });
-
-    const timeline = gsap.timeline({
-      defaults: { ease: 'power3.out' },
-      onComplete: () => {
-        // Shared entry completion clears these styles only after removing
-        // page-entering; clearing here can hide this content a second time.
-        window.dispatchEvent(new Event('hv:campaign-hero-entry-complete'));
-      }
-    });
-    timeline.to(heroElements, {
-      opacity: 1,
-      y: 0,
-      filter: 'blur(0px)',
-      duration: 0.7,
-      stagger: 0.08
-    }, 0.2);
-    timeline.to(fixedPositionElements, {
-      opacity: 1,
-      y: 0,
-      filter: 'blur(0px)',
-      duration: 0.6,
-      stagger: 0.06
-    }, 0.42);
-  };
-
-  const requestEntry = () => {
-    // Prepare in the same frame as the title and loader handoff. Deferring
-    // this to another paint can expose the settled support content first.
-    startAnimation();
-  };
-
-  // main.js dispatches this only after the intro curtain has started lifting.
-  // Holding here prevents Campaigns from completing behind the loader.
-  if (document.documentElement.classList.contains('page-entering')) {
-    window.addEventListener('hv:campaign-hero-entry', requestEntry, { once: true });
-  } else {
-    requestEntry();
-  }
+  campaignHero.dataset.heroAnimated = 'true';
+  // Note: Hero headline word-by-word reveal followed by supporting components entrance
+  // (tags, pillars, search console, cards) is centrally coordinated by triggerPageHeroEntrance
+  // in main.js to guarantee the exact reveal hierarchy on both direct loads and transitions.
 }
 
 // ==========================================================================

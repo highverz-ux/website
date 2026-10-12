@@ -96,6 +96,7 @@ const htmlCache = new Map();
 
 /**
  * Start incoming metric counters underneath the route blur handoff.
+ * Presets counter values to 0 without running premature animations so they don't flash before the hero sequence.
  */
 function startIncomingMetricCounters(content) {
   const incomingHomeStats = content.querySelector('#stats-counter');
@@ -107,74 +108,87 @@ function startIncomingMetricCounters(content) {
   const incomingCreators = content.querySelector('.section-creators');
   if (incomingCreators) {
     incomingCreators.dataset.transitionHydrated = 'true';
-    incomingCreators.querySelectorAll('.stat-number').forEach((el) => {
-      const target = parseInt(el.dataset.count || '', 10);
-      el.textContent = Number.isNaN(target) ? '0' : target.toLocaleString('en-US');
-    });
-    incomingCreators.querySelectorAll('.stat-dyn-num').forEach((el) => {
-      const target = parseInt(el.dataset.count || '', 10);
-      el.textContent = Number.isNaN(target) ? '0' : String(target);
-    });
   }
 
-  const workHero = content.querySelector('.work-hero-section');
-  if (workHero) {
-    workHero.dataset.transitionMetricsStarted = 'true';
-    const items = [];
-    workHero.querySelectorAll('.work-metric-val').forEach((el) => {
-      const target = parseFloat(el.getAttribute('data-metric-target'));
-      if (Number.isNaN(target)) return;
-      const prefix = el.getAttribute('data-metric-prefix') || '';
-      const suffix = el.getAttribute('data-metric-suffix') || '';
+  // Pre-set metric counters in incoming content to 0 so they never flash target values before animating
+  content.querySelectorAll('.work-metric-val').forEach((el) => {
+    const target = parseFloat(el.getAttribute('data-metric-target'));
+    const prefix = el.getAttribute('data-metric-prefix') || '';
+    const suffix = el.getAttribute('data-metric-suffix') || '';
+    if (!isNaN(target)) {
       const isFloat = target % 1 !== 0;
-      const value = { current: 0 };
-      el.textContent = `${prefix}${isFloat ? '0.0' : '0'}${suffix}`;
-      items.push({ el, target, prefix, suffix, isFloat, value });
-    });
-    const timeline = gsap.timeline({ defaults: { duration: 1.6, ease: 'power2.out' } });
-    items.forEach((item) => {
-      timeline.to(item.value, {
-        current: item.target,
-        onUpdate: () => {
-          const display = item.isFloat ? item.value.current.toFixed(1) : Math.round(item.value.current);
-          item.el.textContent = `${item.prefix}${display}${item.suffix}`;
-        },
-        onComplete: () => {
-          const display = item.isFloat ? item.target.toFixed(1) : item.target;
-          item.el.textContent = `${item.prefix}${display}${item.suffix}`;
-        },
-      }, 0);
-    });
-  }
+      el.textContent = `${prefix}${isFloat ? (0).toFixed(1) : 0}${suffix}`;
+    }
+  });
 
-  const teamHero = content.querySelector('.team-hero-section');
-  if (teamHero) {
-    teamHero.dataset.transitionMetricsStarted = 'true';
-    const timeline = gsap.timeline({ defaults: { duration: 2, ease: 'power2.out' } });
-    teamHero.querySelectorAll('.team-metric-val').forEach((el) => {
-      const format = el.getAttribute('data-metric-format');
-      const value = { current: format === 'top' ? 15 : 0 };
-      let target;
-      let render;
-      if (format === 'billion') {
-        target = 4.5; el.textContent = '0.0B+';
-        render = () => { el.textContent = `${value.current.toFixed(1)}B+`; };
-      } else if (format === 'days') {
-        target = 60; el.textContent = '0 Days';
-        render = () => { el.textContent = `${Math.round(value.current)} Days`; };
-      } else if (format === 'percent') {
-        target = 99.4; el.textContent = '0.0%';
-        render = () => { el.textContent = `${value.current.toFixed(1)}%`; };
-      } else if (format === 'top') {
-        target = 1; el.textContent = 'Top 15%';
-        render = () => { el.textContent = `Top ${Math.round(value.current)}%`; };
-      } else {
-        return;
-      }
-      timeline.to(value, { current: target, onUpdate: render, onComplete: render }, 0);
-    });
-  }
+  content.querySelectorAll('.team-metric-val').forEach((el) => {
+    const format = el.getAttribute('data-metric-format');
+    if (format === 'billion') el.textContent = '0.0B+';
+    else if (format === 'days') el.textContent = '0 Days';
+    else if (format === 'percent') el.textContent = '0.0%';
+    else if (format === 'top') el.textContent = 'Top 15%';
+  });
 }
+
+/**
+ * Dynamic count-up animations for incoming metrics triggered in sync with hero entrance.
+ */
+function animateIncomingMetrics(content) {
+  content.querySelectorAll('.work-metric-val').forEach((el) => {
+    const target = parseFloat(el.getAttribute('data-metric-target'));
+    const prefix = el.getAttribute('data-metric-prefix') || '';
+    const suffix = el.getAttribute('data-metric-suffix') || '';
+    if (isNaN(target)) return;
+    const isFloat = target % 1 !== 0;
+    const obj = { val: 0 };
+    gsap.to(obj, {
+      val: target,
+      duration: 1.6,
+      ease: 'power2.out',
+      onUpdate: () => {
+        const displayVal = isFloat ? obj.val.toFixed(1) : Math.round(obj.val);
+        el.textContent = `${prefix}${displayVal}${suffix}`;
+      },
+      onComplete: () => {
+        const finalVal = isFloat ? target.toFixed(1) : target;
+        el.textContent = `${prefix}${finalVal}${suffix}`;
+      }
+    });
+  });
+
+  content.querySelectorAll('.team-metric-val').forEach((el) => {
+    const format = el.getAttribute('data-metric-format');
+    if (format === 'billion') {
+      const obj = { val: 0 };
+      gsap.to(obj, {
+        val: 4.5,
+        duration: 1.8,
+        ease: 'power2.out',
+        onUpdate: () => { el.textContent = `${obj.val.toFixed(1)}B+`; },
+        onComplete: () => { el.textContent = '4.5B+'; }
+      });
+    } else if (format === 'days') {
+      const obj = { val: 0 };
+      gsap.to(obj, {
+        val: 14,
+        duration: 1.6,
+        ease: 'power2.out',
+        onUpdate: () => { el.textContent = `${Math.round(obj.val)} Days`; },
+        onComplete: () => { el.textContent = '14 Days'; }
+      });
+    } else if (format === 'percent') {
+      const obj = { val: 0 };
+      gsap.to(obj, {
+        val: 99.4,
+        duration: 1.8,
+        ease: 'power2.out',
+        onUpdate: () => { el.textContent = `${obj.val.toFixed(1)}%`; },
+        onComplete: () => { el.textContent = '99.4%'; }
+      });
+    }
+  });
+}
+
 
 /**
  * Prefetches target HTML with TTL caching
@@ -342,41 +356,122 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
     currentContent.classList.add('page-outgoing-frozen');
     currentContent.style.top = `-${currentScrollY}px`;
 
-    // Pre-tokenize incoming headings and hold text ready for hero reveal
+    // Pre-tokenize incoming headings and set up kinetic reveal states
     try {
       const heroHeadings = incomingContent.querySelectorAll(
         '.work-hero-title, .campaign-hero-headline, .why-hero-title, .team-hero-title, .case-hero-title'
       );
       heroHeadings.forEach((heading) => {
         if (window.splitAdscaleWords) window.splitAdscaleWords(heading);
+        heading.dataset.adscaleAnimated = 'true';
       });
-      // Pre-tokenize incoming headings and hold headline words ready for kinetic de-blur reveal
-      incomingContent.querySelectorAll('.adscale-reveal-word').forEach((w) => {
-        w.style.opacity = '0';
-        w.style.transform = 'translateY(25px)';
-        w.style.filter = 'blur(10px)';
-      });
-      // Hold home screen incoming headline words ready for kinetic de-blur reveal
-      incomingContent.querySelectorAll('.hl-word, .hero-headline-connector, .hero-word-roller').forEach((w) => {
-        w.style.opacity = '0';
-        w.style.transform = 'translateY(25px)';
-        w.style.filter = 'blur(10px)';
-      });
-      // All other page components (tags, descriptions, CTAs, cards, grids, media) remain 100% visible and complete!
     } catch (_) {}
 
-    // Mount incoming content inside transparent transition layer
-    const transitionLayer = document.createElement('div');
-    transitionLayer.className = `page-transition-layer ${targetBodyClass || ''}`.trim();
-    transitionLayer.id = 'page-transition-layer';
+    // 1. Collect incoming headline words (subpages + home)
+    const headlineWords = Array.from(
+      incomingContent.querySelectorAll(
+        '.adscale-reveal-word, #hero-headline .hl-word, #hero-headline .hero-headline-connector, #hero-headline .hero-word-roller'
+      )
+    );
+
+    // 2. Collect incoming hero supporting lines
+    const heroLineSelectors = [
+      '.work-hero-tag', '.work-hero-desc', '.work-hero-cta', '.work-hero-metrics-grid', '.work-metric-item',
+      '.campaign-hero-tag', '.campaign-hero-sub', '.campaign-hero-pillars',
+      '.team-hero-tag', '.team-hero-desc', '.team-metrics-grid', '.team-metric-item',
+      '.why-hero-subtitle',
+      '.hero-trust-badge-wrap', '#hero-desc', '#hero-actions',
+      '.case-kicker-tag', '.case-profile-chip-row', '.case-hero-desc'
+    ].join(', ');
+    const heroLineElements = Array.from(incomingContent.querySelectorAll(heroLineSelectors));
+
+    // 3. Collect incoming next section header and cards
+    const nextSectionSelectors = [
+      '.work-capabilities-header', '.work-capabilities-section .section-tag', '.work-capabilities-title', '.capability-card',
+      '.why-philosophy-section .services-header-row', '.why-philosophy-section .services-label-box', '.why-philosophy-section .section-tag', '.why-philosophy-section .services-main-title', '.why-philosophy-grid .service-card-item',
+      '.campaign-search-section', '.campaign-featured-label', '#campaign-grid', '.campaign-movie-card',
+      '.team-grid .founder-card', '.team-member-card',
+      '.section-creators', '.carousel-viewport',
+      '.case-hero-media', '.case-follower-transform-card', '.case-stats-hud'
+    ].join(', ');
+    const nextSectionElements = Array.from(incomingContent.querySelectorAll(nextSectionSelectors));
+
+    // Initial kinetic states on incoming elements (ready for synchronized de-blur entrance)
+    if (headlineWords.length) {
+      gsap.set(headlineWords, {
+        opacity: 0,
+        y: 22,
+        scale: 0.96,
+        filter: 'blur(10px) brightness(1.15)',
+        transformOrigin: '50% 100%',
+        willChange: 'opacity, transform, filter',
+      });
+    }
+
+    if (heroLineElements.length) {
+      gsap.set(heroLineElements, {
+        opacity: 0,
+        y: 18,
+        filter: 'blur(6px)',
+        willChange: 'opacity, transform, filter',
+      });
+    }
+
+    if (nextSectionElements.length) {
+      gsap.set(nextSectionElements, {
+        opacity: 0,
+        y: 20,
+        filter: 'blur(6px)',
+        willChange: 'opacity, transform, filter',
+      });
+    }
+
+    // Flag incoming heroRoot so destination scripts know entrance was initiated by transition
+    const heroRoot = incomingContent.querySelector(
+      '.hero-section, .work-hero-section, .team-hero-section, .why-hero-section, .campaign-hero, .case-hero-section'
+    );
+    if (heroRoot) {
+      heroRoot.dataset.pageEntryStarted = 'true';
+    }
+
+    // Mount incoming content inside transparent transition shell
+    const shell = document.createElement('div');
+    shell.className = `page-transition-shell ${targetBodyClass || ''}`.trim();
+    shell.id = 'page-transition-shell';
+    shell.style.zIndex = '20';
 
     incomingContent.style.position = 'relative';
     incomingContent.style.width = '100%';
     incomingContent.style.minHeight = '100vh';
     incomingContent.style.pointerEvents = 'none';
-    transitionLayer.appendChild(incomingContent);
+    shell.appendChild(incomingContent);
 
-    document.body.appendChild(transitionLayer);
+    // Hold current page background underneath both fades to prevent ambient layer flashing
+    const backdrop = document.createElement('div');
+    backdrop.className = 'page-transition-backdrop';
+    backdrop.id = 'page-transition-backdrop';
+    backdrop.style.backgroundColor = getComputedStyle(document.body).backgroundColor || '#050809';
+    backdrop.style.zIndex = '5'; // Placed BEHIND currentContent (10) and shell (20)
+
+    const glow = document.createElement('div');
+    glow.className = 'page-transition-glow';
+    glow.id = 'page-transition-glow';
+    glow.style.zIndex = '25';
+    glow.style.background = 'radial-gradient(ellipse at 50% 35%, rgba(35, 199, 216, 0.08), transparent 70%)';
+
+    document.body.appendChild(backdrop);
+    document.body.appendChild(shell);
+    document.body.appendChild(glow);
+
+    // Lock native scrollbar width to prevent layout jump during transition
+    const transitionScrollbarWidth = Math.max(
+      0,
+      window.innerWidth - document.documentElement.clientWidth
+    );
+    document.body.style.setProperty(
+      '--transition-scrollbar-width',
+      `${transitionScrollbarWidth}px`
+    );
     document.body.classList.add('page-is-transitioning');
 
     // Dispose old page runtime & ScrollTriggers
@@ -385,151 +480,176 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
     }
     ScrollTrigger.getAll().forEach((t) => t.kill());
 
-    // Hydrate incoming counters
+    // Hydrate incoming counters to 0 placeholder
     startIncomingMetricCounters(incomingContent);
 
     const navbar = document.getElementById('navbar');
+    if (navbar) navbar.classList.add('page-nav-outgoing');
 
-    // Cinematic optical rack-focus parameters: 28px bokeh with anamorphic bloom & saturation
-    const PEAK_BLUR = 'blur(28px) brightness(1.12) saturate(120%)';
-    const CRISP_FOCUS = 'blur(0px) brightness(1) saturate(100%)';
+    // Deep, velvety optical blur transition parameters (BLURRRRR!)
+    const PEAK_BLUR = 'blur(28px)';
+    const CRISP_FOCUS = 'blur(0px)';
 
     // Initial visual states:
-    // Outgoing page is at normal 1.0 focus
     gsap.set(currentContent, {
       opacity: 1,
       filter: CRISP_FOCUS,
       scale: 1,
       y: 0,
-      transformOrigin: '50% 30%',
-      willChange: 'filter, opacity, transform',
+      willChange: 'opacity, transform, filter',
     });
 
     if (navbar) {
       gsap.set(navbar, {
-        filter: 'blur(0px)',
+        opacity: 1,
         y: 0,
-        willChange: 'filter',
+        filter: CRISP_FOCUS,
+        willChange: 'opacity, transform, filter',
       });
     }
 
-    // Incoming page starts deeply blurred, slightly pushed into background depth
-    // with scale 1.04 to guarantee 0px border bleed during 28px blur
-    gsap.set(transitionLayer, {
+    // Incoming page starts with full 28px blur handoff
+    gsap.set(shell, {
       opacity: 0,
       filter: PEAK_BLUR,
-      scale: 1.04,
-      transformOrigin: '50% 30%',
-      willChange: 'filter, opacity, transform',
+      scale: 1.015,
+      y: 10,
+      willChange: 'opacity, transform, filter',
     });
+    gsap.set(glow, { opacity: 0 });
 
-    // 1. Enter OUTGOING_BLUR state: camera focal plane pulls away from outgoing page
     setTransitionState(TransitionState.OUTGOING_BLUR);
 
     activeTransitionTimeline = gsap.timeline({
       defaults: { overwrite: 'auto' },
     });
 
-    // Phase 1: Outgoing page smoothly racks out of focus over 0.36s with forward lens breathing
-    activeTransitionTimeline.to(currentContent, {
+    // 1. Outgoing page smoothly blurs out with rich optical defocus over 0.38s
+    activeTransitionTimeline.to([currentContent, navbar].filter(Boolean), {
+      opacity: 0,
       filter: PEAK_BLUR,
-      scale: 1.025,
-      y: -6,
-      duration: 0.36,
+      y: -8,
+      scale: 0.985,
+      duration: 0.38,
       ease: 'power2.inOut',
     }, 0);
 
-    // Navbar stays stably anchored as navigation HUD with subtle optical softening
-    if (navbar) {
-      activeTransitionTimeline.to(navbar, {
-        filter: 'blur(3.5px)',
-        duration: 0.22,
-        ease: 'power2.inOut',
-      }, 0);
-      activeTransitionTimeline.to(navbar, {
-        filter: 'blur(0px)',
-        duration: 0.30,
-        ease: 'power2.out',
-      }, 0.22);
-    }
+    // 2. Soft atmospheric optical bloom during crossover
+    activeTransitionTimeline.fromTo(glow,
+      { opacity: 0 },
+      { opacity: 0.8, duration: 0.20, ease: 'power2.out', yoyo: true, repeat: 1 },
+      0.08
+    );
 
-    // Phase 2: Organic Aperture Cross-Dissolve (0.16s to 0.36s = 200ms smooth crossover)
-    // While both pages are immersed in deep bokeh, they seamlessly blend into each other
-    activeTransitionTimeline.to(transitionLayer, {
+    // 3. Incoming page crossfades and refocusses into crisp focus over 0.48s starting at 0.05s
+    activeTransitionTimeline.to(shell, {
       opacity: 1,
-      duration: 0.20,
-      ease: 'power1.inOut',
-    }, 0.16);
+      filter: CRISP_FOCUS,
+      scale: 1,
+      y: 0,
+      duration: 0.48,
+      ease: 'power3.out',
+      clearProps: 'filter,willChange',
+    }, 0.05);
 
-    activeTransitionTimeline.to(currentContent, {
-      opacity: 0,
-      duration: 0.20,
-      ease: 'power1.inOut',
-    }, 0.16);
-
-    // Incoming cards & kicker badges prepared for subtle physical depth settling
-    const incomingCards = incomingContent.querySelectorAll(
-      '.work-hero-metrics-grid, .team-metrics-grid, .why-comparison-table, .hero-trust-badge-wrap, .carousel-viewport, .case-stats-hud, .case-follower-transform-card, .campaign-hero-pillars, .campaign-search-section, .campaign-featured-label'
-    );
-    const incomingKickers = incomingContent.querySelectorAll(
-      '.work-hero-tag, .team-hero-tag, .why-hero-tag, .campaign-hero-tag, .case-kicker-tag'
-    );
-    if (incomingCards.length) {
-      gsap.set(incomingCards, { y: 14, scale: 0.985 });
+    // 4. Navbar refocuses smoothly
+    if (navbar) {
+      activeTransitionTimeline.fromTo(navbar,
+        { opacity: 0, y: -8, filter: 'blur(10px)' },
+        {
+          opacity: 1,
+          y: 0,
+          filter: CRISP_FOCUS,
+          duration: 0.36,
+          ease: 'power2.out',
+          clearProps: 'all',
+        },
+        0.10
+      );
     }
-    if (incomingKickers.length) {
-      gsap.set(incomingKickers, { y: 8 });
+
+    // 5. KINETIC TEXT ENTRANCE STARTS AS INCOMING PAGE DE-BLURS (at 0.12s)!
+    // Starts right as the page comes into view so there is ZERO delay or waiting!
+    if (headlineWords.length) {
+      activeTransitionTimeline.to(headlineWords, {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        filter: 'blur(0px) brightness(1)',
+        duration: 0.65,
+        stagger: 0.045,
+        ease: 'power3.out',
+        clearProps: 'filter,transform,willChange',
+        onComplete: () => {
+          if (incomingContent.querySelector('#hero-headline') && window.initHeroWordRoller) {
+            window.initHeroWordRoller();
+          }
+        },
+      }, 0.12);
     }
 
-    // At 0.34s: Old page is completely transparent in deep bokeh; advance state to INCOMING_REFOCUS
+    // 6. HERO NEXT LINES & METRICS CASCADE IN SECOND (at 0.26s)
+    if (heroLineElements.length) {
+      activeTransitionTimeline.to(heroLineElements, {
+        opacity: 1,
+        y: 0,
+        filter: 'blur(0px)',
+        duration: 0.50,
+        stagger: 0.04,
+        ease: 'power2.out',
+        clearProps: 'opacity,transform,filter,willChange',
+        onStart: () => {
+          animateIncomingMetrics(incomingContent);
+        },
+      }, 0.26);
+    }
+
+    // 7. NEXT SECTION HEADER & CARDS CASCADE IN THIRD (at 0.38s)
+    if (nextSectionElements.length) {
+      activeTransitionTimeline.to(nextSectionElements, {
+        opacity: 1,
+        y: 0,
+        filter: 'blur(0px)',
+        duration: 0.50,
+        stagger: 0.045,
+        ease: 'power2.out',
+        clearProps: 'opacity,transform,filter,willChange',
+      }, 0.38);
+    }
+
+    // Advance state to INCOMING_REFOCUS at crossover
     activeTransitionTimeline.call(() => {
       setTransitionState(TransitionState.INCOMING_REFOCUS);
-      currentContent.remove();
       window.__hvUpdateNavbar?.(targetUrl.pathname);
-    }, null, 0.34);
+    }, null, 0.28);
 
-    // Phase 3: Whole incoming page smoothly refocusses from 28px bokeh to crystal clarity (0.22s to 0.62s)
-    activeTransitionTimeline.to(transitionLayer, {
-      filter: CRISP_FOCUS,
-      scale: 1.0,
-      duration: 0.40,
-      ease: 'power3.out',
-    }, 0.22);
+    let shellPromoted = false;
+    const promoteIncomingPage = () => {
+      if (shellPromoted) return;
+      shellPromoted = true;
 
-    // Components settle into position with physical spring mass
-    if (incomingCards.length) {
-      activeTransitionTimeline.to(incomingCards, {
-        y: 0,
-        scale: 1.0,
-        duration: 0.42,
-        ease: 'power3.out',
-        clearProps: 'transform',
-      }, 0.26);
-    }
-
-    if (incomingKickers.length) {
-      activeTransitionTimeline.to(incomingKickers, {
-        y: 0,
-        duration: 0.40,
-        ease: 'power3.out',
-        clearProps: 'transform',
-      }, 0.26);
-    }
-
-    // When refocus completes: Destination is completely sharp!
-    activeTransitionTimeline.eventCallback('onComplete', () => {
       try {
+        glow.remove();
+        backdrop.remove();
+
+        // Remove old frozen content from DOM once crossfade is complete
+        currentContent.remove();
+
         // Clear blur and promote incomingContent into the live document
-        gsap.set(transitionLayer, { clearProps: 'opacity,filter,willChange' });
+        gsap.set(shell, { clearProps: 'opacity,filter,willChange' });
         incomingContent.removeAttribute('style');
-        transitionLayer.insertAdjacentElement('beforebegin', incomingContent);
-        transitionLayer.remove();
+        shell.insertAdjacentElement('beforebegin', incomingContent);
+        shell.remove();
 
         gsap.set(incomingContent, { clearProps: 'filter,willChange' });
-        if (navbar) gsap.set(navbar, { clearProps: 'filter,willChange' });
+        if (navbar) {
+          gsap.set(navbar, { clearProps: 'all' });
+          navbar.classList.remove('page-nav-outgoing');
+        }
 
         if (targetBodyClass) document.body.className = targetBodyClass;
         document.body.classList.remove('page-is-transitioning');
+        document.body.style.removeProperty('--transition-scrollbar-width');
         document.documentElement.classList.remove('page-transitioned', 'page-entering');
         window.__hvEnsureCursorActive?.();
 
@@ -553,26 +673,21 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
         window.__hvResetNavbar?.(window.location.pathname);
         if (window.ScrollTrigger) ScrollTrigger.refresh();
 
-        // Advance state to HERO_WORD_REVEAL!
-        setTransitionState(TransitionState.HERO_WORD_REVEAL);
+        setTransitionState(TransitionState.IDLE);
+        window.clearTimeout(transitionSafetyTimer);
 
-        // Run destination page scripts & start the word-by-word reveal!
+        // Run destination page scripts (safely respecting in-flight entrance animations)
         window.__hvInitPageScripts?.(window.location.pathname, true);
-
-        // Fail-safe timeout to ensure state returns to IDLE if page has no reveal
-        window.setTimeout(() => {
-          if (currentTransitionState === TransitionState.HERO_WORD_REVEAL) {
-            setTransitionState(TransitionState.IDLE);
-          }
-          window.clearTimeout(transitionSafetyTimer);
-        }, 1200);
-
       } catch (err) {
-        console.error('Incoming page initialization failed:', err);
+        console.error('Incoming page promotion failed:', err);
         setTransitionState(TransitionState.IDLE);
         window.clearTimeout(transitionSafetyTimer);
       }
-    });
+    };
+
+    // Promote destination into live document as soon as blur refocus hits crisp clarity (0.52s)
+    activeTransitionTimeline.call(promoteIncomingPage, null, 0.52);
+    activeTransitionTimeline.eventCallback('onComplete', promoteIncomingPage);
 
   } catch (err) {
     if (err && err.name === 'AbortError') {

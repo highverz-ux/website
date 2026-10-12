@@ -201,6 +201,7 @@ html, body,
 /* Reserve the scrollbar track so locking scroll cannot reflow centered content. */
 html {
   scrollbar-gutter: stable;
+  overflow-x: clip;
 }
 
 .service-card-item,
@@ -967,6 +968,7 @@ body.cursor-active .custom-cursor {
   transform: translateY(-16px);
   transition: opacity 0.38s cubic-bezier(0.16, 1, 0.3, 1), transform 0.38s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.38s;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .mobile-nav-overlay.is-open {
@@ -11116,7 +11118,7 @@ html {
   height: 100% !important;
   overflow: hidden !important;
   pointer-events: none !important;
-  z-index: 800 !important;
+  z-index: 20 !important;
   background: transparent !important;
 }
 
@@ -11127,7 +11129,7 @@ html {
   width: 100% !important;
   height: 100% !important;
   pointer-events: none !important;
-  z-index: 995 !important;
+  z-index: 25 !important;
   opacity: 0;
   mix-blend-mode: normal !important;
   transform: translateZ(0);
@@ -11212,9 +11214,9 @@ body.cursor-active .cursor-ring {
 .page-transition-backdrop {
   position: fixed !important;
   inset: 0 !important;
-  z-index: 798 !important;
+  z-index: 5 !important;
   pointer-events: none !important;
-  background-color: transparent !important;
+  background-color: var(--bg-primary, #050809) !important;
 }
 
 body.page-is-transitioning,
@@ -14107,8 +14109,8 @@ body::-webkit-scrollbar {
 
 @media (max-width: 900px) {
   .nav-actions { gap: 0.4rem; }
-  .mobile-toggle, .theme-switcher { width: 44px; height: 44px; flex-shrink: 0; }
-  .btn-nav-talk { min-height: 44px; }
+  .mobile-toggle, .theme-switcher { width: 42px; height: 42px; flex-shrink: 0; }
+  .btn-nav-talk { min-height: 42px; }
   .mobile-nav-overlay {
     padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1.5rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
     overscroll-behavior: contain;
@@ -14122,6 +14124,274 @@ body::-webkit-scrollbar {
   .mobile-nav-footer-meta { flex-wrap: wrap; gap: 0.75rem; }
 }
 
+/* ==========================================================================
+   DEDICATED MOBILE APPLICATION OPTIMIZATIONS (STRICTLY MOBILE ONLY)
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* 1. Fluid Canvas: Non-interactive, zero touch jank, pure ambient motion */
+  .global-fluid-canvas {
+    pointer-events: none !important;
+    touch-action: none !important;
+  }
+
+  /* 2. Mobile Floating Navbar Pill: Clean, un-cramped, spacious layout */
+  .navbar {
+    top: 0.65rem;
+    padding: 0 0.85rem;
+  }
+  .navbar .btn-nav-talk {
+    display: none !important;
+  }
+  .nav-container,
+  .navbar.scrolled .nav-container {
+    width: 100%;
+    padding: 0.4rem 0.65rem 0.4rem 0.95rem;
+    justify-content: space-between;
+  }
+  .nav-brand-logo-img {
+    height: 22px;
+    width: auto;
+  }
+  .nav-actions {
+    gap: 0.45rem;
+    align-items: center;
+  }
+  .mobile-toggle,
+  .theme-switcher {
+    width: 38px;
+    height: 38px;
+    min-height: 38px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* 3. Mobile Navigation Drawer Overlay */
+  .mobile-nav-overlay {
+    padding: max(1.2rem, env(safe-area-inset-top)) 1.5rem max(1.5rem, env(safe-area-inset-bottom)) 1.5rem;
+  }
+  .mobile-nav-text {
+    font-size: clamp(1.4rem, 6.2vw, 1.85rem) !important;
+    line-height: 1.15;
+  }
+  .mobile-nav-num {
+    font-size: 0.75rem;
+  }
+  .mobile-nav-list {
+    gap: 0.45rem;
+    margin: auto 0;
+  }
+  .mobile-nav-link {
+    min-height: 42px;
+    padding: 0.45rem 0;
+  }
+  .mobile-nav-talk-btn {
+    padding: 0.85rem 1.35rem;
+    font-size: 0.86rem;
+  }
+
+  /* 4. Balanced Mobile Typography (No giant wrapping headers) */
+  .hero-headline,
+  .hero-headline--centered {
+    font-size: clamp(1.65rem, 6.2vw, 2.15rem) !important;
+    line-height: 1.16 !important;
+    margin-bottom: 0.9rem !important;
+  }
+  .hero-description,
+  .hero-description--centered {
+    font-size: 0.88rem !important;
+    line-height: 1.55 !important;
+    margin-bottom: 1.35rem !important;
+  }
+  .work-hero-title {
+    font-size: clamp(1.75rem, 6.5vw, 2.25rem) !important;
+    line-height: 1.14 !important;
+    margin-bottom: 0.85rem !important;
+  }
+  .work-hero-desc {
+    font-size: 0.88rem !important;
+    line-height: 1.55 !important;
+  }
+  .work-capabilities-title {
+    font-size: clamp(1.65rem, 6vw, 2.15rem) !important;
+    line-height: 1.15 !important;
+  }
+  .work-capabilities-sub {
+    font-size: 0.88rem !important;
+    line-height: 1.55 !important;
+  }
+  .team-hero-title {
+    font-size: clamp(1.75rem, 6.5vw, 2.25rem) !important;
+    line-height: 1.14 !important;
+    margin-bottom: 0.85rem !important;
+  }
+  .team-hero-desc {
+    font-size: 0.88rem !important;
+    line-height: 1.55 !important;
+  }
+  .why-hero-title {
+    font-size: clamp(1.75rem, 6.5vw, 2.25rem) !important;
+    line-height: 1.14 !important;
+    margin-bottom: 0.85rem !important;
+  }
+  .why-hero-subtitle {
+    font-size: 0.88rem !important;
+    line-height: 1.55 !important;
+  }
+  .case-hero-title {
+    font-size: clamp(1.65rem, 6vw, 2.15rem) !important;
+    line-height: 1.15 !important;
+  }
+  .case-hero-desc {
+    font-size: 0.88rem !important;
+    line-height: 1.55 !important;
+  }
+  .section-title,
+  .portfolio-title,
+  .creators-title,
+  .services-title,
+  .statement-headline {
+    font-size: clamp(1.5rem, 5.5vw, 1.95rem) !important;
+    line-height: 1.18 !important;
+  }
+
+  /* 5. Work Page Hero & Metrics Grid */
+  .work-hero-section {
+    padding-top: 5.5rem;
+    padding-bottom: 2rem;
+  }
+  .work-hero-metrics-grid {
+    max-width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+  }
+  .work-metric-item {
+    min-height: 100px;
+    padding: 1.1rem 0.85rem 0.85rem;
+    border-radius: 16px;
+  }
+  .work-metric-item::before {
+    top: 0.65rem;
+    left: 0.85rem;
+    font-size: 0.6rem;
+  }
+  .work-metric-val {
+    font-size: clamp(1.35rem, 5vw, 1.65rem) !important;
+  }
+  .work-metric-label {
+    font-size: 0.64rem !important;
+    line-height: 1.25 !important;
+  }
+
+  /* 6. Work Page Filter Chips: Smooth Horizontal Swipe */
+  .work-toolbar-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .work-toolbar-action {
+    display: none !important;
+  }
+  .work-creators-filter-bar {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 0.5rem;
+    padding-bottom: 0.35rem;
+    margin-bottom: 0;
+    width: 100%;
+  }
+  .work-creators-filter-bar::-webkit-scrollbar {
+    display: none;
+  }
+  .work-filter-chip {
+    flex-shrink: 0;
+    height: 38px;
+    padding: 0.4rem 0.85rem;
+    font-size: 0.74rem;
+  }
+
+  /* 7. Work Page Creator Cards: Proportional, Compact, Premium */
+  .work-creators-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+  .work-creator-visual {
+    aspect-ratio: 16 / 10 !important;
+  }
+  .work-creator-body {
+    padding: 1rem 1.15rem 1.15rem;
+    gap: 0.75rem;
+  }
+  .work-creator-main-info {
+    min-height: auto;
+    gap: 0.2rem;
+  }
+  .work-creator-name {
+    font-size: 1.15rem;
+  }
+  .work-creator-niche {
+    font-size: 0.76rem;
+    line-height: 1.35;
+  }
+  .work-creator-stat-box {
+    min-height: 56px;
+    padding: 0.55rem 0.85rem;
+  }
+  .w-stat-num {
+    font-size: 0.95rem;
+  }
+  .w-stat-lbl {
+    font-size: 0.6rem;
+  }
+  .w-stat-pill {
+    min-height: 30px;
+    font-size: 0.68rem;
+    padding: 0.2rem 0.5rem;
+  }
+  .work-creator-tags {
+    min-height: auto;
+    gap: 0.35rem;
+  }
+  .work-creator-tag-item {
+    min-height: 25px;
+    font-size: 0.64rem;
+    padding: 0.2rem 0.55rem;
+  }
+  .work-creator-cta-row {
+    padding-top: 0.65rem;
+    font-size: 0.76rem;
+  }
+
+  /* 8. Work Page Capabilities Cards */
+  .work-capabilities-section {
+    padding: 3.5rem 0 2rem;
+  }
+  .work-capabilities-header {
+    margin-bottom: 2rem;
+  }
+  .work-capabilities-grid {
+    grid-template-columns: 1fr;
+    gap: 1.15rem;
+  }
+  .work-capabilities-grid .capability-visual-wrap {
+    aspect-ratio: 16 / 9;
+  }
+  .work-capabilities-grid .capability-content {
+    padding: 1.1rem 1.25rem 1.25rem;
+    gap: 0.35rem;
+  }
+  .work-capabilities-grid .capability-name {
+    font-size: 1.1rem;
+  }
+  .work-capabilities-grid .capability-desc {
+    font-size: 0.82rem;
+    line-height: 1.45;
+  }
+}
+
 @media (max-width: 600px) {
   .case-hero-grid { grid-template-columns: minmax(0, 1fr); }
   .case-hero-content, .case-hero-media { min-width: 0; max-width: 100%; }
@@ -14131,15 +14401,14 @@ body::-webkit-scrollbar {
   .case-trans-label { overflow-wrap: anywhere; }
   .team-metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
   .team-metric-item { padding: 1rem 0.5rem; min-width: 0; }
-  .team-metric-val { font-size: clamp(1.4rem, 6vw, 1.85rem); }
-  .team-metric-label { font-size: 0.7rem; overflow-wrap: anywhere; }
-  .team-hero-desc, .why-hero-subtitle { font-size: 1rem; line-height: 1.65; }
-  .why-hero-section { padding: 8rem 0 3rem; }
+  .team-metric-val { font-size: clamp(1.35rem, 5.5vw, 1.75rem); }
+  .team-metric-label { font-size: 0.68rem; overflow-wrap: anywhere; }
+  .team-hero-desc, .why-hero-subtitle { font-size: 0.88rem; line-height: 1.55; }
+  .why-hero-section { padding: 6rem 0 2.5rem; }
   .footer a { display: inline-flex; align-items: center; min-height: 44px; }
 }
 
 @media (max-width: 360px) {
-  .nav-container, .navbar.scrolled .nav-container { padding-inline: 0.65rem; }
-  .btn-nav-talk { padding-inline: 0.6rem; font-size: 0.72rem; }
-  .case-trans-number { font-size: 1.4rem; }
+  .nav-container, .navbar.scrolled .nav-container { padding-inline: 0.55rem; }
+  .case-trans-number { font-size: 1.3rem; }
 }

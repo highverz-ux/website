@@ -748,7 +748,8 @@ body.enquiry-modal-open .admin-leads-close {
 
 .admin-leads-table-wrap {
   flex-grow: 1;
-  overflow-y: auto;
+  overflow: auto;
+  max-width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   background: rgba(4, 7, 11, 0.7);

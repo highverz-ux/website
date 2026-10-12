@@ -180,13 +180,22 @@ export function initHeroFluidBackground() {
     const isMobile = window.innerWidth < 768;
     const width = Math.max(1, window.innerWidth);
     const height = Math.max(1, window.innerHeight);
-    renderer.setPixelRatio(isMobile ? 0.75 : Math.min(window.devicePixelRatio || 1, 1.5));
+    renderer.setPixelRatio(isMobile ? 0.65 : Math.min(window.devicePixelRatio || 1, 1.5));
     renderer.setSize(width, height, false);
     material.uniforms.uResolution.value.set(width, height);
   };
 
   const render = (now = 0) => {
     if (isDestroyed || !isVisible) return;
+
+    if (window.innerWidth < 768) {
+      // Mobile: autonomous, gentle ambient drift without user touch interference
+      const t = now * 0.00035;
+      targetPointer.set(
+        0.5 + Math.sin(t) * 0.16 + Math.cos(t * 0.65) * 0.06,
+        0.5 + Math.cos(t * 0.75) * 0.14 + Math.sin(t * 0.45) * 0.06,
+      );
+    }
 
     pointer.lerp(targetPointer, 0.18);
     material.uniforms.uPointer.value.copy(pointer);
@@ -202,6 +211,9 @@ export function initHeroFluidBackground() {
   };
 
   const onPointerMove = (event) => {
+    // Non-interactive on mobile to preserve touch gestures, eliminate scroll jank, and save resources
+    if (window.innerWidth < 768) return;
+
     const rect = { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
     targetPointer.set(
       Math.max(0, Math.min(1, (event.clientX - rect.left) / Math.max(1, rect.width))),

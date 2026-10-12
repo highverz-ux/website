@@ -11133,16 +11133,16 @@ html {
   opacity: 0;
   mix-blend-mode: normal !important;
   transform: translateZ(0);
-  -webkit-backdrop-filter: blur(28px);
-  backdrop-filter: blur(28px);
-  background: radial-gradient(ellipse at 50% 35%, rgba(35, 199, 216, 0.14), rgba(4, 7, 12, 0.65) 75%);
+  -webkit-backdrop-filter: blur(28px) saturate(140%);
+  backdrop-filter: blur(28px) saturate(140%);
+  background: radial-gradient(ellipse at 50% 35%, rgba(35, 199, 216, 0.08), rgba(4, 7, 12, 0.28) 80%);
   will-change: opacity;
 }
 
 [data-theme="light"] .page-transition-glow {
-  background: radial-gradient(ellipse at 50% 35%, rgba(35, 199, 216, 0.09), rgba(245, 247, 250, 0.65) 75%);
-  -webkit-backdrop-filter: blur(28px);
-  backdrop-filter: blur(28px);
+  background: radial-gradient(ellipse at 50% 35%, rgba(35, 199, 216, 0.06), rgba(245, 247, 250, 0.35) 80%);
+  -webkit-backdrop-filter: blur(28px) saturate(140%);
+  backdrop-filter: blur(28px) saturate(140%);
 }
 
 .page-transition-glow.page-transition-blur-veil {

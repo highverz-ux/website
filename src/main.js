@@ -2432,9 +2432,9 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
         opacity: 0,
         y: isMobile ? 18 : 28,
         scale: isMobile ? 0.97 : 0.94,
-        filter: isMobile ? 'none' : 'blur(12px) brightness(1.2)',
+        filter: 'none',
         transformOrigin: '50% 100%',
-        willChange: isMobile ? 'opacity, transform' : 'opacity, transform, filter',
+        willChange: 'opacity, transform',
       });
       beginEntry();
       gsap.to(allTargetWords, {
@@ -2459,8 +2459,8 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
       gsap.set(heroLineElements, {
         opacity: 0,
         y: isMobile ? 14 : 20,
-        filter: isMobile ? 'none' : 'blur(6px)',
-        willChange: isMobile ? 'opacity, transform' : 'opacity, transform, filter',
+        filter: 'none',
+        willChange: 'opacity, transform',
       });
       beginEntry();
       gsap.to(heroLineElements, {
@@ -2489,8 +2489,8 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
       gsap.set(nextSectionElements, {
         opacity: 0,
         y: isMobile ? 20 : 28,
-        filter: isMobile ? 'none' : 'blur(8px)',
-        willChange: isMobile ? 'opacity, transform' : 'opacity, transform, filter',
+        filter: 'none',
+        willChange: 'opacity, transform',
       });
       beginEntry();
       gsap.to(nextSectionElements, {

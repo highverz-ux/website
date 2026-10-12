@@ -301,16 +301,36 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
   // 2. ENGAGE OPTICAL BLUR TRANSITION IMMEDIATELY ON CLICK (0ms transition start!)
   const currentContent = document.getElementById('page-content') || document.querySelector('main.page-content');
   const navbar = document.getElementById('navbar') || document.querySelector('.navbar');
+  const backgroundLayers = Array.from(document.querySelectorAll(
+    '.global-fluid-canvas, .ambient-glow, .grain-overlay, .hero-bg-accent'
+  ));
+  const backgroundOpacities = new Map(backgroundLayers.map((layer) => [
+    layer,
+    parseFloat(getComputedStyle(layer).opacity) || 1,
+  ]));
 
   if (!prefersReducedMotion) {
+    // Defocus the shared atmospheric layers with the page and navbar. These
+    // sit outside #page-content, so leaving them sharp made the transition
+    // look like only the foreground was changing.
+    if (backgroundLayers.length) {
+      gsap.killTweensOf(backgroundLayers);
+      gsap.to(backgroundLayers, {
+        filter: isMobile ? 'blur(24px)' : 'blur(34px)',
+        opacity: (index, target) => (backgroundOpacities.get(target) || 1) * 0.34,
+        duration: isMobile ? 0.28 : 0.40,
+        ease: 'power2.inOut',
+      });
+    }
+
     // Optical defocus of the navbar in sync with full-page defocus
     if (navbar) {
       gsap.killTweensOf(navbar);
       gsap.to(navbar, {
-        filter: isMobile ? 'blur(16px)' : 'blur(20px)',
-        opacity: isMobile ? 0.50 : 0.40,
+        filter: isMobile ? 'blur(30px)' : 'blur(40px)',
+        opacity: isMobile ? 0.18 : 0.14,
         scale: isMobile ? 0.99 : 0.985,
-        duration: isMobile ? 0.14 : 0.18,
+        duration: isMobile ? 0.44 : 0.56,
         ease: 'power2.inOut',
       });
     }
@@ -338,10 +358,10 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       // Optical defocus of the active page directly on DOM content
       gsap.killTweensOf(currentContent);
       gsap.to(currentContent, {
-        filter: isMobile ? 'blur(20px)' : 'blur(28px)',
+        filter: isMobile ? 'blur(26px)' : 'blur(36px)',
         opacity: 0.08,
         scale: isMobile ? 0.992 : 0.988,
-        duration: isMobile ? 0.16 : 0.20,
+        duration: isMobile ? 0.26 : 0.34,
         ease: 'power2.inOut',
       });
 
@@ -514,8 +534,11 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
 
     // Initial state: incoming shell starts blurred and transparent, ready for smooth optical refocus
     gsap.set(shell, {
-      filter: isMobile ? 'blur(20px)' : 'blur(28px)',
-      opacity: 0,
+      filter: isMobile ? 'blur(30px)' : 'blur(42px)',
+      // Keep the incoming page faintly visible from frame one. Starting at
+      // zero while the outgoing page is already fading creates a blank tree
+      // between routes, especially on throttled phones.
+      opacity: isMobile ? 0.28 : 0.22,
       scale: isMobile ? 1.008 : 1.015,
       y: isMobile ? 4 : 8,
       willChange: 'filter, opacity, transform',
@@ -571,6 +594,11 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
         document.documentElement.classList.remove('page-transitioned', 'page-entering');
         window.__hvEnsureCursorActive?.();
 
+        // The fluid canvas lives outside the swapped content shell. Refresh
+        // its viewport and static mobile frame after promotion so the ambient
+        // background is immediately present on the destination route.
+        window.dispatchEvent(new Event('resize'));
+
         // Reset scroll position to top
         window.scrollTo(0, 0);
         if (window.lenis) {
@@ -587,10 +615,9 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
           document.title = targetTitle;
         }
 
-        if (navbar) {
-          navbar.classList.remove('nav-hidden');
-          gsap.set(navbar, { clearProps: 'all' });
-        }
+        // Keep the navbar blur alive through the handoff. Clearing it here
+        // made the header snap sharp before the page had refocused.
+        navbar?.classList.remove('nav-hidden');
 
         window.__hvUpdateNavbar?.(window.location.pathname);
         window.__hvResetNavbar?.(window.location.pathname);
@@ -619,10 +646,20 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
         opacity: 1,
         scale: 1,
         y: 0,
-        duration: 0.18,
+        duration: 0.36,
         ease: 'power2.out',
         clearProps: 'filter,transform,willChange',
       }, 0.08);
+
+      if (backgroundLayers.length) {
+        activeTransitionTimeline.to(backgroundLayers, {
+          filter: 'blur(0px)',
+          opacity: (index, target) => backgroundOpacities.get(target) || 1,
+          duration: 0.36,
+          ease: 'power2.out',
+          clearProps: 'filter,opacity,willChange',
+        }, 0.08);
+      }
 
       // 2. Navbar smoothly refocused in sync with incoming page
       if (navbar) {
@@ -630,19 +667,19 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
           filter: 'blur(0px)',
           opacity: 1,
           scale: 1,
-          duration: 0.16,
+          duration: 0.34,
           ease: 'power2.out',
           clearProps: 'all',
-        }, 0.10);
+        }, 0.38);
       }
 
       // Outgoing page finishes fade
       if (currentContent) {
         activeTransitionTimeline.to(currentContent, {
           opacity: 0,
-          filter: 'blur(24px)',
+          filter: 'blur(28px)',
           y: -4,
-          duration: 0.14,
+          duration: 0.28,
           ease: 'power2.in',
         }, 0);
       }
@@ -650,16 +687,16 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       // Advance state to INCOMING_REFOCUS
       activeTransitionTimeline.call(() => {
         setTransitionState(TransitionState.INCOMING_REFOCUS);
-      }, null, 0.20);
+      }, null, 0.40);
 
       // Promote destination into live document promptly at 0.26s
-      activeTransitionTimeline.call(promoteIncomingPage, null, 0.26);
+      activeTransitionTimeline.call(promoteIncomingPage, null, 0.48);
 
       // 4. AND THEN THE TEXT REVEALS ONE BY ONE (Word-by-Word Kinetic Reveal)
       if (headlineWords.length) {
         activeTransitionTimeline.call(() => {
           setTransitionState(TransitionState.HERO_WORD_REVEAL);
-        }, null, 0.28);
+        }, null, 0.52);
 
         activeTransitionTimeline.to(headlineWords, {
           opacity: 1,
@@ -675,7 +712,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
               window.initHeroWordRoller();
             }
           },
-        }, 0.28);
+        }, 0.52);
       }
 
       // 5. AND THEN THE COMPONENTS REVEAL (Hero Lines, Subtitles, Tags, Metrics)
@@ -691,7 +728,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
           onStart: () => {
             animateIncomingMetrics(incomingContent);
           },
-        }, 0.34);
+        }, 0.64);
       }
 
       // 6. AND THEN THE CARDS REVEAL (Sequential Cascade)
@@ -704,7 +741,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
           stagger: 0.055,
           ease: 'power2.out',
           clearProps: 'opacity,transform,filter,visibility',
-        }, 0.44);
+        }, 0.82);
       }
 
     } else {
@@ -718,10 +755,20 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
         opacity: 1,
         scale: 1,
         y: 0,
-        duration: 0.24,
+        duration: 0.46,
         ease: 'power2.out',
         clearProps: 'filter,transform,willChange',
       }, 0.10);
+
+      if (backgroundLayers.length) {
+        activeTransitionTimeline.to(backgroundLayers, {
+          filter: 'blur(0px)',
+          opacity: (index, target) => backgroundOpacities.get(target) || 1,
+          duration: 0.46,
+          ease: 'power2.out',
+          clearProps: 'filter,opacity,willChange',
+        }, 0.10);
+      }
 
       // 2. Navbar smoothly refocused in sync with incoming page
       if (navbar) {
@@ -729,20 +776,20 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
           filter: 'blur(0px)',
           opacity: 1,
           scale: 1,
-          duration: 0.22,
+          duration: 0.44,
           ease: 'power2.out',
           clearProps: 'all',
-        }, 0.12);
+        }, 0.52);
       }
 
       // Outgoing page finishes fade
       if (currentContent) {
         activeTransitionTimeline.to(currentContent, {
           opacity: 0,
-          filter: 'blur(32px)',
+          filter: 'blur(40px)',
           y: -8,
           scale: 0.985,
-          duration: 0.18,
+          duration: 0.36,
           ease: 'power2.in',
         }, 0);
       }
@@ -750,16 +797,16 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       // Advance state to INCOMING_REFOCUS
       activeTransitionTimeline.call(() => {
         setTransitionState(TransitionState.INCOMING_REFOCUS);
-      }, null, 0.26);
+      }, null, 0.50);
 
       // Promote destination into live document promptly at 0.34s
-      activeTransitionTimeline.call(promoteIncomingPage, null, 0.34);
+      activeTransitionTimeline.call(promoteIncomingPage, null, 0.62);
 
       // 3. AND THEN THE TEXT REVEALS ONE BY ONE (Beat 3: Word-by-Word Kinetic Reveal)
       if (headlineWords.length) {
         activeTransitionTimeline.call(() => {
           setTransitionState(TransitionState.HERO_WORD_REVEAL);
-        }, null, 0.36);
+        }, null, 0.66);
 
         activeTransitionTimeline.to(headlineWords, {
           opacity: 1,
@@ -775,7 +822,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
               window.initHeroWordRoller();
             }
           },
-        }, 0.36);
+        }, 0.66);
       }
 
       // 4. AND THEN THE COMPONENTS REVEAL (Beat 4: Hero Lines, Subtitles, Tags, Metrics)
@@ -791,7 +838,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
           onStart: () => {
             animateIncomingMetrics(incomingContent);
           },
-        }, 0.48);
+        }, 0.82);
       }
 
       // 5. AND THEN THE CARDS REVEAL SEQUENTIALLY (Beat 5: Capability & Philosophy & Comparison Cards)
@@ -804,7 +851,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
           stagger: 0.065,
           ease: 'power2.out',
           clearProps: 'opacity,transform,filter,visibility',
-        }, 0.60);
+        }, 1.04);
       }
     }
 

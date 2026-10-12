@@ -11191,7 +11191,9 @@ body.cursor-active .cursor-ring {
   inset: 0 !important;
   z-index: 5 !important;
   pointer-events: none !important;
-  background-color: var(--bg-primary, #050809) !important;
+  /* The blurred incoming shell and outgoing page remain visible together. A
+     solid backdrop here creates the black flash users see on slow phones. */
+  background-color: transparent !important;
 }
 
 body.page-is-transitioning,

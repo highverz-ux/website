@@ -811,9 +811,25 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
     activeTransitionTimeline.eventCallback('onComplete', () => {
       promoteIncomingPage();
       setTransitionState(TransitionState.IDLE);
+      // Clean up all transient inline styles across animated elements so scrolling never re-triggers them
+      const allRevealed = document.querySelectorAll(
+        '.adscale-reveal-word, .hl-word, .hero-headline-connector, .hero-word-roller, ' +
+        '.capability-card, .service-card-item, .comp-card, .founder-card, .team-member-card, ' +
+        '.campaign-movie-card, .creator-card, .founder-accord-card, .pillar-card, ' +
+        '.work-metric-item, .team-metric-item'
+      );
+      gsap.set(allRevealed, { opacity: 1, filter: 'none', clearProps: 'all' });
       if (window.ScrollTrigger) ScrollTrigger.refresh();
       window.clearTimeout(transitionSafetyTimer);
     });
+
+    // If user starts scrolling while transition timeline is playing, fast-forward so nothing stays hidden
+    const onUserScrollDuringTransition = () => {
+      if (getTransitionState() !== TransitionState.IDLE && activeTransitionTimeline) {
+        activeTransitionTimeline.progress(1);
+      }
+    };
+    window.addEventListener('scroll', onUserScrollDuringTransition, { passive: true, once: true });
 
   } catch (err) {
     if (err && err.name === 'AbortError') {

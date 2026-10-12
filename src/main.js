@@ -768,6 +768,7 @@ function initNavbar() {
   }
   window.addEventListener('scroll', () => {
     onScrollUpdate(window.scrollY);
+    if (window.ScrollTrigger) window.ScrollTrigger.update();
   }, { passive: true });
 
   // Peek reveal: when cursor moves to top 50px of the viewport, bring navbar back
@@ -1284,7 +1285,13 @@ export function initAdscaleTextEffects(root = document) {
   if (!revealElements.length) return;
 
   function revealWords(element) {
-    if (element.dataset.adscaleAnimated === 'true') return;
+    if (element.dataset.adscaleAnimated === 'true') {
+      const words = element.querySelectorAll('.adscale-reveal-word');
+      if (words.length) {
+        gsap.set(words, { opacity: 1, y: 0, filter: 'none', clearProps: 'all' });
+      }
+      return;
+    }
     element.dataset.adscaleAnimated = 'true';
 
     const words = element.querySelectorAll('.adscale-reveal-word');
@@ -1295,7 +1302,7 @@ export function initAdscaleTextEffects(root = document) {
         filter: 'blur(0px)',
         duration: 0.72,
         ease: 'power2.out',
-        clearProps: 'filter,willChange'
+        clearProps: 'all'
       });
       return;
     }
@@ -1310,21 +1317,27 @@ export function initAdscaleTextEffects(root = document) {
       opacity: 1,
       y: 0,
       filter: 'blur(0px)',
-      duration: 0.7,
-      stagger: 0.07,
+      duration: 0.65,
+      stagger: 0.055,
       ease: 'power3.out',
-      clearProps: 'filter,willChange'
+      clearProps: 'all',
+      onComplete: () => {
+        gsap.set(words, { opacity: 1, y: 0, filter: 'none', clearProps: 'all' });
+      }
     });
   }
 
-  // Clean up any previously attached observer
+  // Clean up any previously attached observer & scroll listener
   if (window.__hvAdscaleObserver) {
     window.__hvAdscaleObserver.disconnect();
     window.__hvAdscaleObserver = null;
   }
+  if (window.__hvAdscaleScrollHandler) {
+    window.removeEventListener('scroll', window.__hvAdscaleScrollHandler);
+    window.__hvAdscaleScrollHandler = null;
+  }
 
-  // Native IntersectionObserver guarantees reliable in-view triggering
-  // regardless of Lenis smooth scroll, virtual inertia, or fast swipe
+  // Widen rootMargin so words finish revealing BEFORE reaching view
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
@@ -1334,7 +1347,7 @@ export function initAdscaleTextEffects(root = document) {
     });
   }, {
     root: null,
-    rootMargin: '0px 0px -40px 0px',
+    rootMargin: '250px 0px 250px 0px',
     threshold: 0
   });
 
@@ -1350,54 +1363,55 @@ export function initAdscaleTextEffects(root = document) {
 
     if (isReducedMotion) {
       gsap.set(words, { opacity: 1, y: 0, filter: 'none', clearProps: 'all' });
+      element.dataset.adscaleAnimated = 'true';
       return;
     }
 
-    // Set initial state: words start hidden, offset below, blurred — same motion language
-    if (element.dataset.adscaleAnimated !== 'true') {
-      gsap.set(words, {
-        opacity: 0,
-        y: 25,
-        filter: 'blur(10px)',
-        willChange: 'opacity, transform, filter'
-      });
-    }
-
-    // If intro screen is still active or pending, hold off revealing until curtain lifts
-    const isIntroPending = document.documentElement.classList.contains('intro-pending') ||
-                           document.body.classList.contains('intro-active');
-    const isHeroEntryPending = document.documentElement.classList.contains('page-entering') &&
-      element.matches('.work-hero-title, .campaign-hero-headline, .why-hero-title, .team-hero-title, .case-hero-title');
-    if (isIntroPending || isHeroEntryPending) {
+    // If already revealed once, keep permanently visible and unblurred!
+    if (element.dataset.adscaleAnimated === 'true') {
+      gsap.set(words, { opacity: 1, y: 0, filter: 'none', clearProps: 'all' });
       return;
     }
 
-    // Immediate viewport check: if already in view, reveal immediately (no stuck text!)
     const rect = element.getBoundingClientRect();
-    const inViewport = rect.top < window.innerHeight * 0.92 && rect.bottom > 0;
-    if (inViewport) {
+    // If element is AT or ABOVE viewport (including already scrolled past), reveal immediately!
+    const isAtOrAboveViewport = rect.top < window.innerHeight * 0.96;
+
+    if (isAtOrAboveViewport) {
       revealWords(element);
-    } else if (element.dataset.adscaleAnimated !== 'true') {
-      observer.observe(element);
+      return;
     }
+
+    // Elements below viewport start hidden waiting to be scrolled into
+    gsap.set(words, {
+      opacity: 0,
+      y: 20,
+      filter: 'blur(8px)',
+      willChange: 'opacity, transform, filter'
+    });
+
+    observer.observe(element);
   });
 
-  // Safety net: after 800ms, ensure no element currently on screen remains stuck blurred
-  const isIntroPending = document.documentElement.classList.contains('intro-pending') ||
-                         document.body.classList.contains('intro-active');
-  if (!isIntroPending) {
-    setTimeout(() => {
-      revealElements.forEach((element) => {
-        if (element.dataset.adscaleAnimated !== 'true') {
-          const rect = element.getBoundingClientRect();
-          if (rect.top < window.innerHeight * 0.95 && rect.bottom > 0) {
-            revealWords(element);
-            observer.unobserve(element);
-          }
+  // Passive scroll listener ensures fast scroll/flick never leaves any element stuck hidden
+  const onScrollCheck = () => {
+    revealElements.forEach((element) => {
+      if (element.dataset.adscaleAnimated !== 'true') {
+        const rect = element.getBoundingClientRect();
+        if (rect.top < window.innerHeight + 150) {
+          revealWords(element);
+          observer.unobserve(element);
         }
-      });
-    }, 800);
-  }
+      }
+    });
+  };
+  window.__hvAdscaleScrollHandler = onScrollCheck;
+  window.addEventListener('scroll', onScrollCheck, { passive: true });
+
+  // Safety net: after 400ms, ensure no element currently visible remains stuck
+  setTimeout(() => {
+    onScrollCheck();
+  }, 400);
 }
 
 function initHeroIntro(immediate = false) {
@@ -1527,10 +1541,9 @@ function initHeroIntro(immediate = false) {
     0.85
   );
 
-  // Hero parallax on scroll
+  // Hero parallax on scroll (maintain full opacity so content stays crisp and never looks blank/washed out)
   gsap.to('.hero-content', {
     y: -40,
-    opacity: 0.5,
     ease: 'none',
     scrollTrigger: {
       trigger: '.hero-section',
@@ -1810,21 +1823,26 @@ function initCreatorsSection() {
   );
 
   // Cards reveal with staggered entrance (once: true guarantees cards never disappear on scroll)
-  gsap.fromTo(cards,
-    { opacity: 0, y: 40 },
-    {
-      opacity: 1, y: 0,
-      duration: 1.1,
-      stagger: 0.18,
-      ease: 'expo.out',
-      clearProps: 'transform',
-      scrollTrigger: {
-        trigger: section,
-        start: 'top 85%',
-        once: true,
+  const creatorsRect = section.getBoundingClientRect();
+  if (creatorsRect.top < window.innerHeight * 0.95) {
+    gsap.set(cards, { opacity: 1, y: 0, clearProps: 'all' });
+  } else {
+    gsap.fromTo(cards,
+      { opacity: 0, y: 40 },
+      {
+        opacity: 1, y: 0,
+        duration: 1.1,
+        stagger: 0.18,
+        ease: 'expo.out',
+        clearProps: 'all',
+        scrollTrigger: {
+          trigger: section,
+          start: 'top 85%',
+          once: true,
+        }
       }
-    }
-  );
+    );
+  }
 
   // Trigger stat animation whenever the creators section enters the viewport
   let statsTrigger = null;
@@ -2099,7 +2117,6 @@ function initServicesReveal(isFromTransition = false) {
   if (document.body.classList.contains('page-why-us')) return;
   const cards = document.querySelectorAll('.service-card-item');
   if (!cards.length) return;
-  if (isFromTransition || window.__hvGetTransitionState?.() !== 'IDLE') return;
 
   // Header reveal
   gsap.fromTo('.services-header-row',
@@ -2108,6 +2125,7 @@ function initServicesReveal(isFromTransition = false) {
       opacity: 1, y: 0,
       duration: 1,
       ease: 'expo.out',
+      clearProps: 'all',
       scrollTrigger: {
         trigger: '.section-services',
         start: 'top 82%',
@@ -2118,6 +2136,11 @@ function initServicesReveal(isFromTransition = false) {
 
   // Cards cascade from bottom smoothly
   cards.forEach((card, i) => {
+    const rect = card.getBoundingClientRect();
+    if (rect.top < window.innerHeight * 0.95) {
+      gsap.set(card, { opacity: 1, y: 0, clearProps: 'all' });
+      return;
+    }
     gsap.fromTo(card,
       { opacity: 0, y: 40 },
       {
@@ -2126,7 +2149,7 @@ function initServicesReveal(isFromTransition = false) {
         duration: 0.8,
         delay: (i % 5) * 0.06,
         ease: 'expo.out',
-        clearProps: 'transform',
+        clearProps: 'all',
         scrollTrigger: {
           trigger: card,
           start: 'top 92%',
@@ -2144,6 +2167,7 @@ function initServicesReveal(isFromTransition = false) {
         opacity: 1, y: 0,
         duration: 0.8,
         ease: 'expo.out',
+        clearProps: 'all',
         scrollTrigger: {
           trigger: '.section-services',
           start: 'top 82%',
@@ -2359,9 +2383,9 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
   const nextSectionSelectors = [
     // Work page: capabilities header & 6 cards
     '.work-capabilities-header', '.capability-card',
-    // Why-us page: philosophy section header & 3 cards + comparison cards
+    // Why-us page: philosophy section header & 3 cards
     '.why-philosophy-section .services-header-row', '.why-philosophy-grid .service-card-item',
-    '.comp-header-centered', '.comp-card',
+    '.comp-header-centered',
     // Campaigns page: search bar and cards
     '.campaign-search-section', '.campaign-featured-label', '.campaign-movie-card',
     // Team page: leadership and member cards
@@ -3402,21 +3426,27 @@ function initTeamPageAnimations(isFromTransition = false) {
   if (accordCards.length > 0) {
     accordCards.forEach((card, idx) => {
       // Entrance animation
-      gsap.fromTo(card,
-        { opacity: 0, y: 35 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.9,
-          delay: idx * 0.12,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: card,
-            start: 'top 88%',
-            toggleActions: 'play none none none'
+      const rect = card.getBoundingClientRect();
+      if (rect.top < window.innerHeight * 0.95) {
+        gsap.set(card, { opacity: 1, y: 0, clearProps: 'all' });
+      } else {
+        gsap.fromTo(card,
+          { opacity: 0, y: 35 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.9,
+            delay: idx * 0.12,
+            ease: 'power3.out',
+            clearProps: 'all',
+            scrollTrigger: {
+              trigger: card,
+              start: 'top 88%',
+              once: true,
+            }
           }
-        }
-      );
+        );
+      }
 
       const body = card.querySelector('.accord-body');
       if (!body) return;
@@ -3527,21 +3557,28 @@ function initTeamPageAnimations(isFromTransition = false) {
   // Pillar Cards Entrance
   const pillarCards = document.querySelectorAll('.pillar-card');
   if (pillarCards.length > 0) {
-    gsap.fromTo(pillarCards,
-      { opacity: 0, y: 30 },
-      {
-        opacity: 1,
-        y: 0,
-        duration: 0.9,
-        stagger: 0.15,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: '.team-pillars-grid',
-          start: 'top 85%',
-          toggleActions: 'play none none none'
+    const pillarsGrid = document.querySelector('.team-pillars-grid');
+    const pRect = pillarsGrid?.getBoundingClientRect();
+    if (pRect && pRect.top < window.innerHeight * 0.95) {
+      gsap.set(pillarCards, { opacity: 1, y: 0, clearProps: 'all' });
+    } else {
+      gsap.fromTo(pillarCards,
+        { opacity: 0, y: 30 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.9,
+          stagger: 0.15,
+          ease: 'power3.out',
+          clearProps: 'all',
+          scrollTrigger: {
+            trigger: '.team-pillars-grid',
+            start: 'top 85%',
+            once: true,
+          }
         }
-      }
-    );
+      );
+    }
   }
 }
 
@@ -3556,12 +3593,16 @@ function initWhyUsAnimations(isFromTransition = false) {
   const comparison = pageContent?.querySelector('.comp-dual-cards');
   if (!comparison || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const cards = comparison.querySelectorAll('.comp-card');
-  cards.forEach(card => card.classList.add('is-entering'));
+  const rows = comparison.querySelectorAll('.comp-list-row');
 
-  // If called during route transition, the transition timeline animates cards in sequence
-  if (isFromTransition || window.__hvGetTransitionState?.() !== 'IDLE') {
+  // If already scrolled into or past the comparison section, reveal immediately!
+  const compRect = comparison.getBoundingClientRect();
+  if (compRect.top < window.innerHeight * 0.95) {
+    gsap.set(cards, { opacity: 1, y: 0, clearProps: 'all' });
+    gsap.set(rows, { opacity: 1, y: 0, clearProps: 'all' });
     return;
   }
+
   gsap.fromTo(cards,
     { opacity: 0, y: 20 },
     {
@@ -3570,8 +3611,7 @@ function initWhyUsAnimations(isFromTransition = false) {
       duration: 0.6,
       stagger: 0.1,
       ease: 'power2.out',
-      clearProps: 'transform,opacity',
-      onComplete: () => cards.forEach(card => card.classList.remove('is-entering')),
+      clearProps: 'all',
       scrollTrigger: {
         trigger: comparison,
         start: 'top 85%',
@@ -3582,7 +3622,7 @@ function initWhyUsAnimations(isFromTransition = false) {
 
   // Reveal each point at its own scroll position, including when the cards
   // stack vertically on phones. Scrolling back up must not hide it again.
-  comparison.querySelectorAll('.comp-list-row').forEach(row => {
+  rows.forEach(row => {
     gsap.fromTo(row,
       { opacity: 0, y: 14 },
       {
@@ -3590,7 +3630,7 @@ function initWhyUsAnimations(isFromTransition = false) {
         y: 0,
         duration: 0.5,
         ease: 'power2.out',
-        clearProps: 'transform,opacity',
+        clearProps: 'all',
         scrollTrigger: {
           trigger: row,
           start: 'top 85%',

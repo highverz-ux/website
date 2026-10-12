@@ -185,16 +185,18 @@ export function initHeroFluidBackground() {
     material.uniforms.uResolution.value.set(width, height);
   };
 
+  const isMobile = () => window.innerWidth < 768;
+
   const render = (now = 0) => {
     if (isDestroyed || !isVisible) return;
 
-    if (window.innerWidth < 768) {
-      // Mobile: autonomous, gentle ambient drift without user touch interference
-      const t = now * 0.00035;
-      targetPointer.set(
-        0.5 + Math.sin(t) * 0.16 + Math.cos(t * 0.65) * 0.06,
-        0.5 + Math.cos(t * 0.75) * 0.14 + Math.sin(t * 0.45) * 0.06,
-      );
+    if (isMobile()) {
+      // Mobile: Render one static initial frame, but do NOT run continuous RAF loop
+      // to keep mobile GPU 100% free for fluid touch scrolling and instant animations
+      material.uniforms.uPointer.value.set(0.5, 0.5);
+      material.uniforms.uTime.value = 0.5;
+      renderer.render(scene, camera);
+      return;
     }
 
     pointer.lerp(targetPointer, 0.18);
@@ -207,12 +209,16 @@ export function initHeroFluidBackground() {
   const start = () => {
     if (!isVisible || isDestroyed) return;
     cancelAnimationFrame(frameId);
+    if (isMobile()) {
+      render(0);
+      return;
+    }
     render(performance.now());
   };
 
   const onPointerMove = (event) => {
-    // Non-interactive on mobile to preserve touch gestures, eliminate scroll jank, and save resources
-    if (window.innerWidth < 768) return;
+    // Restrict fluid pointer interaction on mobile; keep active on desktop web
+    if (isMobile()) return;
 
     const rect = { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
     targetPointer.set(
@@ -221,7 +227,17 @@ export function initHeroFluidBackground() {
     );
   };
 
-  const onResize = resize;
+  const onResize = () => {
+    resize();
+    if (!isMobile() && !reducedMotion && isVisible && !frameId) {
+      start();
+    } else if (isMobile()) {
+      cancelAnimationFrame(frameId);
+      frameId = null;
+      render(0);
+    }
+  };
+
   const visibilityObserver = new IntersectionObserver(([entry]) => {
     isVisible = entry.isIntersecting;
     if (isVisible) start();
@@ -230,7 +246,7 @@ export function initHeroFluidBackground() {
   visibilityObserver.observe(root);
   const themeObserver = new MutationObserver(() => {
     material.uniforms.uTheme.value = document.documentElement.dataset.theme === 'light' ? 1 : 0;
-    if (reducedMotion) render(performance.now());
+    if (reducedMotion || isMobile()) render(performance.now());
   });
   themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   
@@ -238,7 +254,7 @@ export function initHeroFluidBackground() {
     if (document.hidden) {
       cancelAnimationFrame(frameId);
       frameId = null;
-    } else if (isVisible && !reducedMotion && !isDestroyed) {
+    } else if (isVisible && !reducedMotion && !isDestroyed && !isMobile()) {
       start();
     }
   };

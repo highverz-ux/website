@@ -11152,6 +11152,18 @@ html {
   will-change: backdrop-filter;
 }
 
+@media (max-width: 768px) {
+  .page-transition-glow,
+  [data-theme="light"] .page-transition-glow,
+  .page-transition-glow.page-transition-blur-veil,
+  .page-transition-glow.page-transition-settle-veil {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    background: transparent !important;
+    will-change: opacity;
+  }
+}
+
 /* Covers the first layout pass after a route is promoted out of its fixed
    shell. It preserves the requested blur language while ScrollTrigger and
    media components settle their final dimensions off-screen. */

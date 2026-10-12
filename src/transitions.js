@@ -403,33 +403,35 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
     ].join(', ');
     const nextSectionElements = Array.from(incomingContent.querySelectorAll(nextSectionSelectors));
 
-    // Initial kinetic states on incoming elements (ready for synchronized de-blur entrance)
+    const isMobile = window.innerWidth <= 768 || window.matchMedia('(max-width: 768px)').matches;
+
+    // Initial kinetic states on incoming elements (ready for synchronized entrance)
     if (headlineWords.length) {
       gsap.set(headlineWords, {
         opacity: 0,
-        y: 28,
-        scale: 0.94,
-        filter: 'blur(12px) brightness(1.2)',
+        y: isMobile ? 18 : 28,
+        scale: isMobile ? 0.97 : 0.94,
+        filter: isMobile ? 'none' : 'blur(12px) brightness(1.2)',
         transformOrigin: '50% 100%',
-        willChange: 'opacity, transform, filter',
+        willChange: isMobile ? 'opacity, transform' : 'opacity, transform, filter',
       });
     }
 
     if (heroLineElements.length) {
       gsap.set(heroLineElements, {
         opacity: 0,
-        y: 20,
-        filter: 'blur(6px)',
-        willChange: 'opacity, transform, filter',
+        y: isMobile ? 14 : 20,
+        filter: isMobile ? 'none' : 'blur(6px)',
+        willChange: isMobile ? 'opacity, transform' : 'opacity, transform, filter',
       });
     }
 
     if (nextSectionElements.length) {
       gsap.set(nextSectionElements, {
         opacity: 0,
-        y: 28,
-        filter: 'blur(8px)',
-        willChange: 'opacity, transform, filter',
+        y: isMobile ? 20 : 28,
+        filter: isMobile ? 'none' : 'blur(8px)',
+        willChange: isMobile ? 'opacity, transform' : 'opacity, transform, filter',
       });
     }
 
@@ -492,9 +494,9 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
     const navbar = document.getElementById('navbar');
     if (navbar) navbar.classList.add('page-nav-outgoing');
 
-    // Deep, velvety optical blur transition parameters (BLURRRRR!)
-    const PEAK_BLUR = 'blur(48px)';
-    const CRISP_FOCUS = 'blur(0px)';
+    // Optical blur transition parameters (Desktop web uses full 48px blur; mobile restricts blur for max performance)
+    const PEAK_BLUR = isMobile ? 'none' : 'blur(48px)';
+    const CRISP_FOCUS = isMobile ? 'none' : 'blur(0px)';
 
     // Initial visual states:
     gsap.set(currentContent, {
@@ -502,7 +504,7 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       filter: CRISP_FOCUS,
       scale: 1,
       y: 0,
-      willChange: 'opacity, transform, filter',
+      willChange: isMobile ? 'opacity, transform' : 'opacity, transform, filter',
     });
 
     if (navbar) {
@@ -510,93 +512,21 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
         opacity: 1,
         y: 0,
         filter: CRISP_FOCUS,
-        willChange: 'opacity, transform, filter',
+        willChange: isMobile ? 'opacity' : 'opacity, transform, filter',
       });
     }
 
-    // Incoming page starts with full 48px blur handoff
+    // Incoming page starts hidden
     gsap.set(shell, {
       opacity: 0,
       filter: PEAK_BLUR,
-      scale: 1.025,
-      y: 12,
-      willChange: 'opacity, transform, filter',
+      scale: isMobile ? 1 : 1.025,
+      y: isMobile ? 8 : 12,
+      willChange: isMobile ? 'opacity, transform' : 'opacity, transform, filter',
     });
     gsap.set(glow, { opacity: 0 });
 
     setTransitionState(TransitionState.OUTGOING_BLUR);
-
-    activeTransitionTimeline = gsap.timeline({
-      defaults: { overwrite: 'auto' },
-    });
-
-    // 1. Outgoing page smoothly blurs out with rich optical defocus over 0.32s (Beat 1: Full Page Blur)
-    activeTransitionTimeline.to([currentContent, navbar].filter(Boolean), {
-      opacity: 0,
-      filter: PEAK_BLUR,
-      y: -10,
-      scale: 0.985,
-      duration: 0.32,
-      ease: 'power2.inOut',
-    }, 0);
-
-    // 2. Optical blur veil blooms across the viewport (0.0s -> 0.18s, holds through 0.28s)
-    activeTransitionTimeline.fromTo(glow,
-      { opacity: 0 },
-      { opacity: 0.88, duration: 0.18, ease: 'power2.out' },
-      0
-    );
-
-    // 3. Incoming page appears in full 48px blur (Beat 2: Appearance & Blur Sinks In)
-    // Crossfades into view by 0.24s while in heavy blur:
-    activeTransitionTimeline.fromTo(shell,
-      { opacity: 0 },
-      { opacity: 1, duration: 0.20, ease: 'power2.out' },
-      0.04
-    );
-
-    // Heavy blur HOLDS through 0.28s, and then the blur SINKS IN smoothly into crisp focus (0.28s -> 0.65s):
-    activeTransitionTimeline.fromTo(shell,
-      { filter: PEAK_BLUR, scale: 1.025, y: 12 },
-      {
-        filter: CRISP_FOCUS,
-        scale: 1,
-        y: 0,
-        duration: 0.37,
-        ease: 'power2.out',
-        clearProps: 'filter,willChange',
-      },
-      0.28
-    );
-
-    // Optical veil fades out as the blur sinks into clarity (0.28s -> 0.65s):
-    activeTransitionTimeline.to(glow, {
-      opacity: 0,
-      duration: 0.37,
-      ease: 'power2.out',
-    }, 0.28);
-
-    // 4. Navbar refocuses smoothly
-    if (navbar) {
-      activeTransitionTimeline.fromTo(navbar,
-        { opacity: 0, y: -8, filter: 'blur(12px)' },
-        {
-          opacity: 1,
-          y: 0,
-          filter: CRISP_FOCUS,
-          duration: 0.32,
-          ease: 'power2.out',
-          clearProps: 'all',
-        },
-        0.35
-      );
-    }
-
-    // Advance state to INCOMING_REFOCUS at crossover
-    activeTransitionTimeline.call(() => {
-      setTransitionState(TransitionState.INCOMING_REFOCUS);
-      window.__hvUpdateNavbar?.(targetUrl.pathname);
-    }, null, 0.28);
 
     let shellPromoted = false;
     const promoteIncomingPage = () => {
@@ -656,62 +586,243 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       }
     };
 
-    // Promote destination into live document as soon as blur has sunken in to crisp focus (0.65s)
-    activeTransitionTimeline.call(promoteIncomingPage, null, 0.65);
+    activeTransitionTimeline = gsap.timeline({
+      defaults: { overwrite: 'auto' },
+    });
 
-    // 5. AND THEN THE TEXT REVEALS ONE BY ONE (Beat 3: Word-by-Word Kinetic Reveal)
-    // Starts right after promotion as blur completes (at 0.68s)!
-    if (headlineWords.length) {
+    if (isMobile) {
+      // =========================================================================
+      // FAST, CRISP, LIGHTWEIGHT MOBILE TRANSITION (NO HEAVY BLUR, FAST & CLEAR)
+      // =========================================================================
+
+      // 1. Outgoing page smoothly and quickly fades out over 0.18s
+      activeTransitionTimeline.to([currentContent, navbar].filter(Boolean), {
+        opacity: 0,
+        y: -6,
+        duration: 0.18,
+        ease: 'power2.inOut',
+      }, 0);
+
+      // 2. Incoming page appears with clean, snappy fade-in over 0.18s (fast & clear)
+      activeTransitionTimeline.fromTo(shell,
+        { opacity: 0, y: 8 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.18,
+          ease: 'power2.out',
+          clearProps: 'transform,willChange',
+        },
+        0.04
+      );
+
+      // 3. Navbar refocuses quickly
+      if (navbar) {
+        activeTransitionTimeline.fromTo(navbar,
+          { opacity: 0, y: -6 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.20,
+            ease: 'power2.out',
+            clearProps: 'all',
+          },
+          0.10
+        );
+      }
+
+      // Advance state to INCOMING_REFOCUS
       activeTransitionTimeline.call(() => {
-        setTransitionState(TransitionState.HERO_WORD_REVEAL);
-      }, null, 0.68);
+        setTransitionState(TransitionState.INCOMING_REFOCUS);
+        window.__hvUpdateNavbar?.(targetUrl.pathname);
+      }, null, 0.18);
 
-      activeTransitionTimeline.to(headlineWords, {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        filter: 'blur(0px) brightness(1)',
-        duration: 0.60,
-        stagger: 0.085, // Distinct, perceptible one-by-one cadence!
-        ease: 'power3.out',
-        clearProps: 'filter,transform,willChange',
-        onComplete: () => {
-          if (incomingContent.querySelector('#hero-headline') && window.initHeroWordRoller) {
-            window.initHeroWordRoller();
-          }
+      // Promote destination into live document promptly at 0.20s
+      activeTransitionTimeline.call(promoteIncomingPage, null, 0.20);
+
+      // 4. AND THEN THE TEXT REVEALS ONE BY ONE (Beat 3: Word-by-Word Kinetic Reveal)
+      // Fast, clear, distinct cadence on mobile starting at 0.22s!
+      if (headlineWords.length) {
+        activeTransitionTimeline.call(() => {
+          setTransitionState(TransitionState.HERO_WORD_REVEAL);
+        }, null, 0.22);
+
+        activeTransitionTimeline.to(headlineWords, {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.44,
+          stagger: 0.055, // Snappy one-by-one pacing!
+          ease: 'power3.out',
+          clearProps: 'transform,willChange',
+          onComplete: () => {
+            if (incomingContent.querySelector('#hero-headline') && window.initHeroWordRoller) {
+              window.initHeroWordRoller();
+            }
+          },
+        }, 0.22);
+      }
+
+      // 5. AND THEN THE COMPONENTS REVEAL (Beat 4: Hero Lines, Subtitles, Tags, Metrics)
+      // Smoothly follows headline words at 0.36s!
+      if (heroLineElements.length) {
+        activeTransitionTimeline.to(heroLineElements, {
+          opacity: 1,
+          y: 0,
+          duration: 0.40,
+          stagger: 0.045,
+          ease: 'power2.out',
+          clearProps: 'opacity,transform,willChange',
+          onStart: () => {
+            animateIncomingMetrics(incomingContent);
+          },
+        }, 0.36);
+      }
+
+      // 6. AND THEN THE CARDS REVEAL (Beat 5: Capability, Philosophy & Comparison Cards)
+      // "and aslo cards animation should be there as it is"
+      // Cards cascade into view sequentially right after the components at 0.48s!
+      if (nextSectionElements.length) {
+        activeTransitionTimeline.to(nextSectionElements, {
+          opacity: 1,
+          y: 0,
+          duration: 0.46,
+          stagger: 0.065, // Sequential cascade fully preserved!
+          ease: 'power2.out',
+          clearProps: 'opacity,transform,willChange',
+        }, 0.48);
+      }
+
+    } else {
+      // =========================================================================
+      // CINEMATIC OPTICAL BLUR TRANSITION (DESKTOP WEB — FULL 48px BLUR EXPERIENCE)
+      // =========================================================================
+
+      // 1. Outgoing page smoothly blurs out with rich optical defocus over 0.32s (Beat 1: Full Page Blur)
+      activeTransitionTimeline.to([currentContent, navbar].filter(Boolean), {
+        opacity: 0,
+        filter: PEAK_BLUR,
+        y: -10,
+        scale: 0.985,
+        duration: 0.32,
+        ease: 'power2.inOut',
+      }, 0);
+
+      // 2. Optical blur veil blooms across the viewport (0.0s -> 0.18s, holds through 0.28s)
+      activeTransitionTimeline.fromTo(glow,
+        { opacity: 0 },
+        { opacity: 0.88, duration: 0.18, ease: 'power2.out' },
+        0
+      );
+
+      // 3. Incoming page appears in full 48px blur (Beat 2: Appearance & Blur Sinks In)
+      // Crossfades into view by 0.24s while in heavy blur:
+      activeTransitionTimeline.fromTo(shell,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.20, ease: 'power2.out' },
+        0.04
+      );
+
+      // Heavy blur HOLDS through 0.28s, and then the blur SINKS IN smoothly into crisp focus (0.28s -> 0.65s):
+      activeTransitionTimeline.fromTo(shell,
+        { filter: PEAK_BLUR, scale: 1.025, y: 12 },
+        {
+          filter: CRISP_FOCUS,
+          scale: 1,
+          y: 0,
+          duration: 0.37,
+          ease: 'power2.out',
+          clearProps: 'filter,willChange',
         },
-      }, 0.68);
-    }
+        0.28
+      );
 
-    // 6. AND THEN THE COMPONENTS REVEAL (Beat 4: Hero Lines, Subtitles, Tags, Metrics)
-    // Cascades in smoothly right after the headline text reveal starts (at 0.96s)!
-    if (heroLineElements.length) {
-      activeTransitionTimeline.to(heroLineElements, {
-        opacity: 1,
-        y: 0,
-        filter: 'blur(0px)',
-        duration: 0.50,
-        stagger: 0.055,
+      // Optical veil fades out as the blur sinks into clarity (0.28s -> 0.65s):
+      activeTransitionTimeline.to(glow, {
+        opacity: 0,
+        duration: 0.37,
         ease: 'power2.out',
-        clearProps: 'opacity,transform,filter,willChange',
-        onStart: () => {
-          animateIncomingMetrics(incomingContent);
-        },
-      }, 0.96);
-    }
+      }, 0.28);
 
-    // 7. AND THEN THE CARDS REVEAL SEQUENTIALLY (Beat 5: Capability & Philosophy & Comparison Cards)
-    // Cascades into view sequentially right after the components (at 1.22s)!
-    if (nextSectionElements.length) {
-      activeTransitionTimeline.to(nextSectionElements, {
-        opacity: 1,
-        y: 0,
-        filter: 'blur(0px)',
-        duration: 0.54,
-        stagger: 0.08, // Sequential cascade!
-        ease: 'power2.out',
-        clearProps: 'opacity,transform,filter,willChange',
-      }, 1.22);
+      // 4. Navbar refocuses smoothly
+      if (navbar) {
+        activeTransitionTimeline.fromTo(navbar,
+          { opacity: 0, y: -8, filter: 'blur(12px)' },
+          {
+            opacity: 1,
+            y: 0,
+            filter: CRISP_FOCUS,
+            duration: 0.32,
+            ease: 'power2.out',
+            clearProps: 'all',
+          },
+          0.35
+        );
+      }
+
+      // Advance state to INCOMING_REFOCUS at crossover
+      activeTransitionTimeline.call(() => {
+        setTransitionState(TransitionState.INCOMING_REFOCUS);
+        window.__hvUpdateNavbar?.(targetUrl.pathname);
+      }, null, 0.28);
+
+      // Promote destination into live document as soon as blur has sunken in to crisp focus (0.65s)
+      activeTransitionTimeline.call(promoteIncomingPage, null, 0.65);
+
+      // 5. AND THEN THE TEXT REVEALS ONE BY ONE (Beat 3: Word-by-Word Kinetic Reveal)
+      // Starts right after promotion as blur completes (at 0.68s)!
+      if (headlineWords.length) {
+        activeTransitionTimeline.call(() => {
+          setTransitionState(TransitionState.HERO_WORD_REVEAL);
+        }, null, 0.68);
+
+        activeTransitionTimeline.to(headlineWords, {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          filter: 'blur(0px) brightness(1)',
+          duration: 0.60,
+          stagger: 0.085, // Distinct, perceptible one-by-one cadence!
+          ease: 'power3.out',
+          clearProps: 'filter,transform,willChange',
+          onComplete: () => {
+            if (incomingContent.querySelector('#hero-headline') && window.initHeroWordRoller) {
+              window.initHeroWordRoller();
+            }
+          },
+        }, 0.68);
+      }
+
+      // 6. AND THEN THE COMPONENTS REVEAL (Beat 4: Hero Lines, Subtitles, Tags, Metrics)
+      // Cascades in smoothly right after the headline text reveal starts (at 0.96s)!
+      if (heroLineElements.length) {
+        activeTransitionTimeline.to(heroLineElements, {
+          opacity: 1,
+          y: 0,
+          filter: 'blur(0px)',
+          duration: 0.50,
+          stagger: 0.055,
+          ease: 'power2.out',
+          clearProps: 'opacity,transform,filter,willChange',
+          onStart: () => {
+            animateIncomingMetrics(incomingContent);
+          },
+        }, 0.96);
+      }
+
+      // 7. AND THEN THE CARDS REVEAL SEQUENTIALLY (Beat 5: Capability & Philosophy & Comparison Cards)
+      // Cascades into view sequentially right after the components (at 1.22s)!
+      if (nextSectionElements.length) {
+        activeTransitionTimeline.to(nextSectionElements, {
+          opacity: 1,
+          y: 0,
+          filter: 'blur(0px)',
+          duration: 0.54,
+          stagger: 0.08, // Sequential cascade!
+          ease: 'power2.out',
+          clearProps: 'opacity,transform,filter,willChange',
+        }, 1.22);
+      }
     }
 
     activeTransitionTimeline.eventCallback('onComplete', () => {

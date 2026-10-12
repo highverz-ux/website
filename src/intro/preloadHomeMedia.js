@@ -44,9 +44,12 @@ export function preloadHomeMedia(onProgress = () => {}) {
     }, source);
   }
 
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const targetVideos = isMobile ? videos.slice(0, 2) : videos;
+
   const tasks = images.map(image => imageTask(image, image.currentSrc || image.src));
   tasks.push(...posters.map(source => imageTask(new Image(), source)));
-  tasks.push(...videos.map(video => waitFor(video, ['loadeddata', 'canplay', 'canplaythrough', 'progress', 'suspend'], () => {
+  tasks.push(...targetVideos.map(video => waitFor(video, ['loadeddata', 'canplay', 'canplaythrough', 'progress', 'suspend'], () => {
     if (video.readyState < 3) return false;
     const needed = Math.min(2, Number.isFinite(video.duration) ? video.duration : 2);
     for (let i = 0; i < video.buffered.length; i++) {

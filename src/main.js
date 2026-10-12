@@ -2422,26 +2422,28 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
 
     gsap.set(heroHeadings, { opacity: 1, y: 0, filter: 'none' });
 
+    const isMobile = window.innerWidth <= 768 || window.matchMedia('(max-width: 768px)').matches;
+
     // 1. HERO HEADLINE WORDS ANIMATE FIRST (0.0s) — STRICTLY ONE BY ONE
     if (allTargetWords.length) {
       heroHeadings.forEach((heading) => { heading.dataset.adscaleAnimated = 'true'; });
       gsap.killTweensOf(allTargetWords);
       gsap.set(allTargetWords, {
         opacity: 0,
-        y: 28,
-        scale: 0.94,
-        filter: 'blur(12px) brightness(1.2)',
+        y: isMobile ? 18 : 28,
+        scale: isMobile ? 0.97 : 0.94,
+        filter: isMobile ? 'none' : 'blur(12px) brightness(1.2)',
         transformOrigin: '50% 100%',
-        willChange: 'opacity, transform, filter',
+        willChange: isMobile ? 'opacity, transform' : 'opacity, transform, filter',
       });
       beginEntry();
       gsap.to(allTargetWords, {
         opacity: 1,
         y: 0,
         scale: 1,
-        filter: 'blur(0px) brightness(1)',
-        duration: 0.65,
-        stagger: 0.085, // Distinct, visible one-by-one pacing!
+        filter: 'none',
+        duration: isMobile ? 0.48 : 0.65,
+        stagger: isMobile ? 0.055 : 0.085, // Distinct, visible one-by-one pacing!
         ease: 'power3.out',
         clearProps: 'filter,transform,willChange',
         onComplete: () => {
@@ -2451,23 +2453,23 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
       });
     }
 
-    // 2. HERO NEXT LINES & METRICS ANIMATE SECOND (delay: 0.38s)
+    // 2. HERO NEXT LINES & METRICS ANIMATE SECOND (delay: 0.38s desktop, 0.25s mobile)
     if (heroLineElements.length) {
       gsap.killTweensOf(heroLineElements);
       gsap.set(heroLineElements, {
         opacity: 0,
-        y: 20,
-        filter: 'blur(6px)',
-        willChange: 'opacity, transform, filter',
+        y: isMobile ? 14 : 20,
+        filter: isMobile ? 'none' : 'blur(6px)',
+        willChange: isMobile ? 'opacity, transform' : 'opacity, transform, filter',
       });
       beginEntry();
       gsap.to(heroLineElements, {
         opacity: 1,
         y: 0,
-        filter: 'blur(0px)',
-        duration: 0.52,
-        stagger: 0.055,
-        delay: 0.38,
+        filter: 'none',
+        duration: isMobile ? 0.42 : 0.52,
+        stagger: isMobile ? 0.045 : 0.055,
+        delay: isMobile ? 0.25 : 0.38,
         ease: 'power2.out',
         clearProps: 'opacity,transform,filter,willChange',
         onStart: () => {
@@ -2481,23 +2483,23 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
       });
     }
 
-    // 3. NEXT SECTION HEADER & CARDS ANIMATE THIRD (delay: 0.68s) — SEQUENTIAL CASCADE
+    // 3. NEXT SECTION HEADER & CARDS ANIMATE THIRD (delay: 0.68s desktop, 0.45s mobile) — SEQUENTIAL CASCADE
     if (nextSectionElements.length) {
       gsap.killTweensOf(nextSectionElements);
       gsap.set(nextSectionElements, {
         opacity: 0,
-        y: 28,
-        filter: 'blur(8px)',
-        willChange: 'opacity, transform, filter',
+        y: isMobile ? 20 : 28,
+        filter: isMobile ? 'none' : 'blur(8px)',
+        willChange: isMobile ? 'opacity, transform' : 'opacity, transform, filter',
       });
       beginEntry();
       gsap.to(nextSectionElements, {
         opacity: 1,
         y: 0,
-        filter: 'blur(0px)',
-        duration: 0.55,
-        stagger: 0.08, // Sequential cascade!
-        delay: 0.68,
+        filter: 'none',
+        duration: isMobile ? 0.48 : 0.55,
+        stagger: isMobile ? 0.065 : 0.08, // Sequential cascade!
+        delay: isMobile ? 0.45 : 0.68,
         ease: 'power2.out',
         clearProps: 'opacity,transform,filter,willChange',
         onComplete: completeEntry,

@@ -60,6 +60,27 @@
       }
       /* Prevent FOUC for intro */
       .hv-intro-hidden { display: none !important; }
+      html.intro-pending:not(.skip-intro) .carousel-viewport,
+      html.intro-pending:not(.skip-intro) #page-content,
+      html.intro-pending:not(.skip-intro) #navbar,
+      html.intro-pending:not(.skip-intro) .navbar,
+      body.intro-active .carousel-viewport,
+      body.intro-active #page-content,
+      body.intro-active #navbar,
+      body.intro-active .navbar {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+      }
+      #highverz-intro {
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 10000000 !important;
+        background: #050b10 !important;
+      }
     </style>
   <script>
     document.documentElement.classList.add('js');

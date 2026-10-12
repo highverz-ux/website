@@ -290,6 +290,7 @@ export class HighverzIntro {
     this.hasRevealed = true;
     document.documentElement.classList.remove('intro-pending');
     document.body.classList.remove('intro-active');
+    window.dispatchEvent(new CustomEvent('hv:intro-reveal'));
     if (typeof this.onStartReveal === 'function') {
       this.onStartReveal();
     } else if (typeof this.onComplete === 'function') {
@@ -317,6 +318,7 @@ export class HighverzIntro {
       this.container = null;
       window.__HIGHVERZ_INTRO_ACTIVE__ = false;
       activeIntroInstance = null;
+      window.dispatchEvent(new CustomEvent('hv:intro-complete'));
     }, 80);
   }
 

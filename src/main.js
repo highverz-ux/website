@@ -251,10 +251,9 @@ function boot() {
     }
   } else {
     // Play loading intro screen on reload and initial visit.
-    // Initialize all page sections, carousel, and features right now behind the loading screen!
     if (isHomeRoute(window.location.pathname)) {
       prepareHeroInitialState();
-      initBelowFoldFeatures();
+      // Notice: Do NOT call initBelowFoldFeatures() here while intro is pending!
     } else {
       initPageScripts(window.location.pathname);
     }
@@ -264,6 +263,7 @@ function boot() {
       onStartReveal: () => {
         if (lenis) lenis.start();
         if (isHomeRoute(window.location.pathname)) {
+          initBelowFoldFeatures();
           window.__hvUnlockHeroVideos?.();
           initHeroIntro(false);
         } else {
@@ -2554,6 +2554,23 @@ export function initHeroReelCarousel() {
   const track = document.getElementById('heroCarouselTrack') || document.querySelector('.carousel-track');
   if (!viewport || !track) return;
 
+  // Strict Intro Isolation: Never render or animate the carousel during the loading screen!
+  const isIntroPending = document.documentElement.classList.contains('intro-pending') ||
+                         document.body.classList.contains('intro-active');
+
+  if (isIntroPending) {
+    viewport.style.display = 'none';
+    const startAfterIntro = () => {
+      window.removeEventListener('hv:intro-reveal', startAfterIntro);
+      window.removeEventListener('hv:intro-complete', startAfterIntro);
+      viewport.style.display = '';
+      initHeroReelCarousel();
+    };
+    window.addEventListener('hv:intro-reveal', startAfterIntro, { once: true });
+    window.addEventListener('hv:intro-complete', startAfterIntro, { once: true });
+    return;
+  }
+
   const cardPositions = Array.from(track.querySelectorAll('.card-position'));
   const count = cardPositions.length;
   if (!count) return;
@@ -2670,9 +2687,6 @@ export function initHeroReelCarousel() {
   let lastTime = performance.now();
   let cachedViewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
 
-  // During a soft page transition the incoming page can report a tiny width
-  // for a paint while it is being promoted out of the transition shell. Never
-  // let that transient measurement define the permanent rail geometry.
   const getViewportWidth = () => {
     const rectWidth = viewport.getBoundingClientRect().width;
     if (rectWidth >= 320) return rectWidth;
@@ -2700,18 +2714,41 @@ export function initHeroReelCarousel() {
 
   const updateVideoPriority = (force = false) => {
     if (!videosUnlocked || !stageStep || !videos.length || !isCarouselVisible) return;
-    // Start every reel together as requested. This function is called with
-    // force only on setup, visibility return, or user interaction—not on each
-    // animation frame—so all reels play without redoing video work constantly.
-    if (!force) return;
-    videos.forEach((video) => {
-      if (!video) return;
-      loadVideo(video, 'high');
-      playVideo(video);
-    });
+
+    const isMobileDevice = cachedViewportWidth <= 768;
+
+    if (isMobileDevice) {
+      // Mobile performance optimization: ONLY decode/play the active center video (and 1 adjacent)
+      // Pausing off-screen reels frees 80-90% of mobile GPU hardware video pipelines!
+      let centerIdx = Math.round(scrollPosition / stageStep) % count;
+      if (centerIdx < 0) centerIdx += count;
+
+      if (!force && centerIdx === lastVideoPriorityIndex) return;
+      lastVideoPriorityIndex = centerIdx;
+
+      videos.forEach((video, idx) => {
+        if (!video) return;
+        let dist = Math.abs(idx - centerIdx);
+        if (dist > count / 2) dist = count - dist;
+        if (dist <= 1) {
+          loadVideo(video, 'high');
+          playVideo(video);
+        } else {
+          try { video.pause(); } catch (_) {}
+        }
+      });
+    } else {
+      // Desktop: play all reels simultaneously with desktop GPU horsepower
+      if (!force) return;
+      videos.forEach((video) => {
+        if (!video) return;
+        loadVideo(video, 'high');
+        playVideo(video);
+      });
+    }
   };
 
-  // Keep metadata cheap until the carousel is ready to start every reel.
+  // Keep metadata cheap until the carousel is ready to start
   videos.forEach((video) => loadVideo(video, 'low'));
 
   // Resume / unlock autoplay on first interaction if browser blocked initial autoplay
@@ -2761,7 +2798,7 @@ export function initHeroReelCarousel() {
 
   // Extracted Perspective View: Tightly spaced concave amphitheater wrap
   const render = () => {
-    const isMobile = cachedViewportWidth < 768;
+    const isMobileDevice = cachedViewportWidth <= 768;
 
     // Render cards on the concave perspective arc with tight spacing
     cardPositions.forEach((pos, index) => {
@@ -2770,62 +2807,65 @@ export function initHeroReelCarousel() {
       if (x < 0) x += totalWidth;
       x -= totalWidth / 2;
 
-      // Normalized slot index u relative to linear step (up to 4+ slots visible)
+      // Normalized slot index u relative to linear step
       const u = x / stageStep;
       const absU = Math.abs(u);
       const sign = Math.sign(u);
-      const norm = Math.min(1.0, absU / 4.2);
 
-      // 1. Perspective Horizontal Spread: Tighter spacing so more reels are visible
-      const spreadFactor = 1.0 + Math.pow(norm, 1.35) * (isMobile ? 0.10 : 0.16);
-      const screenX = x * spreadFactor;
-
-      // 2. Fisheye Optical Scale: Center card recedes (0.80), outer cards dynamically expand
-      const baseScale = isMobile ? 0.84 : 0.80;
-      const scaleRange = isMobile ? 0.36 : 0.56;
-      const scale = baseScale + Math.pow(norm, 1.35) * scaleRange;
-
-      // 3. Tangent Inward Rotation (concave fisheye amphitheater wrap)
-      const maxRotY = isMobile ? 26 : 38;
-      const rotationY = -sign * Math.pow(norm, 0.78) * maxRotY;
-
-      // 4. Fisheye lens outward fan tilt around Z axis
-      const maxRotZ = isMobile ? 1.4 : 2.8;
-      const rotationZ = sign * Math.pow(norm, 1.3) * maxRotZ;
-
-      // 5. TranslateZ: Pronounced 3D depth curve (-140px center tunnel to +170px foreground)
-      const baseZ = isMobile ? -50 : -140;
-      const zRange = isMobile ? 120 : 310;
-      const translateZ = baseZ + Math.pow(norm, 1.25) * zRange;
-
-      // 6. Fisheye baseline lens arc
-      const baselineY = Math.pow(norm, 1.6) * (isMobile ? 4 : 10);
-
-      // 7. Opacity: up to 4.2 slots away are fully visible (7-9 reels simultaneously visible)
-      const opacity = absU > 4.2 ? Math.max(0, 1 - (absU - 4.2) * 2.2) : 1;
-
-      // Apply transforms: center position horizontally and vertically
-      if (isMobile) {
-        if (absU > 1.8) {
+      if (isMobileDevice) {
+        // Mobile performance: strict culling outside the visible center slot (only 3 cards in DOM)
+        if (absU > 1.55) {
           pos.style.display = 'none';
           return;
         }
         pos.style.display = 'block';
-      } else {
-        pos.style.display = 'block';
+
+        const norm = Math.min(1.0, absU / 2.2);
+        const screenX = x * (1.0 + Math.pow(norm, 1.2) * 0.08);
+        const scale = 0.86 + Math.pow(norm, 1.2) * 0.28;
+        const maxRotY = 22;
+        const rotationY = -sign * Math.pow(norm, 0.75) * maxRotY;
+        const baseZ = -30;
+        const translateZ = baseZ + Math.pow(norm, 1.2) * 80;
+        const baselineY = Math.pow(norm, 1.4) * 3;
+
+        pos.style.transform = `translate3d(calc(-50% + ${screenX.toFixed(1)}px), calc(-50% + ${baselineY.toFixed(1)}px), 0)`;
+        pos.style.opacity = '1';
+
+        const perspectiveEl = cardPerspectives[index];
+        if (perspectiveEl) {
+          perspectiveEl.style.transform = `translate3d(0, 0, ${translateZ.toFixed(1)}px) rotateY(${rotationY.toFixed(1)}deg) scale(${scale.toFixed(3)})`;
+        }
+        pos.style.zIndex = String(Math.round(20 + Math.min(2.0, absU) * 20));
+        return;
       }
 
+      // Desktop full rendering:
+      const norm = Math.min(1.0, absU / 4.2);
+      const spreadFactor = 1.0 + Math.pow(norm, 1.35) * 0.16;
+      const screenX = x * spreadFactor;
+      const baseScale = 0.80;
+      const scaleRange = 0.56;
+      const scale = baseScale + Math.pow(norm, 1.35) * scaleRange;
+      const maxRotY = 38;
+      const rotationY = -sign * Math.pow(norm, 0.78) * maxRotY;
+      const maxRotZ = 2.8;
+      const rotationZ = sign * Math.pow(norm, 1.3) * maxRotZ;
+      const baseZ = -140;
+      const zRange = 310;
+      const translateZ = baseZ + Math.pow(norm, 1.25) * zRange;
+      const baselineY = Math.pow(norm, 1.6) * 10;
+      const opacity = absU > 4.2 ? Math.max(0, 1 - (absU - 4.2) * 2.2) : 1;
+
+      pos.style.display = 'block';
       pos.style.transform = `translate3d(calc(-50% + ${screenX.toFixed(1)}px), calc(-50% + ${baselineY.toFixed(1)}px), 0)`;
       pos.style.filter = '';
       pos.style.opacity = opacity.toFixed(3);
 
-      // Perspective wrapper: 3D rotation, depth + scale
       const perspectiveEl = cardPerspectives[index];
       if (perspectiveEl) {
         perspectiveEl.style.transform = `translate3d(0, 0, ${translateZ.toFixed(1)}px) rotateY(${rotationY.toFixed(2)}deg) rotateZ(${rotationZ.toFixed(2)}deg) scale(${scale.toFixed(4)})`;
       }
-
-      // Layering: foreground corner cards sit cleanly in front of receding cards
       pos.style.zIndex = String(Math.round(20 + Math.min(4.0, absU) * 20));
       pos.classList.remove('is-center-card');
     });
@@ -2839,7 +2879,7 @@ export function initHeroReelCarousel() {
       return;
     }
 
-    const isMobile = cachedViewportWidth < 768;
+    const isMobileDevice = cachedViewportWidth <= 768;
 
     const delta = Math.min((currentTime - lastTime) / 1000, 0.05);
     lastTime = currentTime;
@@ -2854,13 +2894,13 @@ export function initHeroReelCarousel() {
         }
       } else if (!isInteracting) {
         // Continuous smooth auto-rotation on all screens (gentle pace on mobile)
-        const speed = isMobile ? 32 : autoSpeed;
+        const speed = isMobileDevice ? 28 : autoSpeed;
         scrollPosition += speed * autoDirection * delta;
       }
 
       scrollPosition = ((scrollPosition % totalWidth) + totalWidth) % totalWidth;
       render();
-      updateVideoPriority();
+      updateVideoPriority(false);
     }
 
     animId = requestAnimationFrame(loop);

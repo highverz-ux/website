@@ -2347,9 +2347,9 @@ export function initPageScripts(pathname, isFromTransition = false) {
   const normPath = pathname ? pathname.replace(/\/+$/, '') : window.location.pathname.replace(/\/+$/, '');
   const isWorkPage = normPath.includes('work') || !!document.querySelector('.work-hero-section');
   const isCaseStudyPage = normPath.includes('creator-') || !!document.querySelector('.case-hero-section') || !!document.querySelector('.ig-profile-shell');
-  const isTeamPage = normPath.includes('team') || !!document.querySelector('.page-team');
-  const isWhyUs = normPath.includes('why-us') || !!document.querySelector('.page-why-us') || !!document.querySelector('.comparison-section');
-  const isCampaignsPage = normPath.includes('campaigns') || !!document.querySelector('.page-campaigns');
+  const isTeamPage = normPath.includes('team') || !!document.querySelector('.team-hero-section');
+  const isWhyUs = normPath.includes('why-us') || !!document.querySelector('.why-hero-section');
+  const isCampaignsPage = normPath.includes('campaigns') || !!document.querySelector('.campaign-hero');
 
   // The fluid background is shared by every route. Re-request it during SPA
   // hydration so Team and Why Us cannot arrive after a transition without

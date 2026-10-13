@@ -5,8 +5,8 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-const reelPaths = [...index.matchAll(/(?:src|data-src)="(\/assets\/creators\/reels\/[^\"]+\.mp4)"/g)]
-  .map((match) => decodeURIComponent(match[1].replace(/^\//, '')));
+const reelPaths = [...new Set([...index.matchAll(/(?:src|data-src|data-mobile-src)="(\/assets\/creators\/reels\/[^\"]+\.mp4)"/g)]
+  .map((match) => `public/${decodeURIComponent(match[1].replace(/^\//, ''))}`))];
 
 if (reelPaths.length < 2) {
   throw new Error('Hero carousel does not declare its reel sources.');

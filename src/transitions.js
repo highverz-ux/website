@@ -437,6 +437,13 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       document.body.scrollTop = 0;
       window.lenis?.scrollTo(0, { immediate: true });
       currentContent.remove();
+      // Install the incoming route's CSS context before dispatching scripts or
+      // measuring its layout. Outgoing body classes used to select the wrong
+      // initializer (e.g. Team on Home), leaving reels stacked and grids empty.
+      const wasCursorActive = document.body.classList.contains('cursor-active');
+      document.body.className = targetBodyClass;
+      document.body.classList.add('page-is-transitioning');
+      if (wasCursorActive) document.body.classList.add('cursor-active');
       try {
         window.__hvInitPageScripts?.(targetUrl.pathname, true);
       } catch (err) {
@@ -465,15 +472,12 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
           gsap.set(navbar, { clearProps: 'all' });
         }
 
-        // Update body class while preserving essential runtime flags (cursor, theme)
-        const wasCursorActive = document.body.classList.contains('cursor-active');
-        if (targetBodyClass) {
-          document.body.className = targetBodyClass;
-        }
+        // Route classes were installed before initialization; preserve any
+        // runtime flags added by the incoming page's components.
         document.body.classList.remove('page-is-transitioning');
         document.body.style.removeProperty('--transition-scrollbar-width');
         if (navbar) navbar.classList.remove('page-nav-outgoing');
-        if (wasCursorActive || window.innerWidth > 900) {
+        if (window.innerWidth > 900) {
           document.body.classList.add('cursor-active');
         }
         if (window.__hvEnsureCursorActive) {

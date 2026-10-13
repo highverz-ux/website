@@ -8779,7 +8779,7 @@ html.js .floating-badge-item {
   font-size: clamp(2.4rem, 4.2vw, 3.6rem);
   font-weight: 500;
   letter-spacing: -0.03em;
-  line-height: 1.06;
+  line-height: 1.15;
   background-image: var(--hero-headline-gradient);
   -webkit-background-clip: text;
   background-clip: text;
@@ -11516,7 +11516,7 @@ main + footer {
    ========================================================================== */
 .section-growth-widgets {
   position: relative;
-  padding: clamp(2.25rem, 3.2vw, 3rem) 0;
+  padding: clamp(1.35rem, 2.1vw, 2rem) 0 clamp(2rem, 3vw, 2.75rem);
   overflow: hidden;
 }
 
@@ -11527,19 +11527,35 @@ main + footer {
 
 .growth-widgets-heading {
   max-width: 650px;
-  margin-bottom: clamp(1.25rem, 1.8vw, 1.75rem);
+  margin-bottom: clamp(0.9rem, 1.35vw, 1.25rem);
 }
 
 .growth-widgets-heading h2 {
-  margin-top: 0.75rem;
+  margin-top: 0.35rem;
   font-size: clamp(2.25rem, 4vw, 4rem);
-  line-height: 0.98;
+  line-height: 1.06;
   letter-spacing: -0.05em;
+  overflow: visible;
+  padding-bottom: 0.12em;
+}
+
+/* Keep the word-by-word reveal compact in this heading. The shared reveal
+   rhythm is intentionally wider elsewhere, but it makes this short line look
+   visually scattered. */
+.growth-widgets-heading h2 .adscale-reveal-word {
+  margin-right: 0.16em;
+  line-height: 1.1;
+  padding-bottom: 0.04em;
+}
+
+.growth-widgets-heading h2 .adscale-reveal-word.highlight-cyan {
+  margin-left: 0.12em;
+  margin-right: 0.08em;
 }
 
 .growth-widgets-heading p {
   max-width: 530px;
-  margin-top: 0.75rem;
+  margin-top: 0.4rem;
   color: var(--text-secondary);
   font-size: 1.02rem;
   line-height: 1.6;
@@ -11772,7 +11788,7 @@ main + footer {
 }
 
 @media (max-width: 560px) {
-  .section-growth-widgets { padding: 2.25rem 0; }
+  .section-growth-widgets { padding: 1.5rem 0 2rem; }
   .growth-widget { border-radius: 18px; }
   .widget-visual { min-height: 240px; padding: 1rem; }
   .orbit-stack { transform: scale(0.88); }

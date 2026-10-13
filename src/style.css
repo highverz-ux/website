@@ -13581,8 +13581,11 @@ body::after {
   .footer-watermark-logo {
     top: 50%;
     bottom: auto;
-    width: 45vw;
-    opacity: 0.05; 
+    width: min(560px, 86vw);
+    /* The scatter canvas is nested inside this wrapper; keeping the wrapper
+       visible is required for the pixel logo to show on mobile. The source
+       image itself is hidden by the scatter script after it is sampled. */
+    opacity: 1;
   }
 }
 

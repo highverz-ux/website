@@ -94,6 +94,24 @@ export function loadFluidBackground() {
   if (root && root.dataset.fluidBackgroundReady === 'true') {
     return Promise.resolve();
   }
+
+  // Keep the mobile critical path focused on the text, controls, and three
+  // visible reels. The CSS background is already present, so delaying this
+  // WebGL import avoids competing with the first paint and video startup.
+  if (window.innerWidth <= 768 && !window.__hvFluidBackgroundScheduled) {
+    window.__hvFluidBackgroundScheduled = true;
+    const startFluid = () => {
+      window.__hvFluidBackgroundScheduled = false;
+      loadFluidBackground();
+    };
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(startFluid, { timeout: 1800 });
+    } else {
+      window.setTimeout(startFluid, 1200);
+    }
+    return Promise.resolve();
+  }
+
   window.__hvFluidBackgroundPromise = import('./hero/HeroFluidBackground.js')
     .then(({ initHeroFluidBackground }) => {
       const bg = initHeroFluidBackground();
@@ -1573,14 +1591,35 @@ function init3DScene() {
   window.__hv3DCleanup?.();
   // Only download three.js when the page actually contains the 3D canvas.
   if (!document.getElementById('hv-canvas')) return;
-  import('./hv3d.js')
-    .then(({ initHV3D }) => {
-      const scene = initHV3D('hv-canvas', 'hv-canvas-container');
-      window.__hv3DCleanup = () => {
-        try { scene?.dispose?.(); } catch (_) {}
-      };
-    })
-    .catch((err) => console.warn('Hero visual initialization notice:', err));
+
+  const start = () => {
+    window.__hv3DScheduled = false;
+    import('./hv3d.js')
+      .then(({ initHV3D }) => {
+        const scene = initHV3D('hv-canvas', 'hv-canvas-container');
+        window.__hv3DCleanup = () => {
+          try { scene?.dispose?.(); } catch (_) {}
+        };
+      })
+      .catch((err) => console.warn('Hero visual initialization notice:', err));
+  };
+
+  // On phones, let the hero text and three autoplaying reels reach a stable
+  // first paint before downloading/initializing the heavier WebGL scene.
+  // Desktop keeps the existing immediate initialization.
+  const isMobile = window.matchMedia('(max-width: 768px)').matches;
+  if (isMobile) {
+    if (window.__hv3DScheduled) return;
+    window.__hv3DScheduled = true;
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(start, { timeout: 1400 });
+    } else {
+      window.setTimeout(start, 900);
+    }
+    return;
+  }
+
+  start();
 }
 
 // ==========================================================================
@@ -1719,6 +1758,7 @@ function initCreatorsSection() {
   const section = document.querySelector('.section-creators');
   const cards = document.querySelectorAll('.section-creators .creator-card');
   if (!section || !cards.length) return;
+  const isMobileViewport = window.matchMedia('(max-width: 768px)').matches;
 
   // Format number with commas
   function formatNumber(num) {
@@ -1832,8 +1872,8 @@ function initCreatorsSection() {
       { opacity: 0, y: 40 },
       {
         opacity: 1, y: 0,
-        duration: 1.1,
-        stagger: 0.18,
+        duration: isMobileViewport ? 0.62 : 1.1,
+        stagger: isMobileViewport ? 0.07 : 0.18,
         ease: 'expo.out',
         clearProps: 'all',
         scrollTrigger: {
@@ -2118,13 +2158,14 @@ function initServicesReveal(isFromTransition = false) {
   if (document.body.classList.contains('page-why-us')) return;
   const cards = document.querySelectorAll('.service-card-item');
   if (!cards.length) return;
+  const isMobileViewport = window.matchMedia('(max-width: 768px)').matches;
 
   // Header reveal
   gsap.fromTo('.services-header-row',
     { opacity: 0, y: 40 },
     {
       opacity: 1, y: 0,
-      duration: 1,
+      duration: isMobileViewport ? 0.58 : 1,
       ease: 'expo.out',
       clearProps: 'all',
       scrollTrigger: {
@@ -2147,13 +2188,13 @@ function initServicesReveal(isFromTransition = false) {
       {
         opacity: 1,
         y: 0,
-        duration: 0.8,
-        delay: (i % 5) * 0.06,
+        duration: isMobileViewport ? 0.5 : 0.8,
+        delay: isMobileViewport ? (i % 3) * 0.035 : (i % 5) * 0.06,
         ease: 'expo.out',
         clearProps: 'all',
         scrollTrigger: {
           trigger: card,
-          start: 'top 92%',
+          start: isMobileViewport ? 'top 96%' : 'top 92%',
           once: true,
         }
       }
@@ -2467,8 +2508,8 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
         y: 0,
         scale: 1,
         filter: 'none',
-        duration: isMobile ? 0.48 : 0.65,
-        stagger: isMobile ? 0.055 : 0.085, // Distinct, visible one-by-one pacing!
+        duration: isMobile ? 0.42 : 0.65,
+        stagger: isMobile ? 0.045 : 0.085, // Distinct, visible one-by-one pacing!
         ease: 'power3.out',
         clearProps: 'filter,transform,willChange',
         onComplete: () => {
@@ -2492,9 +2533,9 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
         opacity: 1,
         y: 0,
         filter: 'none',
-        duration: isMobile ? 0.42 : 0.52,
-        stagger: isMobile ? 0.045 : 0.055,
-        delay: isMobile ? 0.25 : 0.38,
+        duration: isMobile ? 0.36 : 0.52,
+        stagger: isMobile ? 0.035 : 0.055,
+        delay: isMobile ? 0.18 : 0.38,
         ease: 'power2.out',
         clearProps: 'opacity,transform,filter,willChange',
         onStart: () => {
@@ -2522,9 +2563,9 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
         opacity: 1,
         y: 0,
         filter: 'none',
-        duration: isMobile ? 0.48 : 0.55,
-        stagger: isMobile ? 0.065 : 0.08, // Sequential cascade!
-        delay: isMobile ? 0.45 : 0.68,
+        duration: isMobile ? 0.40 : 0.55,
+        stagger: isMobile ? 0.045 : 0.08, // Sequential cascade!
+        delay: isMobile ? 0.32 : 0.68,
         ease: 'power2.out',
         clearProps: 'opacity,transform,filter,willChange',
         onComplete: completeEntry,
@@ -2585,6 +2626,35 @@ export function initHeroReelCarousel() {
 
   if (isIntroPending) {
     viewport.style.display = 'none';
+
+    // Buffer the three cards that will be visible at the initial carousel
+    // position while the branded loader is on screen. They remain paused and
+    // hidden until the intro finishes, but the first reveal can use decoded
+    // frames instead of flashing black video surfaces.
+    const introVideos = Array.from(track.querySelectorAll('.card-video'));
+    const introCount = introVideos.length;
+    const introIndexes = introCount > 2
+      ? [introCount - 1, 0, 1]
+      : introVideos.map((_, index) => index);
+    const mobileIntro = window.innerWidth <= 768;
+    introIndexes.forEach((index) => {
+      const video = introVideos[index];
+      if (!video || video.dataset.introPreloaded === 'true') return;
+      const source = (mobileIntro && video.dataset.mobileSrc)
+        || video.dataset.src
+        || video.getAttribute('src');
+      if (!source) return;
+      video.defaultMuted = true;
+      video.muted = true;
+      video.playsInline = true;
+      video.preload = 'auto';
+      video.setAttribute('playsinline', '');
+      video.setAttribute('muted', '');
+      video.setAttribute('src', source);
+      video.dataset.introPreloaded = 'true';
+      video.load();
+    });
+
     const startAfterIntro = () => {
       window.removeEventListener('hv:intro-reveal', startAfterIntro);
       window.removeEventListener('hv:intro-complete', startAfterIntro);
@@ -2823,7 +2893,13 @@ export function initHeroReelCarousel() {
             cancelAnimationFrame(animId);
             animId = null;
           }
-          videos.forEach((video) => { try { video?.pause(); } catch (_) {} });
+          // Keep the three mobile hero reels buffered/playing while the page
+          // scrolls past them. Restarting video decode on every re-entry can
+          // expose a black frame on phones. Desktop still pauses off-screen
+          // playback to avoid wasting resources.
+          if (cachedViewportWidth > 768) {
+            videos.forEach((video) => { try { video?.pause(); } catch (_) {} });
+          }
           return;
         }
         if (!wasVisible && isCarouselVisible) {
@@ -3887,6 +3963,7 @@ function initTestimonialsReveal() {
   const section = document.querySelector('.section-testimonials');
   const cards = document.querySelectorAll('.testi-card');
   if (!section || !cards.length) return;
+  const isMobileViewport = window.matchMedia('(max-width: 768px)').matches;
 
   // Give the glass surface a responsive highlight and a very subtle 3D tilt
   // that follows the pointer. The dataset guard keeps route transitions from
@@ -3924,11 +4001,11 @@ function initTestimonialsReveal() {
     { opacity: 0, y: 40 },
     {
       opacity: 1, y: 0,
-      duration: 1.2,
+      duration: isMobileViewport ? 0.62 : 1.2,
       ease: 'expo.out',
       scrollTrigger: {
         trigger: section,
-        start: 'top 85%',
+        start: isMobileViewport ? 'top 94%' : 'top 85%',
         once: true,
       }
     }
@@ -3988,7 +4065,12 @@ function initTestimonialsReveal() {
         gsap.set(card, state);
       } else {
         // Use a highly fluid buttery easing with a soft elastic bounce
-        gsap.to(card, { ...state, duration: 1.0, ease: 'elastic.out(1, 0.85)', overwrite: 'auto' });
+        gsap.to(card, {
+          ...state,
+          duration: isMobileViewport ? 0.56 : 1.0,
+          ease: isMobileViewport ? 'power3.out' : 'elastic.out(1, 0.85)',
+          overwrite: 'auto'
+        });
       }
     });
     stack.dataset.testimonialsActiveIndex = String(activeIndex);
@@ -4099,15 +4181,15 @@ function initTestimonialsReveal() {
   window.addEventListener('resize', () => renderStack(false), { passive: true });
 
   // Enter as one connected composition, then let the active card lead the cycle.
-  gsap.set(cards, { opacity: 0, y: 24, scale: 0.96 });
+  gsap.set(cards, { opacity: 0, y: isMobileViewport ? 12 : 24, scale: isMobileViewport ? 0.98 : 0.96 });
   gsap.to(cards, {
     opacity: 1,
-    duration: 0.75,
-    stagger: 0.08,
+    duration: isMobileViewport ? 0.48 : 0.75,
+    stagger: isMobileViewport ? 0.035 : 0.08,
     ease: 'expo.out',
     scrollTrigger: {
       trigger: section,
-      start: 'top 86%',
+      start: isMobileViewport ? 'top 94%' : 'top 86%',
       once: true,
       onEnter: () => {
         renderStack(true);
@@ -4134,17 +4216,18 @@ function initProcessScrollDraw() {
   const trackContainer = document.getElementById('process-track-container');
 
   if (!steps.length || !processSection || !trackContainer) return;
+  const isMobileViewport = window.matchMedia('(max-width: 768px)').matches;
 
   // Header & section entrance animation
   gsap.fromTo('.process-header',
     { opacity: 0, y: 35 },
     {
       opacity: 1, y: 0,
-      duration: 1.1,
+      duration: isMobileViewport ? 0.62 : 1.1,
       ease: 'expo.out',
       scrollTrigger: {
         trigger: processSection,
-        start: 'top 80%',
+        start: isMobileViewport ? 'top 94%' : 'top 80%',
         once: true,
       }
     }
@@ -4155,12 +4238,12 @@ function initProcessScrollDraw() {
     { opacity: 0, y: 30 },
     {
       opacity: 1, y: 0,
-      duration: 0.9,
-      stagger: 0.1,
+      duration: isMobileViewport ? 0.52 : 0.9,
+      stagger: isMobileViewport ? 0.045 : 0.1,
       ease: 'expo.out',
       scrollTrigger: {
         trigger: '.process-grid',
-        start: 'top 85%',
+        start: isMobileViewport ? 'top 94%' : 'top 85%',
         once: true,
       }
     }
@@ -4287,11 +4370,11 @@ function initCTAReveal() {
     { opacity: 0, x: isMobile ? 0 : -50, y: isMobile ? 25 : 0 },
     {
       opacity: 1, x: 0, y: 0,
-      duration: 1.1,
+      duration: isMobile ? 0.62 : 1.1,
       ease: 'expo.out',
       scrollTrigger: {
         trigger: ctaSection,
-        start: 'top 75%',
+        start: isMobile ? 'top 92%' : 'top 75%',
         once: true,
       }
     }

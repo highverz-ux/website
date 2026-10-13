@@ -594,6 +594,17 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
         document.documentElement.classList.remove('page-transitioned', 'page-entering');
         window.__hvEnsureCursorActive?.();
 
+        // Re-assert the shared atmosphere after the route shell is promoted.
+        // The outgoing page may have left the canvas blurred/dimmed, and a
+        // deferred mobile import may not have created it before navigation.
+        window.loadFluidBackground?.();
+        const fluidCanvas = document.querySelector('.global-fluid-canvas');
+        if (fluidCanvas) {
+          fluidCanvas.style.filter = 'none';
+          fluidCanvas.style.opacity = '';
+          fluidCanvas.style.visibility = 'visible';
+        }
+
         // The fluid canvas lives outside the swapped content shell. Refresh
         // its viewport and static mobile frame after promotion so the ambient
         // background is immediately present on the destination route.

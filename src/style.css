@@ -1441,7 +1441,8 @@ body.mobile-menu-active {
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
-  padding-right: 0.2em;
+  /* Keep italic highlight overhang without turning it into a word-sized gap. */
+  padding-right: 0.04em;
   padding-left: 0.02em;
   margin-right: 0.04em;
   overflow: visible;
@@ -1612,7 +1613,7 @@ body.mobile-menu-active {
 .adscale-reveal-word {
   display: inline-block;
   transform-origin: 50% 100%;
-  margin-right: 0.28em;
+  margin-right: 0.04em;
   background-image: var(--hero-headline-gradient);
   -webkit-background-clip: text;
   background-clip: text;
@@ -1646,8 +1647,8 @@ body.mobile-menu-active {
   filter: drop-shadow(0 0 16px rgba(0, 229, 255, 0.4));
   animation: cyanTextSheen 5s ease-in-out infinite;
   display: inline-block;
-  padding-right: 0.06em;
-  margin-right: 0.28em;
+  padding-right: 0.04em;
+  margin-right: 0.02em;
 }
 
 .adscale-reveal-word.highlight-cyan:last-child,
@@ -7677,7 +7678,7 @@ html.js .floating-badge-item {
   display: inline-block;
   padding-bottom: 0.15em;
   margin-bottom: -0.15em;
-  padding-right: 0.14em;
+  padding-right: 0.04em;
   padding-left: 0.02em;
   overflow: visible;
 }
@@ -8777,7 +8778,7 @@ html.js .floating-badge-item {
 .case-hero-title {
   font-family: var(--font-display);
   font-size: clamp(2.4rem, 4.2vw, 3.6rem);
-  font-weight: 500;
+  font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1.15;
   background-image: var(--hero-headline-gradient);
@@ -8785,6 +8786,7 @@ html.js .floating-badge-item {
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
+  filter: drop-shadow(0 0 18px rgba(0, 229, 255, 0.18));
 }
 
 .case-hero-title .highlight-cyan {
@@ -8802,7 +8804,7 @@ html.js .floating-badge-item {
   display: inline-block;
   padding-bottom: 0.15em;
   margin-bottom: -0.15em;
-  padding-right: 0.14em;
+  padding-right: 0.04em;
   padding-left: 0.02em;
   overflow: visible;
 }
@@ -8889,6 +8891,7 @@ html.js .floating-badge-item {
 }
 
 .case-trans-label {
+  font-family: var(--font-display);
   font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -8901,6 +8904,7 @@ html.js .floating-badge-item {
 }
 
 .case-trans-number {
+  font-family: var(--font-display);
   font-size: clamp(1.6rem, 2.4vw, 2.1rem);
   font-weight: 800;
   letter-spacing: -0.04em;
@@ -8910,8 +8914,14 @@ html.js .floating-badge-item {
 }
 
 .case-trans-item.highlight .case-trans-number {
-  color: var(--accent-cyan);
-  text-shadow: 0 0 30px rgba(0, 229, 255, 0.4);
+  background: linear-gradient(110deg, #00D5FF 0%, #5EFBFF 28%, #FFFFFF 52%, #23C7D8 78%, #00D5FF 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  filter: drop-shadow(0 0 16px rgba(0, 229, 255, 0.52));
+  animation: cyanTextSheen 5s ease-in-out infinite;
 }
 
 .case-trans-arrow {
@@ -10493,7 +10503,7 @@ html.js .floating-badge-item {
   display: inline-block;
   padding-bottom: 0.15em;
   margin-bottom: -0.15em;
-  padding-right: 0.14em;
+  padding-right: 0.04em;
   padding-left: 0.02em;
   overflow: visible;
 }
@@ -11543,14 +11553,14 @@ main + footer {
    rhythm is intentionally wider elsewhere, but it makes this short line look
    visually scattered. */
 .growth-widgets-heading h2 .adscale-reveal-word {
-  margin-right: 0.16em;
+  margin-right: 0.04em;
   line-height: 1.1;
   padding-bottom: 0.04em;
 }
 
 .growth-widgets-heading h2 .adscale-reveal-word.highlight-cyan {
-  margin-left: 0.12em;
-  margin-right: 0.08em;
+  margin-left: 0;
+  margin-right: 0.02em;
 }
 
 .growth-widgets-heading p {
@@ -12807,7 +12817,9 @@ body::after {
 }
 
 .page-why-us .why-hero-subtitle {
-  text-wrap: balance;
+  /* Keep the subtitle's wrapping deterministic during route handoffs. */
+  text-wrap: normal;
+  width: min(600px, 100%);
 }
 
 .page-why-us .section-services {

@@ -337,7 +337,9 @@ export async function fetchBackendMovies({ page = 1, limit = 12, query = '', fil
 
     const data = await response.json();
     if (data && data.success) {
-      browserCache.set(cacheKey, data, 10 * 60 * 1000); // 10 minutes TTL
+      // Campaign catalogue responses are reusable across page switches. The
+      // API still controls freshness with its Cache-Control headers.
+      browserCache.set(cacheKey, data, 30 * 60 * 1000);
     }
     return data;
   } catch (err) {
@@ -358,7 +360,7 @@ export async function fetchBackendMovies({ page = 1, limit = 12, query = '', fil
         total_pages: capTotalPages(searchRes.total_results || results.length, limit),
         results
       };
-      browserCache.set(cacheKey, data, 10 * 60 * 1000);
+      browserCache.set(cacheKey, data, 30 * 60 * 1000);
       return data;
     }
 
@@ -374,7 +376,7 @@ export async function fetchBackendMovies({ page = 1, limit = 12, query = '', fil
       total_pages: capTotalPages(all.length, limit),
       results
     };
-    browserCache.set(cacheKey, data, 10 * 60 * 1000);
+    browserCache.set(cacheKey, data, 30 * 60 * 1000);
     return data;
   }
 }

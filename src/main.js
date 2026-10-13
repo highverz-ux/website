@@ -2228,6 +2228,16 @@ function restoreHomeStableState(isFromTransition = false) {
   if (!hero) return;
   if (isFromTransition && hero.dataset.pageEntryStarted === 'true') return;
 
+  // A previous ScrollTrigger/parallax instance can leave the shared hero
+  // wrapper translated upward for one frame during a route swap. Reset the
+  // wrapper before revealing its words so the Home headline cannot render
+  // behind the navbar or clipped at the top of the viewport.
+  const heroContent = hero.querySelector('.hero-content');
+  if (heroContent) {
+    gsap.killTweensOf(heroContent);
+    gsap.set(heroContent, { x: 0, y: 0, scale: 1, clearProps: 'transform' });
+  }
+
   // Settle background and supporting widgets. On route transitions, leave the
   // headline words blurred and ready for the word-by-word reveal!
   const partsToSettle = [
@@ -2254,6 +2264,16 @@ function restoreHomeStableState(isFromTransition = false) {
     filter: 'none',
     clearProps: 'opacity,transform,filter',
   });
+  // On internal navigation, keep the reel rail behind the text reveal. The
+  // carousel is initialized immediately for buffering, but its viewport must
+  // not paint before the Home headline and supporting copy have entered.
+  if (isFromTransition) {
+    gsap.set(hero.querySelector('.carousel-viewport'), {
+      opacity: 0,
+      y: 20,
+      filter: 'blur(6px)',
+    });
+  }
   hero.querySelectorAll('.hero-headline-line').forEach((line) => {
     line.style.overflow = 'visible';
   });
@@ -2437,6 +2457,8 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
     '.campaign-search-section', '.campaign-featured-label', '.campaign-movie-card',
     // Team page: leadership and member cards
     '.team-grid .founder-card', '.team-member-card',
+    // Home page: creator reels follow the hero text reveal
+    '.carousel-viewport',
     // Home page: creators carousel
     '.section-creators',
     // Case study: media & hud
@@ -2494,6 +2516,8 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
     gsap.set(heroHeadings, { opacity: 1, y: 0, filter: 'none' });
 
     const isMobile = window.innerWidth <= 768 || window.matchMedia('(max-width: 768px)').matches;
+    const glowFilter = 'drop-shadow(0 0 16px rgba(0, 229, 255, 0.48))';
+    const glowWords = allTargetWords.filter((word) => word.classList.contains('highlight-cyan'));
 
     // 1. HERO HEADLINE WORDS ANIMATE FIRST (0.0s) — STRICTLY ONE BY ONE
     if (allTargetWords.length) {
@@ -2503,16 +2527,25 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
         opacity: 0,
         y: isMobile ? 18 : 28,
         scale: isMobile ? 0.97 : 0.94,
-        filter: 'none',
+        filter: (index, word) => word.classList.contains('highlight-cyan')
+          ? `blur(${isCase ? 12 : 8}px) ${glowFilter}`
+          : (isCase ? 'blur(12px)' : 'none'),
         transformOrigin: '50% 100%',
         willChange: 'opacity, transform',
       });
+      // Set the glow before the shell reveal starts; this prevents a visible
+      // second-stage glow pop after the page transition has completed.
+      if (glowWords.length) {
+        gsap.set(glowWords, { filter: `blur(${isCase ? 12 : 8}px) ${glowFilter}` });
+      }
       beginEntry();
       gsap.to(allTargetWords, {
         opacity: 1,
         y: 0,
         scale: 1,
-        filter: 'none',
+        filter: (index, word) => word.classList.contains('highlight-cyan')
+          ? `blur(0px) ${glowFilter}`
+          : (isCase ? 'blur(0px)' : 'none'),
         duration: isMobile ? 0.42 : 0.65,
         stagger: isMobile ? 0.045 : 0.085, // Distinct, visible one-by-one pacing!
         ease: 'power3.out',

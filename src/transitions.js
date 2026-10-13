@@ -51,6 +51,23 @@ export function canTransition(currentPath, targetUrl) {
 
 const htmlCache = new Map();
 
+// Keep the Why Us hero copy canonical during HTML handoffs. A prefetched
+// document can outlive a content edit, and overlapping outgoing/incoming DOM
+// should never leave two subtitle variants visible during a transition.
+const WHY_US_SUBTITLE = 'See how Highverz Creative Agency compares to traditional agencies and freelancers.';
+
+function normalizeWhyUsSubtitle(root) {
+  if (!root) return;
+  const subtitles = Array.from(root.querySelectorAll('.why-hero-subtitle'));
+  subtitles.forEach((subtitle, index) => {
+    if (index === 0) {
+      subtitle.textContent = WHY_US_SUBTITLE;
+    } else {
+      subtitle.remove();
+    }
+  });
+}
+
 // Start only the incoming hero counters underneath the route fade. The rest
 // of the hero remains static so the page reveal and number animation stay in
 // sync without introducing a second entrance sequence.
@@ -216,6 +233,9 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
     const parser = new DOMParser();
     const newDoc = parser.parseFromString(htmlText, 'text/html');
 
+    // Normalize cached Why Us markup before it enters the transition shell.
+    normalizeWhyUsSubtitle(newDoc);
+
     // Find main content container (#page-content or fallback)
     const currentContent = document.getElementById('page-content') || document.querySelector('main.page-content');
     const incomingContent = newDoc.getElementById('page-content') || newDoc.querySelector('main.page-content');
@@ -373,6 +393,15 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       scale: 1,
       filter: 'blur(0px)',
       willChange: 'opacity, transform, filter',
+    });
+    // Do not crossfade two different page subtitles over one another. The
+    // outgoing hero copy is intentionally removed before the blur handoff so
+    // the incoming sentence never appears duplicated or reflows mid-transition.
+    currentContent.querySelectorAll(
+      '#hero-desc, .work-hero-desc, .campaign-hero-sub, .team-hero-desc, ' +
+      '.why-hero-subtitle, .case-hero-desc'
+    ).forEach((copy) => {
+      copy.style.opacity = '0';
     });
     if (navbar) {
       gsap.set(navbar, {

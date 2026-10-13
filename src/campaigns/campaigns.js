@@ -84,6 +84,11 @@ const SORT_OPTIONS = [
   { id: 'campaigns', name: 'Featured Campaigns' }
 ];
 
+// Campaign metadata changes infrequently. Keep it in the browser cache long
+// enough that navigating away and back does not refetch the same catalogue or
+// dossier, while the API's stale-while-revalidate headers keep it fresh.
+const CAMPAIGN_DOSSIER_CACHE_TTL = 60 * 60 * 1000;
+
 // ─── State ───
 const state = {
   page: 1,
@@ -1065,9 +1070,9 @@ async function openMovieModal(movieId) {
     const campaign = getCampaignData(movieId);
     renderModalContent(modalContent, details, credits, videos, campaign);
 
-    // Save to browser cache (30-minute TTL)
+    // Save to browser cache (campaign dossiers are stable and safe to reuse).
     if (details) {
-      browserCache.set(cacheKey, { details, credits, videos }, 30 * 60 * 1000);
+      browserCache.set(cacheKey, { details, credits, videos }, CAMPAIGN_DOSSIER_CACHE_TTL);
     }
 
     // Ensure scroll starts at the absolute top

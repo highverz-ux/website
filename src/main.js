@@ -2331,6 +2331,12 @@ export function initPageScripts(pathname, isFromTransition = false) {
   const isWhyUs = normPath.includes('why-us') || !!document.querySelector('.page-why-us') || !!document.querySelector('.comparison-section');
   const isCampaignsPage = normPath.includes('campaigns') || !!document.querySelector('.page-campaigns');
 
+  // The fluid background is shared by every route. Re-request it during SPA
+  // hydration so Team and Why Us cannot arrive after a transition without
+  // the ambient canvas. The loader remains mobile-deferred by
+  // loadFluidBackground() itself.
+  loadFluidBackground();
+
   if (isWorkPage) {
     initWorkHeroIntro(isFromTransition);
     initCapabilityDeck(isFromTransition);
@@ -2346,7 +2352,6 @@ export function initPageScripts(pathname, isFromTransition = false) {
     initWhyUsAnimations(isFromTransition);
     initCTAReveal();
   } else if (isCampaignsPage) {
-    loadFluidBackground();
     initCampaignsPage(isFromTransition);
   } else if (isCaseStudyPage) {
     // Case-study media is initialized below. Do not run homepage scroll

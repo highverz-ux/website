@@ -60,11 +60,13 @@ body.intro-active .navbar {
 }
 
 [data-theme="light"] #highverz-intro {
-  background: #F8F9FA;
+  background: #FFFFFF !important;
 }
 
 [data-theme="light"] #highverz-intro::before {
-  background: radial-gradient(ellipse 800px 500px at 50% 50%, rgba(0, 151, 167, 0.05) 0%, transparent 70%);
+  background:
+    radial-gradient(ellipse 960px 620px at 50% 50%, rgba(14, 165, 233, 0.12) 0%, rgba(56, 189, 248, 0.05) 45%, transparent 75%),
+    radial-gradient(ellipse 700px 520px at 82% 30%, rgba(125, 211, 252, 0.08) 0%, transparent 70%) !important;
 }
 
 /* ==========================================================================
@@ -114,12 +116,12 @@ body.intro-active .navbar {
 }
 
 [data-theme="light"] .hv-loader-progress-track {
-  background: rgba(8, 77, 88, 0.16);
+  background: rgba(14, 165, 233, 0.14) !important;
 }
 
 [data-theme="light"] .hv-loader-progress-fill {
-  background: #00aebe;
-  box-shadow: 0 0 8px rgba(0, 174, 190, 0.22);
+  background: #0EA5E9 !important;
+  box-shadow: 0 0 10px rgba(14, 165, 233, 0.45) !important;
 }
 
 /* ==========================================================================
@@ -235,23 +237,40 @@ body.intro-active .navbar {
 }
 
 @keyframes hv-logo-glass-sheen {
-  0%, 52% { opacity: 0; background-position: 140% 0; }
-  60% { opacity: 0.56; }
-  76%, 100% { opacity: 0; background-position: -80% 0; }
+
+  0%,
+  52% {
+    opacity: 0;
+    background-position: 140% 0;
+  }
+
+  60% {
+    opacity: 0.56;
+  }
+
+  76%,
+  100% {
+    opacity: 0;
+    background-position: -80% 0;
+  }
 }
 
 [data-theme="light"] .hv-reveal-glass-base {
-  opacity: 0.58;
-  filter: brightness(0) saturate(100%) invert(29%) sepia(18%) saturate(1000%) hue-rotate(145deg) brightness(0.86) contrast(1.12);
+  opacity: 0.92 !important;
+  color: #0A0D12 !important;
+  filter: brightness(0) drop-shadow(0 4px 16px rgba(14, 165, 233, 0.22)) !important;
 }
 
 [data-theme="light"] .hv-reveal-glass::before {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.86), rgba(71, 217, 229, 0.18) 52%, rgba(0, 108, 128, 0.32));
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(56, 189, 248, 0.16) 52%, rgba(14, 165, 233, 0.12)) !important;
+  backdrop-filter: blur(2px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(2px) saturate(120%) !important;
 }
 
 [data-theme="light"] .hv-reveal-edge {
-  opacity: 0.62;
-  filter: drop-shadow(0 0 2px rgba(0, 132, 154, 0.45));
+  opacity: 0.65 !important;
+  background: linear-gradient(115deg, rgba(255, 255, 255, 0.95), rgba(56, 189, 248, 0.35) 38%, rgba(14, 165, 233, 0.45) 72%, rgba(255, 255, 255, 0.85)) !important;
+  filter: drop-shadow(0 0 2px rgba(14, 165, 233, 0.35)) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

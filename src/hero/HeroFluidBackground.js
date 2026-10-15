@@ -112,21 +112,31 @@ const fragmentShader = `
     float highlightNoise = fbm(liquidPoint * 3.5 + vec2(t * 0.45, -t * 0.3));
     float highlight = pow(max(0.0, highlightNoise - 0.55) * 2.25, 2.2) * liquid;
 
+    // Dark mode fluid colors (neon cyber cyan on deep space)
     vec3 deepBlue = vec3(0.0, 0.012, 0.045);
     vec3 electricBlue = vec3(0.0, 0.055, 0.18);
     vec3 cyan = vec3(0.0, 0.42, 0.58);
     vec3 lightCyan = vec3(0.24, 0.64, 0.72);
-    vec3 fluidColor = mix(deepBlue, electricBlue, smoothstep(0.35, 0.72, density));
-    fluidColor = mix(fluidColor, cyan, rim * 0.38 + innerFold * 0.10);
-    fluidColor = mix(fluidColor, lightCyan, highlight * 0.25);
-    fluidColor *= 0.45 + 0.38 * smoothstep(0.35, 0.75, pocketNoise);
-    // Light mode keeps the same motion as a restrained pale-cyan wash.
-    fluidColor = mix(fluidColor, vec3(0.05, 0.58, 0.68), uTheme * 0.86);
+    vec3 darkFluidColor = mix(deepBlue, electricBlue, smoothstep(0.35, 0.72, density));
+    darkFluidColor = mix(darkFluidColor, cyan, rim * 0.38 + innerFold * 0.10);
+    darkFluidColor = mix(darkFluidColor, lightCyan, highlight * 0.25);
+    darkFluidColor *= 0.45 + 0.38 * smoothstep(0.35, 0.75, pocketNoise);
+
+    // Light mode fluid colors (radiant, crystal Sky Blue: #0EA5E9, #38BDF8, #7DD3FC)
+    vec3 skyBase = vec3(0.055, 0.647, 0.914);   // #0EA5E9
+    vec3 skyBright = vec3(0.220, 0.741, 0.969); // #38BDF8
+    vec3 skyLight = vec3(0.490, 0.827, 0.988);  // #7DD3FC
+    vec3 lightFluidColor = mix(skyBase, skyBright, smoothstep(0.32, 0.68, density));
+    lightFluidColor = mix(lightFluidColor, skyLight, rim * 0.45 + highlight * 0.35);
+
+    vec3 fluidColor = mix(darkFluidColor, lightFluidColor, uTheme);
 
     float centerQuiet = aspect < 1.0 ? 1.0 : (1.0 - 0.16 * exp(-2.6 * dot(p * vec2(0.72, 0.95), p * vec2(0.72, 0.95))));
-    float alpha = liquid * 0.61 + rim * 0.17 + innerFold * 0.105 + highlight * 0.19;
-    alpha *= centerQuiet;
-    alpha *= mix(1.0, 0.58, uTheme);
+    float darkAlpha = (liquid * 0.61 + rim * 0.17 + innerFold * 0.105 + highlight * 0.19) * centerQuiet;
+    // Translucent airy Sky Blue fluid on pure white background
+    float lightAlpha = (liquid * 0.38 + rim * 0.25 + highlight * 0.22) * centerQuiet;
+    float alpha = mix(darkAlpha, lightAlpha, uTheme);
+
     gl_FragColor = vec4(fluidColor, alpha);
   }
 `;
@@ -160,7 +170,7 @@ export function initHeroFluidBackground() {
     uniforms: {
       uTime: { value: 0 },
       uPointer: { value: new THREE.Vector2(0.5, 0.5) },
-      uTheme: { value: document.documentElement.dataset.theme === 'light' ? 1 : 0 },
+      uTheme: { value: document.documentElement.getAttribute('data-theme') === 'light' ? 1 : 0 },
       uResolution: { value: new THREE.Vector2(1, 1) },
     },
   });
@@ -244,12 +254,14 @@ export function initHeroFluidBackground() {
     else cancelAnimationFrame(frameId);
   }, { threshold: 0.01 });
   visibilityObserver.observe(root);
-  const themeObserver = new MutationObserver(() => {
-    material.uniforms.uTheme.value = document.documentElement.dataset.theme === 'light' ? 1 : 0;
+  const updateThemeUniform = () => {
+    material.uniforms.uTheme.value = document.documentElement.getAttribute('data-theme') === 'light' ? 1 : 0;
     if (reducedMotion || isMobile()) render(performance.now());
-  });
+  };
+  const themeObserver = new MutationObserver(updateThemeUniform);
   themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-  
+  window.addEventListener('hv:themechange', updateThemeUniform);
+
   const onVisibilityChange = () => {
     if (document.hidden) {
       cancelAnimationFrame(frameId);

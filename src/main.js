@@ -49,8 +49,8 @@ function initVercelTelemetry() {
 
 function initLenis() {
   const isTouchDevice = window.matchMedia('(pointer: coarse)').matches ||
-                        ('ontouchstart' in window && window.innerWidth <= 1024) ||
-                        window.innerWidth <= 768;
+    ('ontouchstart' in window && window.innerWidth <= 1024) ||
+    window.innerWidth <= 768;
 
   // Touch screens have 120Hz/60Hz native hardware momentum scrolling.
   // Intercepting touch scrolling with JS creates input latency and sluggish response.
@@ -189,64 +189,64 @@ function boot() {
   const isDedicatedPage = isWorkPage || isCaseStudyPage || isTeamPage || isWhyUs || isCampaignsPage;
 
   const navEntries = (window.performance && window.performance.getEntriesByType)
-      ? window.performance.getEntriesByType('navigation')
-      : [];
-    const navType = navEntries.length > 0
-      ? navEntries[0].type
-      : (window.performance && window.performance.navigation
-          ? (window.performance.navigation.type === 1 ? 'reload' : (window.performance.navigation.type === 2 ? 'back_forward' : 'navigate'))
-          : 'navigate');
-    const isReload = navType === 'reload';
+    ? window.performance.getEntriesByType('navigation')
+    : [];
+  const navType = navEntries.length > 0
+    ? navEntries[0].type
+    : (window.performance && window.performance.navigation
+      ? (window.performance.navigation.type === 1 ? 'reload' : (window.performance.navigation.type === 2 ? 'back_forward' : 'navigate'))
+      : 'navigate');
+  const isReload = navType === 'reload';
 
-    let isFromInternalSubpage = false;
-    try {
-      if (document.referrer) {
-        const refUrl = new URL(document.referrer);
-        if (refUrl.origin === window.location.origin) {
-          const refPath = refUrl.pathname.replace(/\/+$/, '') || '/';
-          if (refPath !== '/' && refPath !== '/index.html') {
-            isFromInternalSubpage = true;
-          }
+  let isFromInternalSubpage = false;
+  try {
+    if (document.referrer) {
+      const refUrl = new URL(document.referrer);
+      if (refUrl.origin === window.location.origin) {
+        const refPath = refUrl.pathname.replace(/\/+$/, '') || '/';
+        if (refPath !== '/' && refPath !== '/index.html') {
+          isFromInternalSubpage = true;
         }
       }
-    } catch (_) {}
+    }
+  } catch (_) { }
 
-    let internalNavFlag = false;
-    try {
-      internalNavFlag = sessionStorage.getItem('hv_from_subpage') === 'true';
-    } catch (_) {}
+  let internalNavFlag = false;
+  try {
+    internalNavFlag = sessionStorage.getItem('hv_from_subpage') === 'true';
+  } catch (_) { }
 
-    // Intro ONLY plays on reload / hard reload or first clean visit, never on navigation from subpages
-    const isNavigatedToHome = !isReload && (isFromInternalSubpage || internalNavFlag || navType === 'back_forward');
+  // Intro ONLY plays on reload / hard reload or first clean visit, never on navigation from subpages
+  const isNavigatedToHome = !isReload && (isFromInternalSubpage || internalNavFlag || navType === 'back_forward');
 
-    const searchParams = new URLSearchParams(window.location.search);
-    const isForceIntro = (searchParams.get('intro') === 'true' || searchParams.get('intro') === 'force') && !searchParams.has('no-intro');
-    const ua = navigator.userAgent || '';
-    const isDevToolsMobileAudit = (
-      (ua.includes('Macintosh') || ua.includes('Windows NT')) &&
-      !ua.includes('iPhone') &&
-      !ua.includes('Android') &&
-      window.innerWidth <= 768
-    );
-    const isLighthouseAudit = ua.includes('Lighthouse') || 
-                              ua.includes('Chrome-Lighthouse') || 
-                              ua.includes('HeadlessChrome') ||
-                              ua.includes('moto g power') ||
-                              navigator.webdriver === true ||
-                              isDevToolsMobileAudit;
-    const skipIntro = !isForceIntro && (
-      isDedicatedPage ||
-      window.__HV_SKIP_INTRO__ ||
-      isLighthouseAudit ||
-      isNavigatedToHome ||
-      window.location.search.includes('no-intro') || 
-      window.location.search.includes('intro=false')
-    );
+  const searchParams = new URLSearchParams(window.location.search);
+  const isForceIntro = (searchParams.get('intro') === 'true' || searchParams.get('intro') === 'force') && !searchParams.has('no-intro');
+  const ua = navigator.userAgent || '';
+  const isDevToolsMobileAudit = (
+    (ua.includes('Macintosh') || ua.includes('Windows NT')) &&
+    !ua.includes('iPhone') &&
+    !ua.includes('Android') &&
+    window.innerWidth <= 768
+  );
+  const isLighthouseAudit = ua.includes('Lighthouse') ||
+    ua.includes('Chrome-Lighthouse') ||
+    ua.includes('HeadlessChrome') ||
+    ua.includes('moto g power') ||
+    navigator.webdriver === true ||
+    isDevToolsMobileAudit;
+  const skipIntro = !isForceIntro && (
+    isDedicatedPage ||
+    window.__HV_SKIP_INTRO__ ||
+    isLighthouseAudit ||
+    isNavigatedToHome ||
+    window.location.search.includes('no-intro') ||
+    window.location.search.includes('intro=false')
+  );
 
-    // Clean up temporary navigation flag
-    try {
-      sessionStorage.removeItem('hv_from_subpage');
-    } catch (_) {}
+  // Clean up temporary navigation flag
+  try {
+    sessionStorage.removeItem('hv_from_subpage');
+  } catch (_) { }
 
   if (skipIntro) {
     // Intro skipped (navigated from another page or audit)
@@ -259,7 +259,7 @@ function boot() {
       lenis.start();
       lenis.scrollTo(0, { immediate: true });
     }
-    
+
     if (isHomeRoute(window.location.pathname)) {
       prepareHeroInitialState();
       initHeroIntro(true);
@@ -372,7 +372,7 @@ function initCustomCursor() {
   let magneticTarget = null;
 
   // Expose global cursor restoration hook for transitions
-  window.__hvEnsureCursorActive = function() {
+  window.__hvEnsureCursorActive = function () {
     if (window.innerWidth <= 900 || ('ontouchstart' in window || navigator.maxTouchPoints > 0)) return;
     document.body.classList.add('cursor-active');
     if (cursorWrap) cursorWrap.classList.remove('is-hidden');
@@ -673,18 +673,18 @@ function initNavbar() {
     }
 
     window.__hvPositionIndicator = positionIndicator;
-    window.__hvUpdateNavbar = function(targetPath) {
+    window.__hvUpdateNavbar = function (targetPath) {
       const normTarget = targetPath.split('#')[0].split('?')[0].replace(/\/+$/, '') || '/';
       let matchedLink = null;
-      
+
       const allLinks = document.querySelectorAll('.nav-link, .mobile-nav-link');
       allLinks.forEach((link) => {
         const href = link.getAttribute('href');
         if (!href) return;
         const normHref = href.split('#')[0].split('?')[0].replace(/\/+$/, '') || '/';
         const isMatch = normHref === normTarget ||
-                        (normHref.endsWith('.html') && normTarget.endsWith(normHref)) ||
-                        (normHref !== '/' && normTarget.includes(normHref.replace('.html', '')));
+          (normHref.endsWith('.html') && normTarget.endsWith(normHref)) ||
+          (normHref !== '/' && normTarget.includes(normHref.replace('.html', '')));
         if (isMatch) {
           link.classList.add('active');
           if (link.classList.contains('nav-link')) {
@@ -855,7 +855,7 @@ function initNavbar() {
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }
           }
-        } catch (_) {}
+        } catch (_) { }
       }
 
       // If leaving subpage to go Home, ensure Home skips the intro
@@ -864,14 +864,14 @@ function initNavbar() {
         if (isHomeRoute(linkUrl.pathname) && !isHomeRoute(window.location.pathname)) {
           sessionStorage.setItem('hv_from_subpage', 'true');
         }
-      } catch (_) {}
+      } catch (_) { }
     });
   });
 
   // Track subpage exits to guarantee Home intro skip
   window.addEventListener('beforeunload', () => {
     if (!isHomeRoute(window.location.pathname)) {
-      try { sessionStorage.setItem('hv_from_subpage', 'true'); } catch (_) {}
+      try { sessionStorage.setItem('hv_from_subpage', 'true'); } catch (_) { }
     }
   });
 
@@ -1180,11 +1180,11 @@ export function prepareHeroInitialState() {
 
   // Hero entrance continues the loader's motion language:
   // blur + slide upward + opacity — content physically travels into focus
-  gsap.set('.hl-word, .hero-headline-connector, .hero-word-roller', { 
-    opacity: 0, 
-    y: 25, 
-    filter: 'blur(10px)', 
-    willChange: 'opacity, transform, filter' 
+  gsap.set('.hl-word, .hero-headline-connector, .hero-word-roller', {
+    opacity: 0,
+    y: 25,
+    filter: 'blur(10px)',
+    willChange: 'opacity, transform, filter'
   });
   if (platformChips.length) {
     gsap.set(platformChips, { opacity: 0, y: 20, scale: 0.95, filter: 'blur(6px)' });
@@ -1246,19 +1246,28 @@ export function splitAdscaleWords(element) {
     const isHighlight = parentSpan && parentSpan.classList.contains('highlight-cyan');
     const isBoldItalic = parentSpan && parentSpan.classList.contains('font-bold-italic');
     if (parentSpan && isHighlight) {
-      // Prevent parent highlight span from double-applying background/filters over its child words
-      parentSpan.style.backgroundImage = 'none';
-      parentSpan.style.webkitBackgroundClip = 'initial';
-      parentSpan.style.backgroundClip = 'initial';
-      parentSpan.style.webkitTextFillColor = 'initial';
-      parentSpan.style.filter = 'none';
-      parentSpan.style.animation = 'none';
+      // Prevent parent highlight span from double-applying background/filters or box-clipping child words
+      parentSpan.style.setProperty('background', 'none', 'important');
+      parentSpan.style.setProperty('background-image', 'none', 'important');
+      parentSpan.style.setProperty('-webkit-background-clip', 'initial', 'important');
+      parentSpan.style.setProperty('background-clip', 'initial', 'important');
+      parentSpan.style.setProperty('-webkit-text-fill-color', 'initial', 'important');
+      parentSpan.style.setProperty('filter', 'none', 'important');
+      parentSpan.style.setProperty('animation', 'none', 'important');
+      parentSpan.style.setProperty('display', 'inline', 'important');
+      parentSpan.style.setProperty('padding', '0', 'important');
+      parentSpan.style.setProperty('margin', '0', 'important');
+      parentSpan.style.setProperty('box-shadow', 'none', 'important');
+      parentSpan.style.setProperty('text-shadow', 'none', 'important');
     }
     const rawText = textNode.nodeValue;
     const words = rawText.trim().split(/\s+/).filter(Boolean);
     if (!words.length) return;
 
     const fragment = document.createDocumentFragment();
+    if (/^\s/.test(rawText)) {
+      fragment.appendChild(document.createTextNode(' '));
+    }
     words.forEach((wordText, idx) => {
       const word = document.createElement('span');
       word.className = 'adscale-reveal-word';
@@ -1271,6 +1280,9 @@ export function splitAdscaleWords(element) {
         fragment.appendChild(document.createTextNode(' '));
       }
     });
+    if (/\s$/.test(rawText)) {
+      fragment.appendChild(document.createTextNode(' '));
+    }
     textNode.replaceWith(fragment);
   });
 }
@@ -1283,22 +1295,22 @@ export function initAdscaleTextEffects(root = document) {
   // hero title so lower sections cannot reset after the route entrance.
   const headingSelectors = isHomeRoute(window.location.pathname)
     ? [
-        '.creators-title',
-        '.creators-intro',
-        '.growth-widgets-heading h2',
-        '.portfolio-section-title',
-        '.testimonials-title',
-        '.process-headline',
-        '.faq-heading',
-        '.cta-main-title'
-      ]
+      '.creators-title',
+      '.creators-intro',
+      '.growth-widgets-heading h2',
+      '.portfolio-section-title',
+      '.testimonials-title',
+      '.process-headline',
+      '.faq-heading',
+      '.cta-main-title'
+    ]
     : [
-        '.work-hero-title',
-        '.campaign-hero-headline',
-        '.why-hero-title',
-        '.team-hero-title',
-        '.case-hero-title'
-      ];
+      '.work-hero-title',
+      '.campaign-hero-headline',
+      '.why-hero-title',
+      '.team-hero-title',
+      '.case-hero-title'
+    ];
 
   const revealElements = (root || document).querySelectorAll(headingSelectors.join(', '));
   if (!revealElements.length) return;
@@ -1447,8 +1459,8 @@ function initHeroIntro(immediate = false) {
 
   const isMobile = window.innerWidth < 768;
   if (immediate || isMobile || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    gsap.set('.hl-word, .hero-headline-connector, .hero-word-roller, #hero-platform-icons, .platform-chip, #hero-desc, #hero-actions, .hero-trust-badge-wrap, .carousel-viewport, .hero-tag-bar, .section-trusted', { 
-      opacity: 1, y: 0, x: 0, scale: 1, filter: 'none', clearProps: 'all' 
+    gsap.set('.hl-word, .hero-headline-connector, .hero-word-roller, #hero-platform-icons, .platform-chip, #hero-desc, #hero-actions, .hero-trust-badge-wrap, .carousel-viewport, .hero-tag-bar, .section-trusted', {
+      opacity: 1, y: 0, x: 0, scale: 1, filter: 'none', clearProps: 'all'
     });
     if (navbar) gsap.set(navbar, { opacity: 1, y: 0, clearProps: 'opacity,transform,filter' });
     headlineLines.forEach((line) => { line.style.overflow = 'visible'; });
@@ -1598,7 +1610,7 @@ function init3DScene() {
       .then(({ initHV3D }) => {
         const scene = initHV3D('hv-canvas', 'hv-canvas-container');
         window.__hv3DCleanup = () => {
-          try { scene?.dispose?.(); } catch (_) {}
+          try { scene?.dispose?.(); } catch (_) { }
         };
       })
       .catch((err) => console.warn('Hero visual initialization notice:', err));
@@ -1966,7 +1978,7 @@ function initGrowthWidgets() {
     try {
       chartLength = chartLine.getTotalLength() || 400;
       gsap.set(chartLine, { strokeDasharray: chartLength, strokeDashoffset: chartLength });
-    } catch (_) {}
+    } catch (_) { }
   }
 
   // Initialize initial animation states
@@ -2335,7 +2347,7 @@ function disposePageRuntime() {
     '__hvFaqCleanup',
     '__hvFooterScatterCleanup',
   ].forEach((key) => {
-    try { window[key]?.(); } catch (_) {}
+    try { window[key]?.(); } catch (_) { }
     window[key] = null;
   });
   activeWorkMetricTweens.forEach((tween) => tween?.kill?.());
@@ -2660,7 +2672,7 @@ export function initHeroReelCarousel() {
 
   // Strict Intro Isolation: Never render or animate the carousel during the loading screen!
   const isIntroPending = document.documentElement.classList.contains('intro-pending') ||
-                         document.body.classList.contains('intro-active');
+    document.body.classList.contains('intro-active');
 
   if (isIntroPending) {
     viewport.style.display = 'none';
@@ -2792,7 +2804,7 @@ export function initHeroReelCarousel() {
       if (!video.paused) return;
       const playAttempt = video.play();
       if (playAttempt && playAttempt.catch) {
-        playAttempt.catch(() => {});
+        playAttempt.catch(() => { });
       }
     };
 
@@ -2880,7 +2892,7 @@ export function initHeroReelCarousel() {
           loadVideo(video, 'high');
           playVideo(video);
         } else {
-          try { video.pause(); } catch (_) {}
+          try { video.pause(); } catch (_) { }
         }
       });
     } else {
@@ -2924,31 +2936,31 @@ export function initHeroReelCarousel() {
 
   const heroVisibilityObserver = 'IntersectionObserver' in window
     ? new IntersectionObserver(([entry]) => {
-        const wasVisible = isCarouselVisible;
-        isCarouselVisible = entry.isIntersecting;
-        if (!isCarouselVisible) {
-          if (animId) {
-            cancelAnimationFrame(animId);
-            animId = null;
-          }
-          // Keep the three mobile hero reels buffered/playing while the page
-          // scrolls past them. Restarting video decode on every re-entry can
-          // expose a black frame on phones. Desktop still pauses off-screen
-          // playback to avoid wasting resources.
-          if (cachedViewportWidth > 768) {
-            videos.forEach((video) => { try { video?.pause(); } catch (_) {} });
-          }
-          return;
+      const wasVisible = isCarouselVisible;
+      isCarouselVisible = entry.isIntersecting;
+      if (!isCarouselVisible) {
+        if (animId) {
+          cancelAnimationFrame(animId);
+          animId = null;
         }
-        if (!wasVisible && isCarouselVisible) {
-          lastTime = performance.now();
-          lastVideoPriorityIndex = -1;
-          updateVideoPriority(true);
-          if (!animId) {
-            animId = requestAnimationFrame(loop);
-          }
+        // Keep the three mobile hero reels buffered/playing while the page
+        // scrolls past them. Restarting video decode on every re-entry can
+        // expose a black frame on phones. Desktop still pauses off-screen
+        // playback to avoid wasting resources.
+        if (cachedViewportWidth > 768) {
+          videos.forEach((video) => { try { video?.pause(); } catch (_) { } });
         }
-      }, { threshold: 0.05 })
+        return;
+      }
+      if (!wasVisible && isCarouselVisible) {
+        lastTime = performance.now();
+        lastVideoPriorityIndex = -1;
+        updateVideoPriority(true);
+        if (!animId) {
+          animId = requestAnimationFrame(loop);
+        }
+      }
+    }, { threshold: 0.05 })
     : null;
   heroVisibilityObserver?.observe(viewport);
 
@@ -3128,7 +3140,7 @@ export function initHeroReelCarousel() {
       viewport.classList.add('is-dragging');
       cardPositions.forEach((p) => { p.style.transition = 'none'; });
       if (track.setPointerCapture) {
-        try { track.setPointerCapture(e.pointerId); } catch (_) {}
+        try { track.setPointerCapture(e.pointerId); } catch (_) { }
       }
     }
 
@@ -3171,7 +3183,7 @@ export function initHeroReelCarousel() {
     track.classList.remove('is-dragging');
     viewport.classList.remove('is-dragging');
     if (track.releasePointerCapture && e?.pointerId) {
-      try { track.releasePointerCapture(e.pointerId); } catch (_) {}
+      try { track.releasePointerCapture(e.pointerId); } catch (_) { }
     }
 
     // Give even a small swipe a gentle glide.
@@ -3235,7 +3247,7 @@ export function initHeroReelCarousel() {
         cancelAnimationFrame(animId);
         animId = null;
       }
-      videos.forEach((video) => { try { video?.pause(); } catch (_) {} });
+      videos.forEach((video) => { try { video?.pause(); } catch (_) { } });
       return;
     }
     if (isCarouselVisible) {
@@ -3302,7 +3314,7 @@ export function initHeroReelCarousel() {
     document.removeEventListener('visibilitychange', onVisibilityChange);
     resizeObserver?.disconnect();
     heroVisibilityObserver?.disconnect();
-    videos.forEach((v) => { try { v?.pause(); } catch (_) {} });
+    videos.forEach((v) => { try { v?.pause(); } catch (_) { } });
     if (window.__hvHeroReelRefresh === refreshHeroLayout) {
       window.__hvHeroReelRefresh = null;
     }
@@ -3323,7 +3335,7 @@ function initWorkflowSection() {
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduceMotion) {
     gsap.set(cards, { opacity: 1, y: 0 });
-    videos.forEach((video) => { try { video.pause(); } catch (_) {} });
+    videos.forEach((video) => { try { video.pause(); } catch (_) { } });
     return;
   }
 
@@ -3339,12 +3351,12 @@ function initWorkflowSection() {
       video.setAttribute('autoplay', '');
       video.preload = 'auto';
       if (!shouldPlay) {
-        try { video.pause(); } catch (_) {}
+        try { video.pause(); } catch (_) { }
         return;
       }
       if (video.paused) {
         const playAttempt = video.play();
-        if (playAttempt && playAttempt.catch) playAttempt.catch(() => {});
+        if (playAttempt && playAttempt.catch) playAttempt.catch(() => { });
       }
     });
   };
@@ -3829,11 +3841,11 @@ function initServiceFilters() {
 function initPortfolioGrid() {
   const toggleBtns = document.querySelectorAll('.portfolio-toggle-btn');
   const glider = document.getElementById('portfolio-glider');
-  
+
   // Home page marquees
   const marqueeInfluencers = document.getElementById('portfolio-marquee-influencers');
   const marqueeBrands = document.getElementById('portfolio-marquee-brands');
-  
+
   // Work page non-marquee showcase grids
   const showcaseInfluencers = document.getElementById('portfolio-showcase-influencers');
   const showcaseBrands = document.getElementById('portfolio-showcase-brands');
@@ -4098,7 +4110,7 @@ function initTestimonialsReveal() {
       card.classList.toggle('is-testimonial-active', role === 0);
       card.setAttribute('data-card-role', role === 0 ? 'active' : role === 1 ? 'next' : 'previous');
       card.style.zIndex = String(state.zIndex);
-      
+
       if (!animate || reducedMotion) {
         gsap.set(card, state);
       } else {
@@ -4179,11 +4191,11 @@ function initTestimonialsReveal() {
     const absX = Math.abs(rawX);
     dragOffsetX = Math.sign(rawX) * (absX < 150 ? absX : 150 + (absX - 150) * 0.45);
     const dragOffsetY = (event.clientY - dragStartY) * 0.18;
-    
+
     // Add 3D rotation tilt dynamically based on the drag for a tactile coverflow feel
-    gsap.set(stack, { 
-      x: dragOffsetX, 
-      y: dragOffsetY, 
+    gsap.set(stack, {
+      x: dragOffsetX,
+      y: dragOffsetY,
       rotate: dragOffsetX * 0.02,
       rotateY: dragOffsetX * 0.08
     });
@@ -4769,12 +4781,12 @@ function initInstagramReelsPlayer() {
       video.setAttribute('playsinline', '');
       video.preload = 'auto';
       if (!shouldPlay) {
-        try { video.pause(); } catch (_) {}
+        try { video.pause(); } catch (_) { }
         return;
       }
       if (video.paused) {
         const attempt = video.play();
-        if (attempt?.catch) attempt.catch(() => {});
+        if (attempt?.catch) attempt.catch(() => { });
       }
     });
   };
@@ -4839,7 +4851,7 @@ function initInstagramReelsPlayer() {
     isDragging = false;
     rail.classList.remove('is-dragging');
     if (event?.pointerId !== undefined) {
-      try { viewport.releasePointerCapture?.(event.pointerId); } catch (_) {}
+      try { viewport.releasePointerCapture?.(event.pointerId); } catch (_) { }
     }
     window.setTimeout(() => { suppressClick = false; }, 0);
   };
@@ -4890,7 +4902,7 @@ function initInstagramReelsPlayer() {
       videos.forEach((otherVideo) => { if (otherVideo !== video) otherVideo.muted = true; });
       video.muted = false;
       const attempt = video.play();
-      if (attempt?.catch) attempt.catch(() => { video.muted = true; video.play().catch(() => {}); });
+      if (attempt?.catch) attempt.catch(() => { video.muted = true; video.play().catch(() => { }); });
     };
 
     if (soundBtn) {
@@ -4906,7 +4918,7 @@ function initInstagramReelsPlayer() {
     if (!card.classList.contains('case-reel-clone')) {
       card.setAttribute('tabindex', '0');
       const togglePlayback = () => {
-        if (video.paused) video.play().catch(() => {});
+        if (video.paused) video.play().catch(() => { });
         else video.pause();
       };
       card.addEventListener('click', (event) => {
@@ -4936,7 +4948,7 @@ function initInstagramReelsPlayer() {
     window.removeEventListener('pointercancel', stopDragging);
     window.removeEventListener('resize', onResize);
     document.removeEventListener('visibilitychange', onVisibilityChange);
-    videos.forEach((video) => { try { video.pause(); } catch (_) {} });
+    videos.forEach((video) => { try { video.pause(); } catch (_) { } });
   };
 
   if (typeof gsap !== 'undefined') {
@@ -4963,13 +4975,14 @@ function initInstagramReelsPlayer() {
 // away from the pointer and lets them settle back into the logo.
 function initFooterScatterGrid() {
   if (typeof window.__hvFooterScatterCleanup === 'function') {
-    try { window.__hvFooterScatterCleanup(); } catch (_) {}
+    try { window.__hvFooterScatterCleanup(); } catch (_) { }
     window.__hvFooterScatterCleanup = null;
   }
   const shell = document.getElementById('page-transition-shell');
   const watermark = shell ? shell.querySelector('.footer-watermark-logo') : document.querySelector('.footer-watermark-logo');
-  if (!watermark || watermark.querySelector('.footer-scatter-canvas')) return;
-  // Enhanced reactive scatter physics with high visibility dots
+  if (!watermark) return;
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  // Enhanced reactive scatter physics: Sky Blue in light mode, Electric Cyan in dark mode
   window.__hvFooterScatterCleanup = initScatterGrid(watermark, {
     dotSize: 4,
     dotGap: 2,
@@ -4977,7 +4990,15 @@ function initFooterScatterGrid() {
     strength: 2.2,
     stiffness: 0.035,
     damping: 0.86,
-    base: [210, 230, 250],
-    accent: [0, 229, 255]
+    base: isLight ? [195, 220, 240] : [210, 230, 250],
+    accent: isLight ? [14, 165, 233] : [0, 229, 255]
+  });
+}
+
+// Re-sync scatter grid on theme changes
+if (!window.__hvScatterThemeListenerBound) {
+  window.__hvScatterThemeListenerBound = true;
+  window.addEventListener('hv:themechange', () => {
+    initFooterScatterGrid();
   });
 }

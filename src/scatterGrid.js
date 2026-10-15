@@ -14,16 +14,16 @@ export function initScatterGrid(container, options = {}) {
   if (getComputedStyle(container).position === 'static') {
     container.style.position = 'relative';
   }
-  
+
   // Enable pointer events on the container so we can track mouse over it
   container.style.pointerEvents = 'auto';
 
   const canvas = document.createElement('canvas');
   canvas.classList.add('footer-scatter-canvas');
   // It shouldn't block pointer events for the container itself, but we track on window anyway
-  canvas.style.pointerEvents = 'none'; 
+  canvas.style.pointerEvents = 'none';
   container.appendChild(canvas);
-  
+
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
@@ -49,16 +49,16 @@ export function initScatterGrid(container, options = {}) {
   let pointerY = -9999;
   let clock = 0;
   let raf = 0;
-  
+
   let resizeTimer;
-  
+
   function build() {
     const rect = container.getBoundingClientRect();
     const boxW = Math.max(1, Math.round(rect.width));
     const boxH = Math.max(1, Math.round(rect.height));
     width = boxW + bleed * 2;
     height = boxH + bleed * 2;
-    
+
     const dpr = Math.min(2, window.devicePixelRatio || 1);
     canvas.width = Math.round(width * dpr);
     canvas.height = Math.round(height * dpr);
@@ -69,25 +69,25 @@ export function initScatterGrid(container, options = {}) {
     canvas.style.right = "auto";
     canvas.style.bottom = "auto";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    
+
     const mask = document.createElement("canvas");
     mask.width = width;
     mask.height = height;
     const mctx = mask.getContext("2d", { willReadFrequently: true });
     if (!mctx) return;
-    
+
     // Check if there is an image to use
     const existingImg = container.querySelector('img');
-    
+
     const drawAndExtract = () => {
       try {
         const data = mctx.getImageData(0, 0, width, height).data;
-        
+
         // Sample the actual logo densely enough to retain the rocket window,
         // fins and flame. A fixed 6px grid loses those details at footer size.
         const minStep = Math.max(1, Math.min(dotSize + dotGap, boxW / 320));
         let step = minStep;
-        
+
         const countAt = s => {
           let n = 0;
           const half = s / 2;
@@ -99,7 +99,7 @@ export function initScatterGrid(container, options = {}) {
           }
           return n;
         };
-        
+
         let count = countAt(step);
         let guard = 0;
         while (count > 8000 && guard < 20) {
@@ -107,7 +107,7 @@ export function initScatterGrid(container, options = {}) {
           count = countAt(step);
           guard++;
         }
-        
+
         renderedDotSize = Math.min(dotSize, step * 0.72);
         const nextDots = [];
         const half = step / 2;
@@ -130,15 +130,15 @@ export function initScatterGrid(container, options = {}) {
       let w = boxW; // Use full width of container
       let h = w / aspect;
       if (h > boxH) {
-          h = boxH;
-          w = h * aspect;
+        h = boxH;
+        w = h * aspect;
       }
       // Center in canvas (which is box + bleed)
-      mctx.drawImage(existingImg, bleed + (boxW - w)/2, bleed + (boxH - h)/2, w, h);
-      
+      mctx.drawImage(existingImg, bleed + (boxW - w) / 2, bleed + (boxH - h) / 2, w, h);
+
       // Hide the original image to only show dots
       existingImg.style.opacity = 0;
-      
+
       drawAndExtract();
     } else if (existingImg) {
       existingImg.onload = () => {
@@ -148,13 +148,13 @@ export function initScatterGrid(container, options = {}) {
       let text = options.text || "HIGHVERZ";
       let size = boxH * 0.8;
       mctx.font = `900 ${size}px "Inter", sans-serif`;
-      
+
       const measured = mctx.measureText(text).width;
       if (measured > 0 && measured > boxW * 0.9) {
         size = size * (boxW * 0.9 / measured);
         mctx.font = `900 ${size}px "Inter", sans-serif`;
       }
-      
+
       mctx.textAlign = "center";
       mctx.textBaseline = "middle";
       mctx.fillStyle = "#000";
@@ -162,7 +162,7 @@ export function initScatterGrid(container, options = {}) {
       drawAndExtract();
     }
   }
-  
+
   function simulate() {
     const r2 = radius * radius;
     for (let i = 0; i < dots.length; i++) {
@@ -170,14 +170,14 @@ export function initScatterGrid(container, options = {}) {
       const dx = d.x - pointerX;
       const dy = d.y - pointerY;
       const dist2 = dx * dx + dy * dy;
-      
+
       if (dist2 < r2 && dist2 > 0.5) {
         const dist = Math.sqrt(dist2);
         const f = (1 - dist / radius) * strength;
         d.vx += (dx / dist) * f;
         d.vy += (dy / dist) * f;
       }
-      
+
       for (let j = 0; j < ripples.length; j++) {
         const rp = ripples[j];
         const rx = d.x - rp.x;
@@ -190,7 +190,7 @@ export function initScatterGrid(container, options = {}) {
           d.vy += (ry / rd) * f;
         }
       }
-      
+
       d.vx += (d.hx - d.x) * stiffness;
       d.vy += (d.hy - d.y) * stiffness;
       d.vx *= damping;
@@ -198,7 +198,7 @@ export function initScatterGrid(container, options = {}) {
       d.x += d.vx;
       d.y += d.vy;
     }
-    
+
     for (let j = ripples.length - 1; j >= 0; j--) {
       ripples[j].r += 14;
       if (ripples[j].r > Math.max(width, height) * 1.2) {
@@ -206,7 +206,7 @@ export function initScatterGrid(container, options = {}) {
       }
     }
   }
-  
+
   function paint() {
     ctx.clearRect(0, 0, width, height);
     for (let i = 0; i < dots.length; i++) {
@@ -214,24 +214,24 @@ export function initScatterGrid(container, options = {}) {
       const ox = d.x - d.hx;
       const oy = d.y - d.hy;
       const disp = Math.sqrt(ox * ox + oy * oy);
-      
+
       let level = Math.min(1, disp / 24);
       // Shimmer changes color only; keep the logo's stems and baseline straight.
       const s = Math.sin(d.hx * 0.012 - clock * 1.6);
       level = Math.max(level, Math.max(0, s - 0.86) * 3.2);
-      
+
       const idx = Math.min(STEPS - 1, Math.max(0, Math.round(level * (STEPS - 1))));
       ctx.fillStyle = ramp[idx];
       ctx.fillRect(d.x - renderedDotSize / 2, d.y - renderedDotSize / 2, renderedDotSize, renderedDotSize);
     }
   }
-  
+
   let last = 0;
-  const FIXED = 1/60;
+  const FIXED = 1 / 60;
   let acc = 0;
-  
+
   let isIntersecting = false;
-  
+
   function loop(now) {
     if (!isIntersecting) {
       raf = 0;
@@ -241,18 +241,18 @@ export function initScatterGrid(container, options = {}) {
     last = now;
     clock += dt;
     acc += dt;
-    
+
     let guard = 0;
     while (acc >= FIXED && guard < 5) {
       simulate();
       acc -= FIXED;
       guard++;
     }
-    
+
     paint();
     raf = requestAnimationFrame(loop);
   }
-  
+
   build();
 
   const visibilityObserver = 'IntersectionObserver' in window ? new IntersectionObserver(([entry]) => {
@@ -274,7 +274,7 @@ export function initScatterGrid(container, options = {}) {
     isIntersecting = true;
     raf = requestAnimationFrame(loop);
   }
-  
+
   const handlePointerMove = (e) => {
     if (!isIntersecting) return;
     const rect = canvas.getBoundingClientRect();
@@ -290,29 +290,29 @@ export function initScatterGrid(container, options = {}) {
       pointerY = -9999;
     }
   };
-  
+
   const handlePointerLeave = () => {
     pointerX = -9999;
     pointerY = -9999;
   };
-  
+
   const handlePointerDown = (e) => {
     if (!isIntersecting) return;
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     if (x < bleed || y < bleed || x > width - bleed || y > height - bleed) return;
-    
+
     if (ripples.length > 2) ripples.shift();
     ripples.push({ x, y, r: 0 });
   };
-  
+
   // Track on window so overlaying footer content (links, copyright, text) does not block scatter reactivity
-  window.addEventListener("pointermove", handlePointerMove, {passive: true});
-  window.addEventListener("pointerdown", handlePointerDown, {passive: true});
-  window.addEventListener("pointerleave", handlePointerLeave, {passive: true});
-  window.addEventListener("scroll", handlePointerLeave, {passive: true});
-  
+  window.addEventListener("pointermove", handlePointerMove, { passive: true });
+  window.addEventListener("pointerdown", handlePointerDown, { passive: true });
+  window.addEventListener("pointerleave", handlePointerLeave, { passive: true });
+  window.addEventListener("scroll", handlePointerLeave, { passive: true });
+
   const resizeObserver = new ResizeObserver(() => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
@@ -321,7 +321,7 @@ export function initScatterGrid(container, options = {}) {
     }, 120);
   });
   resizeObserver.observe(container);
-  
+
   return () => {
     if (raf) cancelAnimationFrame(raf);
     visibilityObserver?.disconnect();
@@ -330,5 +330,11 @@ export function initScatterGrid(container, options = {}) {
     window.removeEventListener("pointerdown", handlePointerDown);
     window.removeEventListener("pointerleave", handlePointerLeave);
     window.removeEventListener("scroll", handlePointerLeave);
+    if (canvas && canvas.parentNode) {
+      canvas.parentNode.removeChild(canvas);
+    }
+    if (existingImg) {
+      existingImg.style.opacity = '';
+    }
   };
 }

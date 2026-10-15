@@ -25,6 +25,9 @@ function applyTheme(theme) {
   localStorage.setItem(STORAGE_KEY, theme);
   updateIcons(theme);
   updateLogos(theme);
+  try {
+    window.dispatchEvent(new CustomEvent('hv:themechange', { detail: { theme } }));
+  } catch (_) {}
 }
 
 // ─── Update Sun / Moon icon visibility ───
@@ -47,11 +50,9 @@ function updateLogos(theme) {
   const navLogos = document.querySelectorAll('.nav-brand-logo-img');
   navLogos.forEach(logo => {
     if (theme === 'light') {
-      // Use the dark/cyan logo for visibility on light backgrounds
-      logo.src = logo.src.replace('logo-white.png', 'logo-cyan.png');
+      logo.src = logo.src.replace(/logo-(white|cyan)\.(png|svg)/, 'logo-light.png');
     } else {
-      // Use white logo for dark background
-      logo.src = logo.src.replace('logo-cyan.png', 'logo-white.png');
+      logo.src = logo.src.replace(/logo-(light|cyan)\.(png|svg)/, 'logo-white.png');
     }
   });
 
@@ -59,9 +60,9 @@ function updateLogos(theme) {
   const footerLogos = document.querySelectorAll('.footer-logo-img');
   footerLogos.forEach(logo => {
     if (theme === 'light') {
-      logo.src = logo.src.replace('logo-white.png', 'logo-cyan.png');
+      logo.src = logo.src.replace(/logo-(white|cyan)\.(png|svg)/, 'logo-light.png');
     } else {
-      logo.src = logo.src.replace('logo-cyan.png', 'logo-white.png');
+      logo.src = logo.src.replace(/logo-(light|cyan)\.(png|svg)/, 'logo-white.png');
     }
   });
 }

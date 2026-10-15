@@ -321,6 +321,11 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       incCampaignHero.dataset.heroAnimated = 'true';
     }
 
+    // Pre-split words on incoming hero headings before mounting to prevent layout shifting or clipping artifacts
+    incomingContent.querySelectorAll('.work-hero-title, .campaign-hero-headline, .why-hero-title, .team-hero-title, .case-hero-title').forEach((heading) => {
+      window.splitAdscaleWords?.(heading);
+    });
+
     // Pre-set metric counters in incoming content to 0 so they never flash target values before animating
     incomingContent.querySelectorAll('.work-metric-val').forEach((el) => {
       const target = parseFloat(el.getAttribute('data-metric-target'));

@@ -11,7 +11,8 @@ export class HeroWordRoller {
     this.container = document.getElementById('hero-word-roller');
     this.words = ['Reach', 'Boost', 'Trend', 'Clicks'];
     this.currentIndex = 0;
-    this.interval = options.interval || 2800; // ms to pause on each word
+    this.interval = options.interval || 1400; // ms to pause on each word (accelerated cadence)
+    this.duration = options.duration || 0.52; // flip animation duration in seconds
     this.timer = null;
     this.isAnimating = false;
     this.isPaused = false;
@@ -131,16 +132,16 @@ export class HeroWordRoller {
     tl.to(currentItem, {
       rotateX: 90,
       opacity: 0,
-      duration: 0.9,
-      ease: 'expo.inOut'
+      duration: this.duration,
+      ease: 'power3.inOut'
     }, 0);
 
     // The next word elegantly rotates down into view
     tl.to(nextItem, {
       rotateX: 0,
       opacity: 1,
-      duration: 0.9,
-      ease: 'expo.inOut'
+      duration: this.duration,
+      ease: 'power3.inOut'
     }, 0);
   }
 

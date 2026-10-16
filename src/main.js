@@ -4990,7 +4990,7 @@ function initFooterScatterGrid() {
     strength: 2.2,
     stiffness: 0.035,
     damping: 0.86,
-    base: isLight ? [195, 220, 240] : [210, 230, 250],
+    base: isLight ? [90, 160, 210] : [210, 230, 250],
     accent: isLight ? [14, 165, 233] : [0, 229, 255]
   });
 }

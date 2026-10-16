@@ -3892,9 +3892,13 @@ html.js .floating-badge-item {
   height: 100%;
   pointer-events: none;
   opacity: 0.76;
-  background: #000000;
+  background: transparent;
   mix-blend-mode: normal;
   transition: opacity 700ms var(--ease-theme);
+}
+
+[data-theme="dark"] .global-fluid-canvas {
+  background: #000000;
 }
 
 [data-theme="light"] body {
@@ -3938,11 +3942,11 @@ html.js .floating-badge-item {
 
 [data-theme="light"] .global-fluid-canvas {
   z-index: 0;
-  opacity: 0.88;
+  opacity: 0.75;
   background: transparent !important;
   mix-blend-mode: normal;
-  filter: blur(14px);
-  transform: scale(1.02);
+  filter: none !important;
+  transform: none !important;
 }
 
 [data-theme="light"] main,
@@ -3986,8 +3990,8 @@ html.js .floating-badge-item {
   }
 
   [data-theme="light"] .global-fluid-canvas {
-    opacity: 0.34;
-    filter: blur(18px) saturate(68%) brightness(1.08);
+    opacity: 0.65;
+    filter: none !important;
   }
 }
 

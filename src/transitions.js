@@ -265,8 +265,22 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
 
     // Close mobile menu if active
     document.body.classList.remove('mobile-menu-active');
-    const mobileToggle = document.getElementById('mobile-toggle');
-    if (mobileToggle) mobileToggle.classList.remove('is-active');
+    if (window.__hvCloseMobileMenu) {
+      window.__hvCloseMobileMenu();
+    } else {
+      const mobileToggle = document.getElementById('mobile-toggle');
+      if (mobileToggle) mobileToggle.classList.remove('is-active');
+      const mobileOverlay = document.getElementById('mobile-nav-overlay');
+      if (mobileOverlay) {
+        mobileOverlay.classList.remove('is-open');
+        mobileOverlay.setAttribute('aria-hidden', 'true');
+        mobileOverlay.setAttribute('inert', '');
+        mobileOverlay.inert = true;
+        mobileOverlay.style.pointerEvents = 'none';
+        mobileOverlay.style.visibility = 'hidden';
+        mobileOverlay.style.opacity = '0';
+      }
+    }
 
     // Keep cursor active and clear any stuck click/magnetic states
     if (window.__hvEnsureCursorActive) {

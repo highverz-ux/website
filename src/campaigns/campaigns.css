@@ -3256,6 +3256,25 @@ body.page-campaigns {
   color: var(--text-secondary);
 }
 
+/* Movie cards keep their cinematic image overlay in light mode, so titles and
+   metadata must remain light for contrast. Mobile cards move the info below
+   the image and receive their own dark-text rules in the mobile block above. */
+@media (min-width: 769px) {
+  [data-theme="light"] .campaign-movie-card .campaign-card-title {
+    color: #ffffff !important;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45);
+  }
+
+  [data-theme="light"] .campaign-movie-card .campaign-card-meta {
+    color: rgba(255, 255, 255, 0.82) !important;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
+  }
+
+  [data-theme="light"] .campaign-movie-card .campaign-card-meta-dot {
+    background: rgba(255, 255, 255, 0.62);
+  }
+}
+
 [data-theme="light"] .campaign-page-btn {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.28) 100%);
   border: 1px solid rgba(255, 255, 255, 0.85);

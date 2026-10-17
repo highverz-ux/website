@@ -1031,7 +1031,28 @@ function initMobileNav(navbar) {
   function openMenu() {
     isOpen = true;
     gsap.killTweensOf(overlay);
+    overlay.removeAttribute('inert');
     overlay.inert = false;
+    overlay.style.pointerEvents = 'auto';
+    overlay.style.visibility = 'visible';
+    overlay.style.opacity = '1';
+
+    // Synchronize active tab in mobile drawer with current route
+    const currentPath = window.location.pathname;
+    overlay.querySelectorAll('.mobile-nav-link').forEach((link) => {
+      const href = link.getAttribute('href');
+      if (!href) return;
+      const isTargetHome = isHomeRoute(href);
+      const isCurrentHome = isHomeRoute(currentPath);
+      if (isCurrentHome && isTargetHome) {
+        link.classList.add('active');
+      } else if (!isTargetHome && currentPath.includes(href.replace(/^\//, ''))) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
+
     if (toggleBtn) {
       toggleBtn.classList.add('is-active');
       toggleBtn.setAttribute('aria-expanded', 'true');
@@ -1063,7 +1084,9 @@ function initMobileNav(navbar) {
     if (!isOpen) return;
     isOpen = false;
     gsap.killTweensOf(overlay);
+    overlay.setAttribute('inert', '');
     overlay.inert = true;
+    overlay.style.pointerEvents = 'none';
     toggleBtn?.focus({ preventScroll: true });
     if (toggleBtn) {
       toggleBtn.classList.remove('is-active');
@@ -1081,13 +1104,18 @@ function initMobileNav(navbar) {
         onComplete: () => {
           overlay.classList.remove('is-open');
           overlay.setAttribute('aria-hidden', 'true');
+          overlay.style.visibility = 'hidden';
         }
       });
     } else {
       overlay.classList.remove('is-open');
       overlay.setAttribute('aria-hidden', 'true');
+      overlay.style.visibility = 'hidden';
+      overlay.style.opacity = '0';
     }
   }
+
+  window.__hvCloseMobileMenu = closeMenu;
 
   if (toggleBtn) {
     toggleBtn.addEventListener('click', (e) => {
@@ -1116,6 +1144,7 @@ function initMobileNav(navbar) {
       }
       // Instantly dismiss overlay before view-transition snapshot to avoid freezing a half-closed drawer
       isOpen = false;
+      overlay.setAttribute('inert', '');
       overlay.inert = true;
       if (toggleBtn) {
         toggleBtn.classList.remove('is-active');
@@ -1124,11 +1153,20 @@ function initMobileNav(navbar) {
       document.body.classList.remove('mobile-menu-active');
       overlay.classList.remove('is-open');
       overlay.setAttribute('aria-hidden', 'true');
+      overlay.style.visibility = 'hidden';
       overlay.style.opacity = '0';
       overlay.style.pointerEvents = 'none';
       if (window.lenis) window.lenis.start();
     });
   });
+
+  // Prevent touch propagation from leaking to underlying reels/content while interacting with drawer
+  overlay.addEventListener('touchstart', (e) => {
+    e.stopPropagation();
+  }, { passive: true });
+  overlay.addEventListener('touchmove', (e) => {
+    e.stopPropagation();
+  }, { passive: true });
 
   // Close on Escape
   window.addEventListener('keydown', (e) => {

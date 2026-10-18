@@ -3969,6 +3969,12 @@ function initTeamPageAnimations(isFromTransition = false) {
           }
         });
         activeMetricTweens.push(tw);
+      } else if (format === 'reach') {
+        el.textContent = 'Global Reach';
+        gsap.fromTo(el,
+          { filter: 'drop-shadow(0 0 28px rgba(0, 229, 255, 0.85))' },
+          { filter: 'drop-shadow(0 0 16px rgba(0, 229, 255, 0.4))', duration: 0.8, ease: 'power2.out' }
+        );
       } else if (format === 'percent') {
         const obj = { val: 0 };
         el.textContent = '0.0%';
@@ -3988,6 +3994,12 @@ function initTeamPageAnimations(isFromTransition = false) {
           }
         });
         activeMetricTweens.push(tw);
+      } else if (format === 'distribution') {
+        el.textContent = '24/7';
+        gsap.fromTo(el,
+          { filter: 'drop-shadow(0 0 28px rgba(0, 229, 255, 0.85))' },
+          { filter: 'drop-shadow(0 0 16px rgba(0, 229, 255, 0.4))', duration: 0.8, ease: 'power2.out' }
+        );
       } else if (format === 'top') {
         const obj = { val: 15 };
         el.textContent = 'Top 15%';

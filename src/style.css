@@ -8628,6 +8628,16 @@ html.js .floating-badge-item {
   color: rgba(255, 255, 255, 0.65);
 }
 
+.capability-flow {
+  margin-top: 0.35rem;
+  color: var(--accent-cyan);
+  font-family: var(--font-body);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  line-height: 1.3;
+}
+
 /* Light Mode Overrides */
 [data-theme="light"] .work-capabilities-section {
   background:
@@ -8679,6 +8689,10 @@ html.js .floating-badge-item {
 
 [data-theme="light"] .capability-desc {
   color: #555e6d;
+}
+
+[data-theme="light"] .capability-flow {
+  color: #0789a2;
 }
 
 @media (max-width: 1080px) {

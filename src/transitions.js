@@ -144,9 +144,15 @@ function startIncomingMetricCounters(content) {
       } else if (format === 'days') {
         target = 60; el.textContent = '0 Days';
         render = () => { el.textContent = `${Math.round(value.current)} Days`; };
+      } else if (format === 'reach') {
+        el.textContent = 'Global Reach';
+        return;
       } else if (format === 'percent') {
         target = 99.4; el.textContent = '0.0%';
         render = () => { el.textContent = `${value.current.toFixed(1)}%`; };
+      } else if (format === 'distribution') {
+        el.textContent = '24/7';
+        return;
       } else if (format === 'top') {
         target = 1; el.textContent = 'Top 15%';
         render = () => { el.textContent = `Top ${Math.round(value.current)}%`; };
@@ -358,7 +364,9 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
       const format = el.getAttribute('data-metric-format');
       if (format === 'billion') el.textContent = '0.0B+';
       else if (format === 'days') el.textContent = '0 Days';
+      else if (format === 'reach') el.textContent = 'Global Reach';
       else if (format === 'percent') el.textContent = '0.0%';
+      else if (format === 'distribution') el.textContent = '24/7';
     });
 
     incomingContent.style.position = 'relative';

@@ -5955,6 +5955,111 @@ html.js .floating-badge-item {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
 }
 
+/* Light mode Home showcase: the same glass system, refocused on films. */
+.section-creators.is-movie-showcase .creator-image-wrap {
+  aspect-ratio: 3 / 4;
+}
+
+.section-creators.is-movie-showcase .creator-card {
+  box-sizing: border-box;
+  min-width: 0;
+  margin-right: 0;
+  grid-template-columns: minmax(0, 195px) minmax(0, 1fr);
+  gap: 1.35rem;
+}
+
+.section-creators.is-movie-showcase {
+  scroll-margin-top: 7rem;
+}
+
+.section-creators.is-movie-showcase .creators-header {
+  padding-top: 1.25rem;
+}
+
+.section-creators.is-movie-showcase .creator-info-col {
+  min-width: 0;
+  align-self: stretch;
+  justify-content: center;
+}
+
+.section-creators.is-movie-showcase .creator-name-row {
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.section-creators.is-movie-showcase .creator-name {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.section-creators.is-movie-showcase .creator-img {
+  object-position: center center;
+}
+
+.section-creators.is-movie-showcase .creator-platform {
+  color: #0369A1;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  flex: 0 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  font-size: clamp(0.62rem, 0.8vw, 0.76rem);
+  padding-left: 0.68rem;
+  padding-right: 0.68rem;
+}
+
+.section-creators.is-movie-showcase .creator-platform:hover {
+  background: rgba(14, 165, 233, 0.14);
+  border-color: rgba(14, 165, 233, 0.45);
+  color: #0369A1;
+  box-shadow: 0 4px 16px rgba(14, 165, 233, 0.16);
+}
+
+.section-creators.is-movie-showcase .stat-number {
+  font-size: clamp(0.86rem, 1.15vw, 1.16rem);
+  letter-spacing: -0.045em;
+  white-space: nowrap;
+  overflow: visible;
+}
+
+.section-creators.is-movie-showcase .creator-stats-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  min-width: 0;
+}
+
+.section-creators.is-movie-showcase .creator-stat-item {
+  min-width: 0;
+}
+
+.section-creators.is-movie-showcase .creator-description {
+  color: #40566A;
+}
+
+@media (max-width: 600px) {
+  .section-creators.is-movie-showcase .creator-image-wrap {
+    aspect-ratio: 3 / 4;
+    max-height: 320px;
+  }
+
+  .section-creators.is-movie-showcase .stat-number {
+    font-size: clamp(0.8rem, 3.8vw, 1.05rem);
+  }
+
+  .section-creators.is-movie-showcase .creator-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .section-creators.is-movie-showcase .creator-name-row {
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .section-creators.is-movie-showcase .creator-platform {
+    margin-left: auto;
+  }
+}
+
 /* Subtle dark gradient at bottom of home creator photo so overlay text pops without milky haze */
 [data-theme="light"] .creator-image-gradient {
   background: linear-gradient(to top, rgba(0, 0, 0, 0.68) 0%, transparent 60%);
@@ -13201,8 +13306,11 @@ html {
    dark page underneath can bleed through the blurred incoming shell, causing
    the brief bright-glow-then-dark flash seen on mobile and desktop. */
 [data-theme="light"] .page-transition-backdrop {
-  background: var(--bg-primary, #f8f9fa) !important;
-  opacity: 0.96;
+  /* The light page already has an opaque CSS fallback plus the shared fluid
+     canvas. A solid 96% layer hid that canvas until the transition completed,
+     creating the white-then-fluid flash on route returns. */
+  background: transparent !important;
+  opacity: 1;
 }
 
 [data-theme="light"] body.page-is-transitioning {
@@ -13210,8 +13318,8 @@ html {
 }
 
 [data-theme="light"] body.page-is-transitioning .global-fluid-canvas {
-  opacity: 0.22 !important;
-  filter: blur(28px) saturate(62%) brightness(1.08) !important;
+  opacity: 0.75 !important;
+  filter: none !important;
 }
 
 /* Lock scroll and interactions during transition */
@@ -13260,6 +13368,20 @@ body.cursor-active .cursor-ring {
 
 body.page-is-transitioning,
 body.page-is-transitioning .ambient-glow {
+  transition: none !important;
+}
+
+/* Route transitions are driven by the GSAP blur timeline. Prevent individual
+   incoming cards, sections, and text nodes from running their own background
+   or colour transitions after the shell has settled; that secondary pass is
+   the visible colour shift at the end of the handoff. */
+body.page-is-transitioning *,
+body.page-is-transitioning *::before,
+body.page-is-transitioning *::after {
+  transition: none !important;
+}
+
+body.page-is-transitioning .global-fluid-canvas {
   transition: none !important;
 }
 

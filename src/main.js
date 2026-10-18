@@ -1216,15 +1216,15 @@ function applyThemeHeroCopy() {
   if (headline.dataset.themeCopyApplied === document.documentElement.dataset.theme && hasExpectedMarkup) return;
   headline.innerHTML = isLight
     ? `<span class="hero-headline-line">
-        <span class="hl-word" data-word>From</span>
-        <span class="hl-word" data-word>the</span>
-        <span class="hl-word" data-word>Big</span>
-        <span class="hl-word" data-word>Screen</span>
+        <span class="hl-word" data-word>Boost</span>
+        <span class="hl-word" data-word>Your</span>
+        <span class="hl-word" data-word>Movie's</span>
+        <span class="hl-word" data-word>Potential</span>
       </span>
       <span class="hero-headline-connector" aria-hidden="true">to</span>
       <span class="hero-headline-line">
-        <span class="hl-word" data-word>Every</span>
-        <span class="hl-word highlight-cyan font-bold-italic hero-movie-screen" data-word>Screen.</span>
+        <span class="hl-word" data-word>Millions</span>
+        <span class="hl-word highlight-cyan font-bold-italic hero-movie-screen" data-word>of Views.</span>
       </span>`
     : `<span class="hero-headline-line">
         <span class="hl-word" data-word>Turn</span>
@@ -1250,10 +1250,164 @@ function applyThemeHeroCopy() {
 
   if (description) {
     description.innerHTML = isLight
-      ? '<span>Where cinema meets reach.</span><span>From the big screen to every screen.</span>'
-      : '<span>We build the accounts in-house, post daily, and track every clip to a sale.</span><span>We get you real revenue, not just views.</span>';
+      ? '<span>We turn cinematic stories into scroll-stopping campaigns.</span><span>More reach, more views, and more audience potential.</span>'
+      : '<span>We build and manage distribution accounts, publish daily,</span><span>and turn short-form content into measurable growth.</span>';
   }
   headline.dataset.themeCopyApplied = document.documentElement.dataset.theme || 'dark';
+}
+
+// The Home case-study rail has two deliberate identities: creator growth in
+// Dark mode and film distribution in Light mode. Keep the existing creator
+// markup as the source of truth, then swap only the copy/assets at the theme
+// boundary so both variants share the same layout and animation hooks.
+let homeCreatorsDarkMarkup = null;
+
+function applyThemeCreatorsCopy() {
+  const section = document.querySelector('.section-creators');
+  const cards = Array.from(section?.querySelectorAll('.creator-card') || []);
+  if (!section || cards.length < 2) return;
+
+  if (!homeCreatorsDarkMarkup) {
+    homeCreatorsDarkMarkup = {
+      header: section.querySelector('.creators-header')?.innerHTML || '',
+      cards: cards.map((card) => card.outerHTML),
+      more: section.querySelector('.creators-more-note')?.innerHTML || '',
+    };
+  }
+
+  const isLight = document.documentElement.dataset.theme === 'light';
+  if (!isLight) {
+    if (section.dataset.creatorsThemeCopy === 'dark') return;
+    const currentCards = Array.from(section.querySelectorAll('.creator-card'));
+    const header = section.querySelector('.creators-header');
+    if (header) header.innerHTML = homeCreatorsDarkMarkup.header;
+    const moreNote = section.querySelector('.creators-more-note');
+    if (moreNote) moreNote.innerHTML = homeCreatorsDarkMarkup.more;
+    currentCards.forEach((card, index) => {
+      const original = homeCreatorsDarkMarkup.cards[index];
+      if (original) card.outerHTML = original;
+    });
+    section.classList.remove('is-movie-showcase');
+    section.dataset.creatorsThemeCopy = 'dark';
+    return;
+  }
+
+  if (section.dataset.creatorsThemeCopy === 'light') return;
+
+  const header = section.querySelector('.creators-header');
+  if (header) {
+    header.innerHTML = `
+      <span class="section-tag">CASE STUDIES</span>
+      <h2 class="creators-title">Films We've<br/><span class="highlight-cyan">Amplified.</span></h2>
+      <p class="creators-intro">Two films, shaped for the big screen and built to reach every screen.</p>
+    `;
+  }
+
+  const movieCards = [
+    {
+      image: '/assets/movie/runner.png',
+      alt: 'Runner film poster',
+      title: 'Runner',
+      description: 'A fast-moving story shaped into a cinematic campaign that carries its momentum beyond the theatre.',
+      badge: '↗ Cinematic Reach',
+      before: ['FORMAT', 'BIG SCREEN', 'Original release'],
+      after: ['REACH', 'EVERY SCREEN', 'Audience reach'],
+    },
+    {
+      image: '/assets/movie/kingofkings.png',
+      alt: 'King of Kings film poster',
+      title: 'King of Kings',
+      description: 'An epic story translated into a film-first campaign built for memorable moments and wider reach.',
+      badge: '↗ Epic Storytelling',
+      before: ['FORMAT', 'THEATRICAL', 'Cinema first'],
+      after: ['REACH', 'GLOBAL REACH', 'Campaign scale'],
+    },
+  ];
+
+  cards.forEach((card, index) => {
+    const movie = movieCards[index];
+    if (!movie) return;
+    const imageWrap = card.querySelector('.creator-image-wrap');
+    const image = card.querySelector('.creator-img');
+    const name = card.querySelector('.creator-name');
+    const platform = card.querySelector('.creator-platform');
+    const description = card.querySelector('.creator-description');
+    const badge = card.querySelector('.badge-growth');
+    const campaignHref = `/campaigns.html?movie=${encodeURIComponent(movie.title)}`;
+
+    if (imageWrap) {
+      imageWrap.href = campaignHref;
+      imageWrap.removeAttribute('target');
+      imageWrap.removeAttribute('rel');
+      imageWrap.dataset.cursor = 'FILM BREAKDOWN ↗';
+      imageWrap.setAttribute('aria-label', `${movie.title} film breakdown`);
+    }
+    if (image) {
+      image.src = movie.image;
+      image.alt = movie.alt;
+      image.loading = 'lazy';
+      image.decoding = 'async';
+    }
+    if (name) name.textContent = movie.title;
+    if (platform) {
+      platform.href = campaignHref;
+      platform.removeAttribute('target');
+      platform.removeAttribute('rel');
+      platform.dataset.cursor = 'CAMPAIGN BREAKDOWN ↗';
+      platform.setAttribute('aria-label', `View ${movie.title} campaign breakdown`);
+      platform.classList.add('movie-platform');
+      platform.innerHTML = `<span>FEATURED FILM</span><svg class="creator-ext-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>`;
+    }
+    if (description) description.textContent = movie.description;
+    if (badge) badge.textContent = movie.badge;
+
+    const statItems = card.querySelectorAll('.creator-stat-item');
+    [movie.before, movie.after].forEach((stat, statIndex) => {
+      const item = statItems[statIndex];
+      if (!item) return;
+      const overline = item.querySelector('.stat-before-label, .stat-after-label');
+      const number = item.querySelector('.stat-number');
+      const label = item.querySelector('.stat-label');
+      if (overline) overline.textContent = stat[0];
+      if (number) {
+        number.removeAttribute('data-count');
+        number.dataset.staticText = stat[1];
+        number.textContent = stat[1];
+      }
+      if (label) label.textContent = stat[2];
+      item.removeAttribute('data-stat-target');
+    });
+
+    const meta = card.querySelectorAll('.creator-meta-row .meta-chip');
+    const metaCopy = [
+      `${movie.title} · film`,
+      'Audience reach',
+      'Cinematic strategy',
+      'View breakdown',
+    ];
+    meta.forEach((chip, chipIndex) => {
+      if (chipIndex === 3) {
+        chip.href = campaignHref;
+        chip.dataset.cursor = 'FILM BREAKDOWN ↗';
+        chip.innerHTML = `<span>${metaCopy[chipIndex]}</span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>`;
+      } else {
+        chip.innerHTML = `<span>${metaCopy[chipIndex]}</span>`;
+      }
+    });
+  });
+
+  const moreNote = section.querySelector('.creators-more-note');
+  const moreLink = moreNote?.querySelector('.creators-more-link');
+  const moreText = moreNote?.querySelector('.creators-more-text');
+  if (moreLink) {
+    moreLink.href = '/campaigns.html';
+    moreLink.dataset.cursor = 'ALL FILMS ↗';
+    moreLink.setAttribute('aria-label', 'Explore more film campaign case studies');
+  }
+  if (moreText) moreText.textContent = 'and more films';
+
+  section.classList.add('is-movie-showcase');
+  section.dataset.creatorsThemeCopy = 'light';
 }
 
 // Theme changes happen without a page reload. Refresh the Home copy in place
@@ -1263,6 +1417,7 @@ window.addEventListener('hv:themechange', () => {
   const headline = document.getElementById('hero-headline');
   if (!headline) return;
   applyThemeHeroCopy();
+  applyThemeCreatorsCopy();
   window.__hvHeroReelRefreshTheme?.();
 
   const words = headline.querySelectorAll('.hl-word, .hero-headline-connector, .hero-word-roller');
@@ -1279,6 +1434,10 @@ window.addEventListener('hv:themechange', () => {
     );
   }
   if (document.documentElement.dataset.theme === 'dark') initHeroWordRoller();
+  if (isHomeRoute(window.location.pathname)) {
+    initAdscaleTextEffects();
+    initCreatorsSection();
+  }
 });
 
 export function prepareHeroInitialState() {
@@ -1926,6 +2085,10 @@ function initCreatorsSection() {
 
   function setFinalStats() {
     section.querySelectorAll('.stat-number').forEach((el) => {
+      if (el.dataset.staticText) {
+        el.textContent = el.dataset.staticText;
+        return;
+      }
       const target = parseInt(el.getAttribute('data-count'), 10);
       el.textContent = Number.isNaN(target) ? '0' : formatNumber(target);
     });
@@ -1948,6 +2111,10 @@ function initCreatorsSection() {
     // 1. Follower counts (BEFORE / AFTER e.g. 0 to 100,000 and 0 to 400,000)
     const statNumbers = section.querySelectorAll('.stat-number');
     statNumbers.forEach((el) => {
+      if (el.dataset.staticText) {
+        el.textContent = el.dataset.staticText;
+        return;
+      }
       const target = parseInt(el.getAttribute('data-count'), 10);
       if (target === 0 || isNaN(target)) {
         el.textContent = '0';
@@ -2444,6 +2611,10 @@ function restoreHomeStableState(isFromTransition = false) {
   if (creators) {
     creators.dataset.transitionHydrated = 'true';
     creators.querySelectorAll('.stat-number').forEach((el) => {
+      if (el.dataset.staticText) {
+        el.textContent = el.dataset.staticText;
+        return;
+      }
       const target = parseInt(el.dataset.count || '', 10);
       el.textContent = Number.isNaN(target) ? '0' : target.toLocaleString('en-US');
     });
@@ -2463,6 +2634,11 @@ function restoreHomeStableState(isFromTransition = false) {
 }
 
 function initHomePageScripts(isFromTransition = false) {
+  // Route swaps reuse the incoming document's static markup. Re-apply the
+  // active theme before measuring or animating the hero so returning to Home
+  // in Light mode cannot briefly restore the creator (dark-theme) headline.
+  applyThemeHeroCopy();
+  applyThemeCreatorsCopy();
   restoreHomeStableState(isFromTransition);
   initAdscaleTextEffects();
   init3DScene();
@@ -2501,11 +2677,18 @@ window.__hvDisposePageRuntime = disposePageRuntime;
 
 export function initPageScripts(pathname, isFromTransition = false) {
   const normPath = pathname ? pathname.replace(/\/+$/, '') : window.location.pathname.replace(/\/+$/, '');
-  const isWorkPage = normPath.includes('work') || !!document.querySelector('.work-hero-section');
-  const isCaseStudyPage = normPath.includes('creator-') || !!document.querySelector('.case-hero-section') || !!document.querySelector('.ig-profile-shell');
-  const isTeamPage = normPath.includes('team') || !!document.querySelector('.team-hero-section');
-  const isWhyUs = normPath.includes('why-us') || !!document.querySelector('.why-hero-section');
-  const isCampaignsPage = normPath.includes('campaigns') || !!document.querySelector('.campaign-hero');
+  // During an internal transition the outgoing document is still mounted
+  // while this initializer runs. Never infer the incoming route from a broad
+  // document query in that window (an outgoing Campaigns hero used to make a
+  // returning Home page skip initHomePageScripts, leaving the static creator
+  // cards in place). The explicit pathname is authoritative; DOM fallback is
+  // only needed for callers that intentionally omit it on a fresh document.
+  const hasExplicitPath = typeof pathname === 'string' && pathname.length > 0;
+  const isWorkPage = normPath.includes('work') || (!hasExplicitPath && !!document.querySelector('.work-hero-section'));
+  const isCaseStudyPage = normPath.includes('creator-') || (!hasExplicitPath && (!!document.querySelector('.case-hero-section') || !!document.querySelector('.ig-profile-shell')));
+  const isTeamPage = normPath.includes('team') || (!hasExplicitPath && !!document.querySelector('.team-hero-section'));
+  const isWhyUs = normPath.includes('why-us') || (!hasExplicitPath && !!document.querySelector('.why-hero-section'));
+  const isCampaignsPage = normPath.includes('campaigns') || (!hasExplicitPath && !!document.querySelector('.campaign-hero'));
 
   // The fluid background is shared by every route. Re-request it during SPA
   // hydration so Team and Why Us cannot arrive after a transition without

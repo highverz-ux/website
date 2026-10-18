@@ -207,6 +207,10 @@ export async function navigateWithTransition(targetHref, isPopState = false) {
   }
 
   isTransitioning = true;
+  // A theme toggle can leave its optical veil alive for a few hundred
+  // milliseconds. Navigation owns the next visual handoff, so remove that
+  // stale veil instead of letting its colour continue settling over the page.
+  document.documentElement.classList.remove('theme-switching', 'theme-target-light', 'theme-target-dark');
   // A failed page initializer must never leave navigation permanently locked.
   // The normal handoff completes in under a second; this is only a last-resort
   // native navigation fallback for a stalled fetch, animation, or initializer.

@@ -107,6 +107,7 @@ const state = {
 
 let currentMovies = [];
 let modalOpen = false;
+let pendingMovieFocus = null;
 
 /**
  * Initialize the campaigns page.
@@ -116,9 +117,23 @@ export function initCampaignsPage(isFromTransition = false) {
   if (pageContent?.dataset.campaignsInitialized === 'true') return;
   if (pageContent) pageContent.dataset.campaignsInitialized = 'true';
 
+  // Home movie case studies link here with ?movie=... . Keep the normal
+  // catalogue/search flow, then open the exact matching dossier once its
+  // result is available.
+  const requestedMovie = new URLSearchParams(window.location.search).get('movie')?.trim() || '';
+  pendingMovieFocus = requestedMovie || null;
+  state.page = 1;
+  state.query = requestedMovie;
+  state.genre = 'all';
+  state.year = 'all';
+  state.sortBy = 'popularity.desc';
+
   animateHero(isFromTransition);
   initSearch();
   initFilters();
+  const searchInput = document.getElementById('campaign-search-input');
+  if (searchInput && requestedMovie) searchInput.value = requestedMovie;
+  renderActiveTags();
   loadMovies();
   setupModal();
 }
@@ -699,6 +714,24 @@ async function loadMovies(scrollToGrid = false) {
       }
 
       renderPagination(pagination, state);
+
+      if (pendingMovieFocus) {
+        const requested = pendingMovieFocus.toLowerCase();
+        const exactMatch = currentMovies.find((movie) =>
+          String(movie.title || '').trim().toLowerCase() === requested
+        );
+        const partialMatch = currentMovies.find((movie) =>
+          String(movie.title || '').toLowerCase().includes(requested) || requested.includes(String(movie.title || '').toLowerCase())
+        );
+        // Never open an unrelated result when a title cannot be resolved. The
+        // filtered catalogue remains visible so the user can choose the exact
+        // film instead.
+        const targetMovie = exactMatch || partialMatch;
+        pendingMovieFocus = null;
+        if (targetMovie?.id) {
+          window.setTimeout(() => openMovieModal(targetMovie.id), 0);
+        }
+      }
 
       if (scrollToGrid) {
         const gridTop = document.querySelector('.campaign-grid-section');

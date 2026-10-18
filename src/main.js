@@ -1223,15 +1223,20 @@ function applyThemeHeroCopy() {
   if (headline.dataset.themeCopyApplied === document.documentElement.dataset.theme && hasExpectedMarkup) return;
   headline.innerHTML = isLight
     ? `<span class="hero-headline-line">
-        <span class="hl-word" data-word>Boost</span>
-        <span class="hl-word" data-word>Your</span>
-        <span class="hl-word" data-word>Movie's</span>
-        <span class="hl-word" data-word>Potential</span>
+        <span class="hl-word" data-word>From</span>
+        <span class="hl-word" data-word>Movie</span>
+        <span class="hl-word" data-word>Screens</span>
+        <span class="hl-word" data-word>to</span>
+        <span class="hl-word" data-word>Social</span>
+        <span class="hl-word" data-word>Feeds,</span>
       </span>
-      <span class="hero-headline-connector" aria-hidden="true">to</span>
       <span class="hero-headline-line">
-        <span class="hl-word" data-word>Millions</span>
-        <span class="hl-word highlight-cyan font-bold-italic hero-movie-screen" data-word>of Views.</span>
+        <span class="hl-word" data-word>Turning</span>
+        <span class="hl-word" data-word>Every</span>
+        <span class="hl-word" data-word>Scene</span>
+        <span class="hl-word" data-word>Into</span>
+        <span class="hl-word" data-word>a</span>
+        <span class="hl-word highlight-cyan font-bold-italic hero-movie-screen" data-word>Global Sensation.</span>
       </span>`
     : `<span class="hero-headline-line">
         <span class="hl-word" data-word>Turn</span>

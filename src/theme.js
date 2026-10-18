@@ -20,7 +20,19 @@ function getInitialTheme() {
 }
 
 // ─── Apply theme to DOM ───
-function applyTheme(theme) {
+let themeTransitionTimer = null;
+
+function applyTheme(theme, animate = false) {
+  if (animate) {
+    const root = document.documentElement;
+    root.classList.remove('theme-target-light', 'theme-target-dark');
+    root.classList.add('theme-switching', theme === 'light' ? 'theme-target-light' : 'theme-target-dark');
+    if (themeTransitionTimer) window.clearTimeout(themeTransitionTimer);
+    themeTransitionTimer = window.setTimeout(() => {
+      root.classList.remove('theme-switching', 'theme-target-light', 'theme-target-dark');
+      themeTransitionTimer = null;
+    }, 760);
+  }
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem(STORAGE_KEY, theme);
   updateIcons(theme);
@@ -74,7 +86,7 @@ function toggleTheme(button) {
 
   // Simple, immediate theme change. CSS transitions handle the smooth
   // crossfade for the scene, materials, controls, and background.
-  applyTheme(newTheme);
+  applyTheme(newTheme, true);
 }
 
 // ─── Initialize Theme System ───
@@ -99,7 +111,7 @@ export function initThemeSystem() {
     // Only auto-switch if user hasn't manually set a preference
     const saved = localStorage.getItem(STORAGE_KEY);
     if (!saved) {
-      applyTheme(e.matches ? 'light' : 'dark');
+      applyTheme(e.matches ? 'light' : 'dark', true);
     }
   });
 }

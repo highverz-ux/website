@@ -98,7 +98,10 @@ export function loadFluidBackground() {
   // Keep the mobile critical path focused on the text, controls, and three
   // visible reels. The CSS background is already present, so delaying this
   // WebGL import avoids competing with the first paint and video startup.
-  if (window.innerWidth <= 768 && !window.__hvFluidBackgroundScheduled) {
+  // Light mode's hero transition depends on the fluid layer already being
+  // mounted. Start it immediately there; retain the mobile idle deferral for
+  // Dark mode where the CSS canvas is sufficient for first paint.
+  if (window.innerWidth <= 768 && document.documentElement.dataset.theme !== 'light' && !window.__hvFluidBackgroundScheduled) {
     window.__hvFluidBackgroundScheduled = true;
     const startFluid = () => {
       window.__hvFluidBackgroundScheduled = false;
@@ -1196,14 +1199,98 @@ function initMobileNav(navbar) {
 // 03. HERO CHOREOGRAPHY (WORD BLUR-FADE REVEAL — ROI Media style)
 // ==========================================================================
 
+// The light theme is positioned around cinema and campaign distribution,
+// while dark mode keeps the creator-growth message. Both variants use the
+// same word-level markup so the existing reveal timeline remains identical.
+function applyThemeHeroCopy() {
+  const headline = document.getElementById('hero-headline');
+  const description = document.getElementById('hero-desc');
+  if (!headline) return;
+
+  const isLight = document.documentElement.dataset.theme === 'light';
+  // Do not trust only the marker: Vite hot reloads and route handoffs can
+  // preserve the marker while restoring the previous theme's DOM nodes.
+  const hasExpectedMarkup = isLight
+    ? headline.querySelector('.hero-movie-screen')
+    : headline.querySelector('#hero-word-roller');
+  if (headline.dataset.themeCopyApplied === document.documentElement.dataset.theme && hasExpectedMarkup) return;
+  headline.innerHTML = isLight
+    ? `<span class="hero-headline-line">
+        <span class="hl-word" data-word>From</span>
+        <span class="hl-word" data-word>the</span>
+        <span class="hl-word" data-word>Big</span>
+        <span class="hl-word" data-word>Screen</span>
+      </span>
+      <span class="hero-headline-connector" aria-hidden="true">to</span>
+      <span class="hero-headline-line">
+        <span class="hl-word" data-word>Every</span>
+        <span class="hl-word highlight-cyan font-bold-italic hero-movie-screen" data-word>Screen.</span>
+      </span>`
+    : `<span class="hero-headline-line">
+        <span class="hl-word" data-word>Turn</span>
+        <span class="hl-word" data-word>Your</span>
+        <span class="hl-word" data-word>Content</span>
+        <span class="hl-word" data-word>Into</span>
+        <span class="hero-word-roller" id="hero-word-roller" aria-label="Reach, Boost, Trend, Clicks">
+          <span class="roller-item highlight-cyan font-bold-italic is-active" data-word="Reach">Reach</span>
+          <span class="roller-item highlight-cyan font-bold-italic" data-word="Boost">Boost</span>
+          <span class="roller-item highlight-cyan font-bold-italic" data-word="Trend">Trend</span>
+          <span class="roller-item highlight-cyan font-bold-italic" data-word="Clicks">Clicks</span>
+        </span>
+      </span>
+      <span class="hero-headline-connector" aria-hidden="true">&amp;</span>
+      <span class="hero-headline-line">
+        <span class="hl-word" data-word>Turn</span>
+        <span class="hl-word" data-word>Your</span>
+        <span class="hl-word" data-word>Name</span>
+        <span class="hl-word" data-word>Into</span>
+        <span class="hl-word" data-word>a</span>
+        <span class="hl-word highlight-cyan font-bold-italic" data-word>Brand</span>
+      </span>`;
+
+  if (description) {
+    description.innerHTML = isLight
+      ? '<span>Where cinema meets reach.</span><span>From the big screen to every screen.</span>'
+      : '<span>We build the accounts in-house, post daily, and track every clip to a sale.</span><span>We get you real revenue, not just views.</span>';
+  }
+  headline.dataset.themeCopyApplied = document.documentElement.dataset.theme || 'dark';
+}
+
+// Theme changes happen without a page reload. Refresh the Home copy in place
+// so the cinema message appears as soon as Light mode is selected (and the
+// creator message returns when switching back to Dark mode).
+window.addEventListener('hv:themechange', () => {
+  const headline = document.getElementById('hero-headline');
+  if (!headline) return;
+  applyThemeHeroCopy();
+  window.__hvHeroReelRefreshTheme?.();
+
+  const words = headline.querySelectorAll('.hl-word, .hero-headline-connector, .hero-word-roller');
+  const description = document.getElementById('hero-desc');
+  if (typeof gsap === 'undefined') return;
+  gsap.fromTo(words,
+    { opacity: 0, y: 14, filter: 'blur(8px)' },
+    { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.48, stagger: 0.045, ease: 'power3.out', clearProps: 'filter,transform' }
+  );
+  if (description) {
+    gsap.fromTo(description,
+      { opacity: 0, y: 10, filter: 'blur(6px)' },
+      { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.42, delay: 0.14, ease: 'power3.out', clearProps: 'filter,transform' }
+    );
+  }
+  if (document.documentElement.dataset.theme === 'dark') initHeroWordRoller();
+});
+
 export function prepareHeroInitialState() {
+  applyThemeHeroCopy();
   const heroHeadline = document.getElementById('hero-headline');
   if (!heroHeadline) return;
 
   prepareHeroWordRoller();
 
   const isMobile = window.innerWidth < 768;
-  if (isMobile) {
+  const isLightTheme = document.documentElement.dataset.theme === 'light';
+  if (isMobile && !isLightTheme) {
     // Keep headline text visible and sharp on mobile for instant LCP and 0 GPU blur overhead
     const headlineLines = heroHeadline.querySelectorAll('.hero-headline-line');
     headlineLines.forEach((line) => { line.style.overflow = 'visible'; });
@@ -1484,6 +1571,25 @@ export function initAdscaleTextEffects(root = document) {
 }
 
 function initHeroIntro(immediate = false) {
+  const isLightTheme = document.documentElement.dataset.theme === 'light';
+
+  // Do not let the Light hero reveal outrun its ambient fluid background.
+  // The promise is shared with the boot-time loader, so this adds no second
+  // import and resolves immediately when the background is already ready.
+  if (isLightTheme && window.__hvLightHeroFluidGate !== 'ready') {
+    if (window.__hvLightHeroFluidGate === 'pending') return;
+    window.__hvLightHeroFluidGate = 'pending';
+    Promise.resolve(loadFluidBackground()).then(() => {
+      window.__hvLightHeroFluidGate = 'ready';
+      initHeroIntro(immediate);
+    }).catch(() => {
+      window.__hvLightHeroFluidGate = 'ready';
+      initHeroIntro(immediate);
+    });
+    return;
+  }
+
+  applyThemeHeroCopy();
   // The reel is prepared during Home hydration so its media can buffer behind
   // the loader. Never rebuild it when the text entrance begins.
   if (!window.__hvHeroReelCleanup) initHeroReelCarousel();
@@ -1496,7 +1602,7 @@ function initHeroIntro(immediate = false) {
   const navbar = document.getElementById('navbar');
 
   const isMobile = window.innerWidth < 768;
-  if (immediate || isMobile || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  if ((immediate && !isLightTheme) || (isMobile && !isLightTheme) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     gsap.set('.hl-word, .hero-headline-connector, .hero-word-roller, #hero-platform-icons, .platform-chip, #hero-desc, #hero-actions, .hero-trust-badge-wrap, .carousel-viewport, .hero-tag-bar, .section-trusted', {
       opacity: 1, y: 0, x: 0, scale: 1, filter: 'none', clearProps: 'all'
     });
@@ -2702,11 +2808,29 @@ window.initHeroWordRoller = initHeroWordRoller;
 // Continuous infinite cylindrical perspective carousel matching ClipCut reference
 // ===========================================================================
 export function initHeroReelCarousel() {
-  if (window.__hvHeroReelCleanup) return;
+  if (window.__hvHeroReelCleanup) {
+    // Hot reloads and route hydration can leave the existing carousel alive;
+    // still force its media source to follow the current theme.
+    window.__hvHeroReelRefreshTheme?.();
+    return;
+  }
 
   const viewport = document.getElementById('heroCarouselViewport') || document.querySelector('.carousel-viewport');
   const track = document.getElementById('heroCarouselTrack') || document.querySelector('.carousel-track');
   if (!viewport || !track) return;
+
+  // Keep both reel sets in the same browser cache, but choose the set from
+  // the active visual theme. Dark mode remains creator-led; Light mode uses
+  // the local cinema reels without changing the carousel machinery.
+  const getThemeVideoSource = (video) => {
+    if (!video) return '';
+    const isLight = document.documentElement.dataset.theme === 'light';
+    const mobile = window.innerWidth <= 768;
+    const themedSource = isLight
+      ? (mobile && video.dataset.lightMobileSrc) || video.dataset.lightSrc
+      : (mobile && video.dataset.darkMobileSrc) || video.dataset.darkSrc;
+    return themedSource || (mobile && video.dataset.mobileSrc) || video.dataset.src || video.getAttribute('src') || '';
+  };
 
   // Strict Intro Isolation: Never render or animate the carousel during the loading screen!
   const isIntroPending = document.documentElement.classList.contains('intro-pending') ||
@@ -2728,9 +2852,7 @@ export function initHeroReelCarousel() {
     introIndexes.forEach((index) => {
       const video = introVideos[index];
       if (!video || video.dataset.introPreloaded === 'true') return;
-      const source = (mobileIntro && video.dataset.mobileSrc)
-        || video.dataset.src
-        || video.getAttribute('src');
+      const source = getThemeVideoSource(video);
       if (!source) return;
       video.defaultMuted = true;
       video.muted = true;
@@ -2738,7 +2860,11 @@ export function initHeroReelCarousel() {
       video.preload = 'auto';
       video.setAttribute('playsinline', '');
       video.setAttribute('muted', '');
+      if (video.getAttribute('src') !== source) {
+        video.removeAttribute('src');
+      }
       video.setAttribute('src', source);
+      video.dataset.activeThemeSrc = source;
       video.dataset.introPreloaded = 'true';
       video.load();
     });
@@ -2761,6 +2887,19 @@ export function initHeroReelCarousel() {
   const cardPerspectives = cardPositions.map((pos) => pos.querySelector('.card-perspective'));
   const videos = cardPositions.map((pos) => pos.querySelector('.card-video'));
   const reelViewCounts = ['24.5M', '38.2M', '19.4M', '45.0M', '82.6M', '54.1M', '16.8M', '29.3M', '41.7M', '67.4M'];
+
+  // Creator posters must not flash behind cinema reels in Light mode. Keep
+  // the original poster as the Dark-mode fallback and let the loaded movie
+  // frame take over in Light mode.
+  videos.forEach((video) => {
+    if (!video) return;
+    if (!video.dataset.darkPoster && video.getAttribute('poster')) {
+      video.dataset.darkPoster = video.getAttribute('poster');
+    }
+    if (document.documentElement.dataset.theme === 'light') {
+      video.removeAttribute('poster');
+    }
+  });
 
   // Keep the view count attached to each reel as it moves around the
   // carousel. Create it here so route refreshes never duplicate the badge.
@@ -2801,9 +2940,7 @@ export function initHeroReelCarousel() {
   const loadVideo = (video, priority = 'low') => {
     if (!video) return;
     const useMobileSource = window.innerWidth <= 768;
-    const targetSrc = (useMobileSource && video.dataset.mobileSrc)
-      || video.dataset.src
-      || video.getAttribute('src');
+    const targetSrc = getThemeVideoSource(video);
     video.defaultMuted = true;
     video.muted = true;
     video.playsInline = true;
@@ -2815,9 +2952,12 @@ export function initHeroReelCarousel() {
     if (shouldPlay) video.setAttribute('autoplay', '');
     else video.removeAttribute('autoplay');
     video.preload = priority === 'high' ? 'auto' : 'metadata';
-    if (!video.getAttribute('src') && targetSrc) {
+    if (targetSrc && video.getAttribute('src') !== targetSrc) {
+      video.pause();
+      video.removeAttribute('src');
       video.setAttribute('src', targetSrc);
       video.preload = 'auto';
+      video.dataset.activeThemeSrc = targetSrc;
       video.load();
     }
     video.fetchPriority = priority;
@@ -3334,6 +3474,40 @@ export function initHeroReelCarousel() {
 
   window.__hvHeroReelRefresh = refreshHeroLayout;
 
+  // Theme toggles happen without a document reload. Swap only the media
+  // source, retain the existing card geometry/animation, and let the browser
+  // cache serve any previously loaded reel immediately on subsequent swaps.
+  const onThemeChange = () => {
+    videos.forEach((video) => {
+      if (!video) return;
+      const nextSrc = getThemeVideoSource(video);
+      if (!nextSrc || video.dataset.activeThemeSrc === nextSrc) return;
+      const shouldResume = !video.paused;
+      video.pause();
+      video.dataset.activeThemeSrc = nextSrc;
+      video.removeAttribute('src');
+      video.setAttribute('src', nextSrc);
+      video.preload = 'auto';
+      video.load();
+      if (shouldResume) {
+        const resume = () => {
+          const attempt = video.play();
+          attempt?.catch?.(() => {});
+        };
+        video.addEventListener('canplay', resume, { once: true });
+      }
+      if (document.documentElement.dataset.theme === 'light') {
+        video.removeAttribute('poster');
+      } else if (video.dataset.darkPoster) {
+        video.setAttribute('poster', video.dataset.darkPoster);
+      }
+    });
+    lastVideoPriorityIndex = -1;
+    updateVideoPriority(true);
+  };
+  window.addEventListener('hv:themechange', onThemeChange);
+  window.__hvHeroReelRefreshTheme = onThemeChange;
+
   window.__hvHeroReelCleanup = () => {
     if (animId) cancelAnimationFrame(animId);
     if (layoutRetryId) cancelAnimationFrame(layoutRetryId);
@@ -3350,11 +3524,15 @@ export function initHeroReelCarousel() {
     window.removeEventListener('resize', onResize);
     window.removeEventListener('pageshow', onPageShow);
     document.removeEventListener('visibilitychange', onVisibilityChange);
+    window.removeEventListener('hv:themechange', onThemeChange);
     resizeObserver?.disconnect();
     heroVisibilityObserver?.disconnect();
     videos.forEach((v) => { try { v?.pause(); } catch (_) { } });
     if (window.__hvHeroReelRefresh === refreshHeroLayout) {
       window.__hvHeroReelRefresh = null;
+    }
+    if (window.__hvHeroReelRefreshTheme === onThemeChange) {
+      window.__hvHeroReelRefreshTheme = null;
     }
   };
 }

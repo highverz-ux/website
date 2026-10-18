@@ -4046,6 +4046,24 @@ html.js .floating-badge-item {
   }
 }
 
+/* Never crop descenders in the Home hero headline (g, y, p, j). The kinetic
+   word spans are inline-blocks, so the line box needs a little extra breathing
+   room below the baseline while they reveal and settle. */
+#hero .hero-headline--centered {
+  overflow: visible !important;
+  line-height: 1.18 !important;
+}
+
+#hero .hero-headline-line {
+  overflow: visible !important;
+  line-height: 1.18;
+  padding-bottom: 0.18em;
+}
+
+#hero .hero-headline-line .hl-word {
+  padding-bottom: 0.035em;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .global-fluid-canvas {
     opacity: 0.53;
@@ -18337,4 +18355,91 @@ body::-webkit-scrollbar {
 [data-theme="light"] .team-cta-desc,
 [data-theme="light"] .ig-case-cta-banner p {
   color: var(--text-secondary) !important;
+}
+
+/* A single, low-opacity optical veil keeps the theme swap cohesive while
+   gradients, fluid layers, text colors, and the hero reel source settle. It
+   fades away rather than flashing a black or white screen. */
+html.theme-switching::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  opacity: 0;
+  background: rgba(3, 8, 12, 0.18);
+  backdrop-filter: blur(5px) saturate(108%);
+  -webkit-backdrop-filter: blur(5px) saturate(108%);
+  animation: theme-optical-veil 760ms var(--ease-theme) both;
+}
+
+html.theme-switching.theme-target-light::before {
+  background: rgba(237, 248, 255, 0.3);
+}
+
+html.theme-switching.theme-target-dark::before {
+  background: rgba(3, 8, 12, 0.24);
+}
+
+@keyframes theme-optical-veil {
+  0% { opacity: 0; }
+  18% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.theme-switching::before {
+    animation-duration: 200ms;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* Keep the light hero's large display type inside a generous line box. The
+   descenders on words such as “Every” and “Story” otherwise get clipped by
+   the hero's media rail overflow boundary during the initial reveal. */
+[data-theme="light"] #hero.hero-section {
+  overflow: visible !important;
+}
+
+[data-theme="light"] #hero .hero-headline--centered,
+[data-theme="light"] #hero .hero-headline-line {
+  overflow: visible !important;
+  line-height: 1.2 !important;
+}
+
+[data-theme="light"] #hero .hero-headline-line {
+  padding-top: 0.12em !important;
+  padding-bottom: 0.2em !important;
+}
+
+/* Cinema headline accent: underline only the Light-theme “Screen.” word. */
+[data-theme="light"] #hero .hero-movie-screen {
+  position: relative;
+  isolation: isolate;
+}
+
+[data-theme="light"] #hero .hero-movie-screen::after {
+  content: '';
+  position: absolute;
+  left: 0.03em;
+  right: 0.03em;
+  bottom: 0.02em;
+  height: 0.055em;
+  min-height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #0284c7, #38bdf8);
+  transform: scaleX(0);
+  transform-origin: left center;
+  opacity: 0;
+  transition: transform 0.42s var(--ease-expo), opacity 0.24s ease;
+  pointer-events: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  [data-theme="light"] #hero .hero-movie-screen:hover::after,
+  [data-theme="light"] #hero .hero-movie-screen:focus-visible::after {
+    opacity: 1;
+    transform: scaleX(1);
+  }
 }

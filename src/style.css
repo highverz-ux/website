@@ -6016,20 +6016,25 @@ html.js .floating-badge-item {
 }
 
 .section-creators.is-movie-showcase .stat-number {
-  font-size: clamp(0.86rem, 1.15vw, 1.16rem);
-  letter-spacing: -0.045em;
+  font-size: clamp(0.78rem, 0.98vw, 1.04rem);
+  letter-spacing: -0.055em;
   white-space: nowrap;
   overflow: visible;
 }
 
 .section-creators.is-movie-showcase .creator-stats-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 0.82fr) auto minmax(0, 1.18fr);
+  gap: 0.5rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
   min-width: 0;
+  overflow: visible;
 }
 
 .section-creators.is-movie-showcase .creator-stat-item {
   min-width: 0;
+  overflow: visible;
 }
 
 .section-creators.is-movie-showcase .creator-description {
@@ -13806,6 +13811,8 @@ main+footer {
 
 .growth-widget {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
   padding: clamp(1rem, 1.7vw, 1.4rem);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 22px;
@@ -13828,7 +13835,9 @@ main+footer {
 
 .widget-visual {
   position: relative;
-  min-height: 270px;
+  height: 310px;
+  min-height: 310px;
+  box-sizing: border-box;
   padding: 1.25rem;
   overflow: hidden;
   border-radius: 15px;
@@ -13968,12 +13977,14 @@ main+footer {
 
 .growth-widget h3 {
   margin-top: 1.25rem;
+  min-height: 2.4em;
   font-size: clamp(1.3rem, 2vw, 1.65rem);
   letter-spacing: -0.045em;
 }
 
 .growth-widget>p {
   margin-top: 0.65rem;
+  min-height: 3.1em;
   color: var(--text-secondary);
   font-size: 0.93rem;
   line-height: 1.55;
@@ -14297,7 +14308,8 @@ main+footer {
   }
 
   .widget-visual {
-    min-height: 250px;
+    height: 280px;
+    min-height: 280px;
   }
 }
 
@@ -14311,7 +14323,8 @@ main+footer {
   }
 
   .widget-visual {
-    min-height: 240px;
+    height: 260px;
+    min-height: 260px;
     padding: 1rem;
   }
 
@@ -14766,7 +14779,15 @@ main+footer {
 }
 
 @media (min-width: 1100px) {
-  .hero-headline-line:first-child {
+  /* Keep the cinema headline as two intentional lines on wide screens. The
+     centered flex layout otherwise sizes the h1 to its first line and lets
+     the longer second line wrap into a third line. */
+  #hero .hero-headline--centered {
+    width: 100%;
+    max-width: none;
+  }
+
+  #hero .hero-headline-line {
     white-space: nowrap;
   }
 }

@@ -20,6 +20,15 @@ import { inject as injectAnalytics } from '@vercel/analytics';
 import { injectSpeedInsights } from '@vercel/speed-insights';
 import { initScatterGrid } from './scatterGrid.js';
 
+// React Grab is a development-only picker for sharing precise UI context with
+// an agent. It is framework-agnostic at runtime, so it can inspect this
+// vanilla Vite page without adding anything to production bundles.
+if (import.meta.env.DEV) {
+  import('react-grab').catch((error) => {
+    console.warn('[React Grab] Development picker unavailable:', error);
+  });
+}
+
 gsap.registerPlugin(ScrollTrigger);
 
 // Capture cross-document view transition early if supported
@@ -1225,7 +1234,7 @@ function applyThemeHeroCopy() {
     ? `<span class="hero-headline-line">
         <span class="hl-word" data-word>From</span>
         <span class="hl-word" data-word>Movie</span>
-        <span class="hl-word" data-word>Screens</span>
+        <span class="hl-word hero-movie-screen" data-word>Screens</span>
         <span class="hl-word" data-word>to</span>
         <span class="hl-word" data-word>Social</span>
         <span class="hl-word" data-word>Feeds,</span>
@@ -1236,7 +1245,7 @@ function applyThemeHeroCopy() {
         <span class="hl-word" data-word>Scene</span>
         <span class="hl-word" data-word>Into</span>
         <span class="hl-word" data-word>a</span>
-        <span class="hl-word highlight-cyan font-bold-italic hero-movie-screen" data-word>Global Sensation.</span>
+        <span class="hl-word highlight-cyan font-bold-italic" data-word>Global Sensation.</span>
       </span>`
     : `<span class="hero-headline-line">
         <span class="hl-word" data-word>Turn</span>

@@ -2891,13 +2891,19 @@ export function initHeroReelCarousel() {
   // Creator posters must not flash behind cinema reels in Light mode. Keep
   // the original poster as the Dark-mode fallback and let the loaded movie
   // frame take over in Light mode.
-  videos.forEach((video) => {
+  // Seamless poster handover between themes:
+  // Light mode displays dedicated cinema posters; Dark mode displays creator posters.
+  videos.forEach((video, index) => {
     if (!video) return;
     if (!video.dataset.darkPoster && video.getAttribute('poster')) {
       video.dataset.darkPoster = video.getAttribute('poster');
     }
-    if (document.documentElement.dataset.theme === 'light') {
-      video.removeAttribute('poster');
+    const isLight = document.documentElement.dataset.theme === 'light';
+    const lightPoster = video.dataset.lightPoster || `/assets/movie/posters/poster_${index + 1}.jpg`;
+    if (isLight) {
+      video.setAttribute('poster', lightPoster);
+    } else if (video.dataset.darkPoster) {
+      video.setAttribute('poster', video.dataset.darkPoster);
     }
   });
 
@@ -3497,7 +3503,8 @@ export function initHeroReelCarousel() {
         video.addEventListener('canplay', resume, { once: true });
       }
       if (document.documentElement.dataset.theme === 'light') {
-        video.removeAttribute('poster');
+        const lightPoster = video.dataset.lightPoster || `/assets/movie/posters/poster_${videos.indexOf(video) + 1}.jpg`;
+        video.setAttribute('poster', lightPoster);
       } else if (video.dataset.darkPoster) {
         video.setAttribute('poster', video.dataset.darkPoster);
       }

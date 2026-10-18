@@ -3089,8 +3089,14 @@ export function initHeroReelCarousel() {
   if (!count) return;
 
   const cardPerspectives = cardPositions.map((pos) => pos.querySelector('.card-perspective'));
-  const videos = cardPositions.map((pos) => pos.querySelector('.card-video'));
-  const reelViewCounts = ['24.5M', '38.2M', '19.4M', '45.0M', '82.6M', '54.1M', '16.8M', '29.3M', '41.7M', '67.4M'];
+  const creatorReelViewCounts = ['24.5M', '38.2M', '19.4M', '45.0M', '82.6M', '54.1M', '16.8M', '29.3M', '41.7M', '67.4M'];
+  const movieReelViewCounts = ['8M', '12M', '5M', '6.5M', '9.4M', '11M', '15M', '17M', '4M', '6M'];
+
+  const getReelViewCount = (index) => {
+    const isLight = document.documentElement.dataset.theme === 'light';
+    const counts = isLight ? movieReelViewCounts : creatorReelViewCounts;
+    return counts[index] || '0';
+  };
 
   // Creator posters must not flash behind cinema reels in Light mode. Keep
   // the original poster as the Dark-mode fallback and let the loaded movie
@@ -3117,17 +3123,22 @@ export function initHeroReelCarousel() {
     const videoCard = position.querySelector('.video-card');
     if (!videoCard) return;
     let viewCount = videoCard.querySelector('.reel-view-count');
+    const count = getReelViewCount(index);
     if (!viewCount) {
       viewCount = document.createElement('div');
       viewCount.className = 'reel-view-count';
-      viewCount.setAttribute('aria-label', `${reelViewCounts[index] || '0'} views`);
+      viewCount.setAttribute('aria-label', `${count} views`);
       viewCount.innerHTML = `
         <span class="rvc-icon-wrap">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7c-1.73-3.89-6-7-11-7Z" stroke="#000" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3" fill="#000"/></svg>
         </span>
-        <span class="rvc-text">${reelViewCounts[index] || '0'} views</span>
+        <span class="rvc-text">${count} views</span>
       `;
       videoCard.appendChild(viewCount);
+    } else {
+      const text = viewCount.querySelector('.rvc-text');
+      if (text) text.textContent = `${count} views`;
+      viewCount.setAttribute('aria-label', `${count} views`);
     }
   });
 
@@ -3712,6 +3723,14 @@ export function initHeroReelCarousel() {
       } else if (video.dataset.darkPoster) {
         video.setAttribute('poster', video.dataset.darkPoster);
       }
+    });
+    cardPositions.forEach((position, index) => {
+      const viewCount = position.querySelector('.reel-view-count');
+      if (!viewCount) return;
+      const count = getReelViewCount(index);
+      const text = viewCount.querySelector('.rvc-text');
+      if (text) text.textContent = `${count} views`;
+      viewCount.setAttribute('aria-label', `${count} views`);
     });
     lastVideoPriorityIndex = -1;
     updateVideoPriority(true);

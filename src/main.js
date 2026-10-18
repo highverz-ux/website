@@ -136,6 +136,13 @@ function initBelowFoldFeatures() {
   // interaction on a dedicated route can attach duplicate observers/tweens to
   // similarly named content and cause visual glitches.
   if (!isHomeRoute(window.location.pathname)) return;
+
+  // Home can be restored through a native back/forward load or through the
+  // in-place route transition. Both paths may reuse the static creator-card
+  // markup, so re-apply the active theme before the below-fold guard exits.
+  // This keeps Light mode's movie showcase authoritative on every re-entry.
+  applyThemeCreatorsCopy();
+
   if (belowFoldInitialized) return;
   belowFoldInitialized = true;
 

@@ -3089,6 +3089,7 @@ export function initHeroReelCarousel() {
   if (!count) return;
 
   const cardPerspectives = cardPositions.map((pos) => pos.querySelector('.card-perspective'));
+  const videos = cardPositions.map((pos) => pos.querySelector('.card-video'));
   const creatorReelViewCounts = ['24.5M', '38.2M', '19.4M', '45.0M', '82.6M', '54.1M', '16.8M', '29.3M', '41.7M', '67.4M'];
   const movieReelViewCounts = ['8M', '12M', '5M', '6.5M', '9.4M', '11M', '15M', '17M', '4M', '6M'];
 

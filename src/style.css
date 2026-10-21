@@ -144,7 +144,7 @@ html.lenis body {
   --bg-secondary: #F8FAFC;
   --bg-card: #FFFFFF;
   --bg-elevated: #FFFFFF;
-  --bg-translucent: rgba(255, 255, 255, 0.94);
+  --bg-translucent: rgba(255, 255, 255, 0.82);
 
   --text-primary: #0A0D12;
   --text-secondary: #505B67;
@@ -156,11 +156,20 @@ html.lenis body {
   --accent-cyan-glow: rgba(14, 165, 233, 0.20);
 
   --border-subtle: rgba(0, 0, 0, 0.06);
-  --border-card: rgba(0, 0, 0, 0.08);
+  --border-card: rgba(255, 255, 255, 0.85);
   --border-cyan: rgba(14, 165, 233, 0.35);
 
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.03), 0 10px 28px -4px rgba(0, 0, 0, 0.05);
-  --shadow-elevated: 0 4px 16px rgba(0, 0, 0, 0.04), 0 20px 48px -8px rgba(0, 0, 0, 0.08);
+  /* Framer Layered Diffuse Glass Shadows for Light Theme */
+  --shadow-card:
+    0 1px 2px rgba(15, 23, 42, 0.015),
+    0 4px 10px -2px rgba(15, 23, 42, 0.035),
+    0 12px 28px -4px rgba(15, 23, 42, 0.05),
+    0 32px 64px -10px rgba(15, 23, 42, 0.065);
+  --shadow-elevated:
+    0 2px 4px rgba(15, 23, 42, 0.02),
+    0 8px 18px -2px rgba(15, 23, 42, 0.05),
+    0 22px 44px -4px rgba(15, 23, 42, 0.08),
+    0 44px 80px -12px rgba(14, 165, 233, 0.12);
   --img-brightness: 1;
   --img-contrast: 1;
   --grain-opacity: 0.012;
@@ -168,6 +177,29 @@ html.lenis body {
   /* Clutra Exact 177deg Metallic Gradient for Light Theme */
   --hero-headline-gradient: linear-gradient(177deg, #5e5e66 0%, #232328 55%, #0a0a0c 100%);
   --hero-cyan-gradient: linear-gradient(135deg, #0284C7 0%, #0EA5E9 48%, #38BDF8 100%);
+
+  /* Framer Precision Glass Specification Tokens */
+  --glass-surface-bg: linear-gradient(150deg, rgba(255, 255, 255, 0.78) 0%, rgba(246, 250, 254, 0.45) 50%, rgba(234, 243, 252, 0.62) 100%);
+  --glass-surface-bg-hover: linear-gradient(150deg, rgba(255, 255, 255, 0.94) 0%, rgba(250, 252, 255, 0.72) 50%, rgba(240, 248, 255, 0.85) 100%);
+  --glass-bevel-border: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(212, 224, 238, 0.65) 15%, rgba(165, 185, 208, 0.28) 48%, rgba(206, 222, 238, 0.5) 82%, rgba(255, 255, 255, 0.96) 100%);
+  --glass-bevel-border-hover: linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0.9) 30%, rgba(14, 165, 233, 0.45) 75%, #FFFFFF 100%);
+  --glass-diffuse-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.015),
+    0 4px 10px -2px rgba(15, 23, 42, 0.035),
+    0 12px 28px -4px rgba(15, 23, 42, 0.05),
+    0 32px 64px -10px rgba(15, 23, 42, 0.065),
+    inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1),
+    inset 0 -1.5px 1.5px 0 rgba(255, 255, 255, 0.45),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.8);
+  --glass-diffuse-shadow-hover:
+    0 2px 4px rgba(15, 23, 42, 0.02),
+    0 8px 18px -2px rgba(15, 23, 42, 0.05),
+    0 22px 44px -4px rgba(15, 23, 42, 0.08),
+    0 44px 80px -12px rgba(14, 165, 233, 0.12),
+    inset 0 2px 2px 0 #FFFFFF,
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.6),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.95);
+  --glass-blur-filter: blur(24px) saturate(190%) contrast(102%);
 }
 
 /* ==========================================================================
@@ -699,17 +731,35 @@ body.cursor-active .custom-cursor {
 }
 
 [data-theme="light"] .nav-container {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.25) 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.85) !important;
-  box-shadow: 0 16px 40px -10px rgba(15, 23, 42, 0.06), inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 1px 0 rgba(255, 255, 255, 0.35) !important;
-  backdrop-filter: blur(28px) saturate(200%) contrast(105%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(200%) contrast(105%) !important;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.78) 0%, rgba(246, 250, 254, 0.45) 50%, rgba(234, 242, 252, 0.62) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(212, 224, 238, 0.62) 15%, rgba(165, 185, 208, 0.28) 48%, rgba(206, 222, 238, 0.5) 82%, rgba(255, 255, 255, 0.96) 100%) border-box !important;
+  border: 1px solid transparent !important;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.015),
+    0 4px 10px -2px rgba(15, 23, 42, 0.035),
+    0 12px 28px -4px rgba(15, 23, 42, 0.05),
+    0 32px 64px -10px rgba(15, 23, 42, 0.065),
+    inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1),
+    inset 0 -1.5px 1.5px 0 rgba(255, 255, 255, 0.45),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(28px) saturate(190%) contrast(102%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(102%) !important;
 }
 
 [data-theme="light"] .navbar.scrolled .nav-container {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.35) 100%) !important;
-  border-color: rgba(255, 255, 255, 0.95) !important;
-  box-shadow: 0 20px 48px -10px rgba(15, 23, 42, 0.08), inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 1px 0 rgba(255, 255, 255, 0.35) !important;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.88) 0%, rgba(250, 252, 255, 0.58) 50%, rgba(238, 246, 255, 0.72) 100%) padding-box,
+    linear-gradient(180deg, #FFFFFF 0%, rgba(220, 232, 245, 0.75) 20%, rgba(175, 195, 218, 0.35) 50%, rgba(215, 228, 244, 0.6) 80%, #FFFFFF 100%) border-box !important;
+  border: 1px solid transparent !important;
+  box-shadow:
+    0 2px 4px rgba(15, 23, 42, 0.02),
+    0 8px 18px -2px rgba(15, 23, 42, 0.05),
+    0 20px 42px -4px rgba(15, 23, 42, 0.07),
+    0 40px 76px -12px rgba(15, 23, 42, 0.09),
+    inset 0 2px 2px 0 #FFFFFF,
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.6),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.95) !important;
 }
 
 /* Brand Logo */
@@ -882,14 +932,32 @@ body.cursor-active .custom-cursor {
 }
 
 [data-theme="light"] .btn-nav-talk {
-  background: #111418;
-  color: #ffffff;
+  background:
+    linear-gradient(145deg, rgba(17, 24, 39, 0.94) 0%, rgba(10, 14, 22, 0.96) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.15) 35%, rgba(0, 0, 0, 0.25) 70%, rgba(255, 255, 255, 0.3) 100%) border-box !important;
+  border: 1px solid transparent !important;
+  color: #FFFFFF !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  box-shadow:
+    0 2px 6px rgba(15, 23, 42, 0.08),
+    0 8px 20px -2px rgba(15, 23, 42, 0.12),
+    inset 0 1.2px 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.4) !important;
 }
 
 [data-theme="light"] .btn-nav-talk:hover {
-  background: #0284C7;
-  color: #ffffff;
-  box-shadow: 0 6px 20px rgba(0, 135, 158, 0.35);
+  background:
+    linear-gradient(145deg, rgba(14, 165, 233, 0.96) 0%, rgba(2, 132, 199, 0.92) 100%) padding-box,
+    linear-gradient(180deg, #FFFFFF 0%, rgba(186, 230, 253, 0.6) 30%, rgba(2, 132, 199, 0.3) 70%, #FFFFFF 100%) border-box !important;
+  border-color: transparent !important;
+  color: #FFFFFF !important;
+  box-shadow:
+    0 4px 12px rgba(14, 165, 233, 0.25),
+    0 12px 28px -2px rgba(14, 165, 233, 0.38),
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.85) !important;
+  transform: translateY(-1px) scale(1.02);
 }
 
 .theme-switcher {
@@ -913,14 +981,30 @@ body.cursor-active .custom-cursor {
 }
 
 [data-theme="light"] .theme-switcher {
-  background: rgba(0, 0, 0, 0.04);
-  border-color: rgba(0, 0, 0, 0.08);
-  color: var(--text-secondary);
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.82) 0%, rgba(244, 248, 253, 0.5) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(205, 220, 236, 0.55) 30%, rgba(162, 182, 206, 0.25) 70%, rgba(255, 255, 255, 0.92) 100%) border-box !important;
+  border: 1px solid transparent !important;
+  color: #334155 !important;
+  backdrop-filter: blur(16px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(190%) !important;
+  box-shadow:
+    0 2px 6px rgba(15, 23, 42, 0.04),
+    0 8px 18px -2px rgba(15, 23, 42, 0.06),
+    inset 0 1.5px 1.5px 0 #FFFFFF,
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.5) !important;
 }
 
 [data-theme="light"] .theme-switcher:hover {
-  color: #0284C7;
-  border-color: #0284C7;
+  color: #0284C7 !important;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.96) 0%, rgba(236, 246, 255, 0.75) 100%) padding-box,
+    linear-gradient(180deg, #FFFFFF 0%, rgba(14, 165, 233, 0.5) 50%, #FFFFFF 100%) border-box !important;
+  box-shadow:
+    0 4px 14px rgba(14, 165, 233, 0.16),
+    0 10px 24px -2px rgba(14, 165, 233, 0.22),
+    inset 0 1.5px 1.5px 0 #FFFFFF !important;
+  transform: translateY(-1px) scale(1.06);
 }
 
 .mobile-toggle {
@@ -946,8 +1030,17 @@ body.cursor-active .custom-cursor {
 }
 
 [data-theme="light"] .mobile-toggle {
-  background: rgba(0, 0, 0, 0.04);
-  border-color: rgba(0, 0, 0, 0.08);
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.82) 0%, rgba(244, 248, 253, 0.5) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(205, 220, 236, 0.55) 30%, rgba(162, 182, 206, 0.25) 70%, rgba(255, 255, 255, 0.92) 100%) border-box !important;
+  border: 1px solid transparent !important;
+  backdrop-filter: blur(16px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(190%) !important;
+  box-shadow:
+    0 2px 6px rgba(15, 23, 42, 0.04),
+    0 8px 18px -2px rgba(15, 23, 42, 0.06),
+    inset 0 1.5px 1.5px 0 #FFFFFF,
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.5) !important;
 }
 
 .toggle-bar {
@@ -5809,53 +5902,141 @@ html.js .floating-badge-item {
 }
 
 [data-theme="light"] .btn-nav-talk {
-  background-color: #0C1014;
-  color: #FFFFFF;
-  border-color: transparent;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background:
+    linear-gradient(145deg, rgba(17, 24, 39, 0.94) 0%, rgba(10, 14, 22, 0.96) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.15) 35%, rgba(0, 0, 0, 0.25) 70%, rgba(255, 255, 255, 0.3) 100%) border-box !important;
+  border: 1px solid transparent !important;
+  color: #FFFFFF !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  box-shadow:
+    0 2px 6px rgba(15, 23, 42, 0.08),
+    0 8px 20px -2px rgba(15, 23, 42, 0.12),
+    inset 0 1.2px 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.4) !important;
 }
 
 [data-theme="light"] .btn-nav-talk:hover {
-  background-color: #0284C7;
-  border-color: #0284C7;
-  color: #FFFFFF;
-  box-shadow: 0 4px 14px rgba(14, 165, 233, 0.3);
+  background:
+    linear-gradient(145deg, rgba(14, 165, 233, 0.96) 0%, rgba(2, 132, 199, 0.92) 100%) padding-box,
+    linear-gradient(180deg, #FFFFFF 0%, rgba(186, 230, 253, 0.6) 30%, rgba(2, 132, 199, 0.3) 70%, #FFFFFF 100%) border-box !important;
+  border-color: transparent !important;
+  color: #FFFFFF !important;
+  box-shadow:
+    0 4px 12px rgba(14, 165, 233, 0.25),
+    0 12px 28px -2px rgba(14, 165, 233, 0.38),
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.85) !important;
+  transform: translateY(-1px) scale(1.02);
 }
 
-/* ── Hero Section ── */
+/* ── Hero Section (Glass-Engineered Action Elements) ── */
 [data-theme="light"] .btn-primary-cyan {
-  background: linear-gradient(135deg, #0EA5E9 0%, #0EA5E9 50%, #0369A1 100%);
-  color: #FFFFFF;
-  box-shadow: 0 4px 16px rgba(14, 165, 233, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  background:
+    linear-gradient(145deg, rgba(14, 165, 233, 0.94) 0%, rgba(2, 132, 199, 0.88) 52%, rgba(3, 105, 161, 0.94) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(186, 230, 253, 0.6) 25%, rgba(2, 132, 199, 0.3) 70%, rgba(255, 255, 255, 0.8) 100%) border-box !important;
+  border: 1px solid transparent !important;
+  color: #FFFFFF !important;
+  text-shadow: 0 1px 2px rgba(3, 105, 161, 0.5) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  box-shadow:
+    0 1px 3px rgba(14, 165, 233, 0.12),
+    0 6px 18px -2px rgba(14, 165, 233, 0.32),
+    0 18px 40px -6px rgba(14, 165, 233, 0.25),
+    inset 0 1.5px 1.2px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -1.5px 1px 0 rgba(0, 0, 0, 0.2) !important;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, background 0.3s ease !important;
 }
 
 [data-theme="light"] .btn-primary-cyan:hover {
-  background: linear-gradient(135deg, #0EA5E9 0%, #0EA5E9 50%, #0369A1 100%);
-  box-shadow: 0 8px 24px rgba(14, 165, 233, 0.35);
+  background:
+    linear-gradient(145deg, rgba(56, 189, 248, 0.98) 0%, rgba(14, 165, 233, 0.92) 50%, rgba(2, 132, 199, 0.96) 100%) padding-box,
+    linear-gradient(180deg, #FFFFFF 0%, rgba(224, 242, 254, 0.8) 30%, rgba(14, 165, 233, 0.4) 75%, #FFFFFF 100%) border-box !important;
+  transform: translateY(-2px);
+  box-shadow:
+    0 2px 6px rgba(14, 165, 233, 0.15),
+    0 12px 28px -2px rgba(14, 165, 233, 0.42),
+    0 28px 54px -6px rgba(14, 165, 233, 0.35),
+    inset 0 2px 1.5px 0 #FFFFFF !important;
 }
 
+[data-theme="light"] .btn-primary-cyan:active {
+  transform: translateY(1px) scale(0.982) !important;
+  box-shadow:
+    0 2px 8px rgba(14, 165, 233, 0.25),
+    inset 0 2px 4px rgba(2, 44, 67, 0.25),
+    inset 0 1px 1px rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Framer-Exact Optical Glass Button */
 [data-theme="light"] .btn-secondary-dark {
-  background-color: #FFFFFF;
-  border-color: rgba(0, 0, 0, 0.1);
-  color: #0A0D12;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.85) 0%, rgba(246, 250, 254, 0.52) 50%, rgba(234, 242, 252, 0.68) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(210, 222, 236, 0.65) 15%, rgba(162, 180, 204, 0.28) 48%, rgba(206, 222, 238, 0.5) 82%, rgba(255, 255, 255, 0.96) 100%) border-box !important;
+  border: 1px solid transparent !important;
+  color: #0A0D12 !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(20px) saturate(190%) contrast(102%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(190%) contrast(102%) !important;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.02),
+    0 4px 10px -2px rgba(15, 23, 42, 0.04),
+    0 12px 28px -4px rgba(15, 23, 42, 0.06),
+    0 28px 56px -8px rgba(15, 23, 42, 0.07),
+    inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1),
+    inset 0 -1.5px 1.5px 0 rgba(255, 255, 255, 0.45),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.8) !important;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, background 0.3s ease, color 0.3s ease !important;
+}
+
+[data-theme="light"] .btn-secondary-dark .btn-arrow {
+  filter: drop-shadow(0 1px 0.5px rgba(255, 255, 255, 0.9));
 }
 
 [data-theme="light"] .btn-secondary-dark:hover {
-  background-color: #F8F9FA;
-  border-color: #0284C7;
-  color: #0284C7;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.96) 0%, rgba(250, 252, 255, 0.75) 50%, rgba(240, 248, 255, 0.86) 100%) padding-box,
+    linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0.9) 30%, rgba(14, 165, 233, 0.45) 75%, #FFFFFF 100%) border-box !important;
+  color: #0284C7 !important;
+  transform: translateY(-2px);
+  box-shadow:
+    0 2px 4px rgba(15, 23, 42, 0.02),
+    0 8px 18px -2px rgba(15, 23, 42, 0.05),
+    0 20px 42px -4px rgba(15, 23, 42, 0.08),
+    0 36px 72px -10px rgba(14, 165, 233, 0.14),
+    inset 0 2px 2px 0 #FFFFFF,
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.6),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.95) !important;
+}
+
+[data-theme="light"] .btn-secondary-dark:active {
+  transform: translateY(1px) scale(0.982) !important;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.03),
+    0 3px 8px rgba(15, 23, 42, 0.04),
+    inset 0 2px 4px rgba(15, 23, 42, 0.08),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9) !important;
 }
 
 /* ── Hero Badges ── */
 [data-theme="light"] .badge-icon-wrap {
-  background-color: #FFFFFF;
-  border-color: rgba(0, 0, 0, 0.08);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.92) 0%, rgba(242, 248, 254, 0.65) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(205, 220, 236, 0.55) 45%, rgba(255, 255, 255, 0.9) 100%) border-box !important;
+  border: 1px solid transparent !important;
+  color: #0284C7 !important;
+  backdrop-filter: blur(14px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(180%) !important;
+  box-shadow:
+    0 2px 8px rgba(15, 23, 42, 0.04),
+    0 8px 20px -3px rgba(15, 23, 42, 0.05),
+    inset 0 1.2px 1.2px 0 #FFFFFF,
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.5) !important;
 }
 
 [data-theme="light"] .badges-vertical-line {
-  background: linear-gradient(to bottom, rgba(14, 165, 233, 0.25) 0%, rgba(0, 0, 0, 0.08) 50%, rgba(14, 165, 233, 0.25) 100%);
+  background: linear-gradient(to bottom, rgba(14, 165, 233, 0.35) 0%, rgba(0, 0, 0, 0.08) 50%, rgba(14, 165, 233, 0.35) 100%);
 }
 
 /* ── Scroll Indicator ── */
@@ -5882,25 +6063,37 @@ html.js .floating-badge-item {
   opacity: 1;
 }
 
-/* ── Services Section (3 Cards & Service Grid) ── */
+/* ── Services Section (Framer Optical Glass Cards) ── */
 [data-theme="light"] .service-card-item {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.22) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(28px) saturate(190%) contrast(105%);
-  -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(105%);
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.72) 0%, rgba(246, 250, 254, 0.42) 50%, rgba(234, 243, 252, 0.58) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(212, 224, 238, 0.62) 15%, rgba(168, 185, 206, 0.25) 48%, rgba(206, 222, 238, 0.45) 82%, rgba(255, 255, 255, 0.96) 100%) border-box !important;
+  border: 1px solid transparent !important;
+  backdrop-filter: blur(28px) saturate(190%) contrast(102%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(102%) !important;
   box-shadow:
-    0 16px 40px -10px rgba(15, 23, 42, 0.06),
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.85);
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.35s ease, background 0.3s ease;
+    0 1px 3px rgba(15, 23, 42, 0.015),
+    0 6px 16px -3px rgba(15, 23, 42, 0.035),
+    0 16px 36px -6px rgba(15, 23, 42, 0.05),
+    0 32px 64px -10px rgba(15, 23, 42, 0.06),
+    inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.45),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.75) !important;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.35s ease, background 0.3s ease !important;
 }
 
 [data-theme="light"] .service-card-item:hover {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.35) 100%);
-  border-color: rgba(14, 165, 233, 0.45);
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.9) 0%, rgba(250, 252, 255, 0.65) 50%, rgba(238, 246, 255, 0.78) 100%) padding-box,
+    linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0.9) 25%, rgba(14, 165, 233, 0.4) 75%, #FFFFFF 100%) border-box !important;
   box-shadow:
-    0 24px 50px -10px rgba(15, 23, 42, 0.09),
-    0 8px 24px -6px rgba(14, 165, 233, 0.16),
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.95);
+    0 2px 6px rgba(15, 23, 42, 0.02),
+    0 12px 28px -4px rgba(15, 23, 42, 0.05),
+    0 28px 56px -8px rgba(15, 23, 42, 0.07),
+    0 48px 90px -12px rgba(14, 165, 233, 0.12),
+    inset 0 2px 2px 0 #FFFFFF,
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.6),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.95) !important;
   transform: translateY(-8px);
 }
 
@@ -5921,18 +6114,24 @@ html.js .floating-badge-item {
   transform: scale(1.05);
 }
 
-/* ── Creator Cards (Home Page) ── */
+/* ── Creator Cards (Home Page — Refined Framer Glass) ── */
 [data-theme="light"] .creator-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.16) 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.75) !important;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.72) 0%, rgba(246, 250, 254, 0.42) 50%, rgba(234, 243, 252, 0.58) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(212, 224, 238, 0.62) 15%, rgba(168, 185, 206, 0.25) 48%, rgba(206, 222, 238, 0.45) 82%, rgba(255, 255, 255, 0.96) 100%) border-box !important;
+  border: 1px solid transparent !important;
   border-radius: 40px;
-  backdrop-filter: blur(28px) saturate(180%) contrast(105%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(180%) contrast(105%) !important;
+  backdrop-filter: blur(28px) saturate(190%) contrast(102%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(102%) !important;
   box-shadow:
-    0 16px 40px -10px rgba(15, 23, 42, 0.06),
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.35) !important;
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.35s ease, background 0.3s ease;
+    0 1px 3px rgba(15, 23, 42, 0.015),
+    0 6px 16px -3px rgba(15, 23, 42, 0.035),
+    0 16px 36px -6px rgba(15, 23, 42, 0.05),
+    0 32px 64px -10px rgba(15, 23, 42, 0.06),
+    inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.45),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.75) !important;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.35s ease, background 0.3s ease !important;
 }
 
 [data-theme="light"] .creator-card::before,
@@ -5941,11 +6140,17 @@ html.js .floating-badge-item {
 }
 
 [data-theme="light"] .creator-card:hover {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.28) 100%) !important;
-  border-color: rgba(255, 255, 255, 0.95) !important;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.9) 0%, rgba(250, 252, 255, 0.65) 50%, rgba(238, 246, 255, 0.78) 100%) padding-box,
+    linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0.9) 25%, rgba(14, 165, 233, 0.4) 75%, #FFFFFF 100%) border-box !important;
   box-shadow:
-    0 24px 50px -10px rgba(15, 23, 42, 0.08),
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95) !important;
+    0 2px 6px rgba(15, 23, 42, 0.02),
+    0 12px 28px -4px rgba(15, 23, 42, 0.05),
+    0 28px 56px -8px rgba(15, 23, 42, 0.07),
+    0 48px 90px -12px rgba(14, 165, 233, 0.12),
+    inset 0 2px 2px 0 #FFFFFF,
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.6),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.95) !important;
   transform: translateY(-8px);
 }
 
@@ -6154,19 +6359,44 @@ html.js .floating-badge-item {
 }
 
 /* ── Portfolio Section ── */
+/* ── Portfolio Section (Framer Optical Glass Cards & Buttons) ── */
 [data-theme="light"] .portfolio-vertical-card {
-  background: #FFFFFF;
-  border-color: rgba(0, 0, 0, 0.08);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.78) 0%, rgba(246, 250, 254, 0.45) 50%, rgba(234, 242, 252, 0.62) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(212, 224, 238, 0.62) 15%, rgba(168, 185, 206, 0.25) 48%, rgba(206, 222, 238, 0.45) 82%, rgba(255, 255, 255, 0.96) 100%) border-box !important;
+  border: 1px solid transparent !important;
+  border-radius: 24px;
+  backdrop-filter: blur(28px) saturate(190%) contrast(102%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(102%) !important;
+  box-shadow:
+    0 1px 3px rgba(15, 23, 42, 0.015),
+    0 6px 16px -3px rgba(15, 23, 42, 0.035),
+    0 16px 36px -6px rgba(15, 23, 42, 0.05),
+    0 32px 64px -10px rgba(15, 23, 42, 0.06),
+    inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.45),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.75) !important;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.35s ease, background 0.3s ease !important;
 }
 
 [data-theme="light"] .portfolio-vertical-card:hover {
-  border-color: rgba(14, 165, 233, 0.4);
-  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.08), 0 0 20px rgba(14, 165, 233, 0.08);
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.92) 0%, rgba(250, 252, 255, 0.68) 50%, rgba(240, 248, 255, 0.8) 100%) padding-box,
+    linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0.9) 25%, rgba(14, 165, 233, 0.4) 75%, #FFFFFF 100%) border-box !important;
+  box-shadow:
+    0 2px 6px rgba(15, 23, 42, 0.02),
+    0 12px 28px -4px rgba(15, 23, 42, 0.05),
+    0 28px 56px -8px rgba(15, 23, 42, 0.07),
+    0 48px 90px -12px rgba(14, 165, 233, 0.12),
+    inset 0 2px 2px 0 #FFFFFF,
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.6),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.95) !important;
+  transform: translateY(-8px);
 }
 
 [data-theme="light"] .p-card-media-wrap {
   background: #0E1217;
+  border-radius: 18px 18px 0 0;
 }
 
 [data-theme="light"] .p-card-img {
@@ -6189,44 +6419,80 @@ html.js .floating-badge-item {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, transparent 35%, rgba(0, 0, 0, 0.6) 80%, rgba(0, 0, 0, 0.9) 100%);
 }
 
+/* Framer-grade Glass Pill Views Button */
 [data-theme="light"] .p-card-views-btn {
-  background: #0C1014;
-  color: #FFFFFF;
-  border: 1px solid transparent;
+  background:
+    linear-gradient(145deg, rgba(20, 28, 40, 0.88) 0%, rgba(10, 15, 24, 0.92) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.1) 40%, rgba(0, 0, 0, 0.25) 75%, rgba(255, 255, 255, 0.25) 100%) border-box !important;
+  color: #FFFFFF !important;
+  border: 1px solid transparent !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  box-shadow:
+    0 2px 6px rgba(15, 23, 42, 0.08),
+    0 8px 18px -2px rgba(15, 23, 42, 0.12),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.4) !important;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, background 0.3s ease !important;
 }
 
 [data-theme="light"] .portfolio-vertical-card:hover .p-card-views-btn {
-  background: #0284C7;
-  color: #FFFFFF;
-  box-shadow: 0 6px 20px rgba(14, 165, 233, 0.3);
+  background:
+    linear-gradient(145deg, rgba(14, 165, 233, 0.96) 0%, rgba(2, 132, 199, 0.92) 100%) padding-box,
+    linear-gradient(180deg, #FFFFFF 0%, rgba(186, 230, 253, 0.6) 30%, rgba(2, 132, 199, 0.3) 70%, #FFFFFF 100%) border-box !important;
+  color: #FFFFFF !important;
+  box-shadow:
+    0 4px 14px rgba(14, 165, 233, 0.28),
+    0 10px 24px -2px rgba(14, 165, 233, 0.35),
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.85) !important;
+  transform: translateY(-1px);
 }
 
+/* Framer-grade Glass Pill Filter Bar */
 [data-theme="light"] .portfolio-toggle-pill {
-  background: #FFFFFF;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.82) 0%, rgba(246, 250, 254, 0.52) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(210, 222, 236, 0.6) 20%, rgba(165, 185, 208, 0.25) 50%, rgba(206, 222, 238, 0.5) 80%, rgba(255, 255, 255, 0.95) 100%) border-box !important;
+  border: 1px solid transparent !important;
+  backdrop-filter: blur(20px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(190%) !important;
+  box-shadow:
+    0 2px 6px rgba(15, 23, 42, 0.03),
+    0 8px 24px -4px rgba(15, 23, 42, 0.06),
+    inset 0 1.5px 1.5px 0 #FFFFFF,
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.5) !important;
 }
 
 [data-theme="light"] .portfolio-toggle-btn {
   color: #55616D;
+  transition: color 0.25s ease;
 }
 
 [data-theme="light"] .portfolio-toggle-btn:hover,
 [data-theme="light"] .portfolio-toggle-btn.active {
   color: #0A0D12;
   font-weight: 700;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 [data-theme="light"] .portfolio-toggle-glider {
-  background: linear-gradient(135deg, rgba(255, 92, 138, 0.18) 0%, rgba(255, 92, 138, 0.08) 100%);
-  border: 1px solid rgba(255, 92, 138, 0.4);
-  box-shadow: 0 2px 10px rgba(255, 92, 138, 0.15);
+  background:
+    linear-gradient(145deg, rgba(255, 92, 138, 0.22) 0%, rgba(255, 92, 138, 0.1) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 92, 138, 0.5) 50%, rgba(255, 255, 255, 0.8) 100%) border-box !important;
+  border: 1px solid transparent !important;
+  box-shadow:
+    0 2px 8px rgba(255, 92, 138, 0.16),
+    inset 0 1.2px 1.2px 0 rgba(255, 255, 255, 0.9) !important;
 }
 
 [data-theme="light"] .portfolio-toggle-glider.brands-active {
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.18) 0%, rgba(14, 165, 233, 0.08) 100%);
-  border-color: rgba(14, 165, 233, 0.4);
-  box-shadow: 0 2px 10px rgba(14, 165, 233, 0.15);
+  background:
+    linear-gradient(145deg, rgba(14, 165, 233, 0.22) 0%, rgba(14, 165, 233, 0.1) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(14, 165, 233, 0.5) 50%, rgba(255, 255, 255, 0.8) 100%) border-box !important;
+  border: 1px solid transparent !important;
+  box-shadow:
+    0 2px 8px rgba(14, 165, 233, 0.16),
+    inset 0 1.2px 1.2px 0 rgba(255, 255, 255, 0.9) !important;
 }
 
 [data-theme="light"] .p-brand-tag {
@@ -6245,22 +6511,29 @@ html.js .floating-badge-item {
   -webkit-backdrop-filter: blur(12px);
 }
 
-/* ── Testimonials ── */
+/* ── Testimonials (Framer Optical Floating Glass Tiles) ── */
 [data-theme="light"] .section-testimonials::before {
-  background: radial-gradient(ellipse at center, rgba(14, 165, 233, 0.035) 0%, transparent 70%);
+  background: radial-gradient(ellipse at center, rgba(14, 165, 233, 0.05) 0%, transparent 70%);
   filter: blur(50px);
 }
 
 [data-theme="light"] .testi-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.48) 0%, rgba(255, 255, 255, 0.18) 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.75) !important;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.74) 0%, rgba(246, 250, 254, 0.44) 50%, rgba(234, 242, 252, 0.6) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(212, 224, 238, 0.62) 15%, rgba(168, 185, 206, 0.25) 48%, rgba(206, 222, 238, 0.45) 82%, rgba(255, 255, 255, 0.96) 100%) border-box !important;
+  border: 1px solid transparent !important;
   border-radius: 32px;
-  backdrop-filter: blur(28px) saturate(180%) contrast(105%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(180%) contrast(105%) !important;
+  backdrop-filter: blur(28px) saturate(190%) contrast(102%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(102%) !important;
   box-shadow:
-    0 20px 48px -10px rgba(15, 23, 42, 0.06),
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.35) !important;
+    0 1px 3px rgba(15, 23, 42, 0.015),
+    0 6px 16px -3px rgba(15, 23, 42, 0.035),
+    0 16px 36px -6px rgba(15, 23, 42, 0.05),
+    0 32px 64px -10px rgba(15, 23, 42, 0.06),
+    inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.45),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.75) !important;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.35s ease, background 0.3s ease !important;
 }
 
 [data-theme="light"] .testi-card::before,
@@ -6269,25 +6542,37 @@ html.js .floating-badge-item {
 }
 
 [data-theme="light"] .testi-card:hover {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.62) 0%, rgba(255, 255, 255, 0.28) 100%) !important;
-  border-color: rgba(255, 255, 255, 0.95) !important;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.92) 0%, rgba(250, 252, 255, 0.68) 50%, rgba(240, 248, 255, 0.8) 100%) padding-box,
+    linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0.9) 25%, rgba(14, 165, 233, 0.4) 75%, #FFFFFF 100%) border-box !important;
   box-shadow:
-    0 28px 60px -10px rgba(15, 23, 42, 0.08),
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95) !important;
+    0 2px 6px rgba(15, 23, 42, 0.02),
+    0 12px 28px -4px rgba(15, 23, 42, 0.05),
+    0 28px 56px -8px rgba(15, 23, 42, 0.07),
+    0 48px 90px -12px rgba(14, 165, 233, 0.12),
+    inset 0 2px 2px 0 #FFFFFF,
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.6),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.95) !important;
   transform: translateY(-8px) rotateX(var(--tilt-y)) rotateY(var(--tilt-x));
 }
 
 [data-theme="light"] .testi-quote-mark {
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(0, 0, 0, 0.07);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.92) 0%, rgba(242, 248, 254, 0.7) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(205, 220, 236, 0.5) 45%, rgba(255, 255, 255, 0.9) 100%) border-box !important;
+  border: 1px solid transparent !important;
   color: #0EA5E9;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04), inset 0 1px 1.5px rgba(255, 255, 255, 1);
+  box-shadow:
+    0 2px 8px rgba(15, 23, 42, 0.04),
+    inset 0 1.2px 1.2px 0 #FFFFFF,
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.5) !important;
 }
 
 [data-theme="light"] .testi-text {
   color: #334155;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.85);
 }
 
 [data-theme="light"] .testi-author-row {
@@ -6351,23 +6636,36 @@ html.js .floating-badge-item {
 }
 
 [data-theme="light"] .process-col-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.48) 0%, rgba(255, 255, 255, 0.18) 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.75) !important;
-  backdrop-filter: blur(28px) saturate(180%) contrast(105%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(180%) contrast(105%) !important;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.74) 0%, rgba(246, 250, 254, 0.44) 50%, rgba(234, 242, 252, 0.6) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(212, 224, 238, 0.62) 15%, rgba(168, 185, 206, 0.25) 48%, rgba(206, 222, 238, 0.45) 82%, rgba(255, 255, 255, 0.96) 100%) border-box !important;
+  border: 1px solid transparent !important;
+  backdrop-filter: blur(28px) saturate(190%) contrast(102%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(102%) !important;
   box-shadow:
-    0 14px 36px -10px rgba(15, 23, 42, 0.06),
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.35) !important;
+    0 1px 3px rgba(15, 23, 42, 0.015),
+    0 6px 16px -3px rgba(15, 23, 42, 0.035),
+    0 16px 36px -6px rgba(15, 23, 42, 0.05),
+    0 32px 64px -10px rgba(15, 23, 42, 0.06),
+    inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.45),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.75) !important;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.35s ease, background 0.3s ease !important;
 }
 
 [data-theme="light"] .process-col.active .process-col-card,
 [data-theme="light"] .process-col:hover .process-col-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.62) 0%, rgba(255, 255, 255, 0.28) 100%) !important;
-  border-color: rgba(255, 255, 255, 0.95) !important;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.92) 0%, rgba(250, 252, 255, 0.68) 50%, rgba(240, 248, 255, 0.8) 100%) padding-box,
+    linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0.9) 25%, rgba(14, 165, 233, 0.4) 75%, #FFFFFF 100%) border-box !important;
   box-shadow:
-    0 20px 45px -10px rgba(15, 23, 42, 0.08),
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95) !important;
+    0 2px 6px rgba(15, 23, 42, 0.02),
+    0 12px 28px -4px rgba(15, 23, 42, 0.05),
+    0 28px 56px -8px rgba(15, 23, 42, 0.07),
+    0 48px 90px -12px rgba(14, 165, 233, 0.12),
+    inset 0 2px 2px 0 #FFFFFF,
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.6),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.95) !important;
   transform: translateY(-6px);
 }
 
@@ -6435,23 +6733,32 @@ html.js .floating-badge-item {
 }
 
 [data-theme="light"] .cta-inner-layout {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.88) 0%, rgba(255, 255, 255, 0.6) 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.95) !important;
-  backdrop-filter: blur(32px) saturate(140%) !important;
-  -webkit-backdrop-filter: blur(32px) saturate(140%) !important;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.88) 0%, rgba(246, 250, 255, 0.62) 50%, rgba(235, 244, 254, 0.75) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(215, 226, 238, 0.65) 20%, rgba(170, 190, 212, 0.3) 50%, rgba(210, 226, 242, 0.55) 80%, rgba(255, 255, 255, 0.98) 100%) border-box !important;
+  border: 1px solid transparent !important;
+  backdrop-filter: blur(32px) saturate(180%) contrast(102%) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(180%) contrast(102%) !important;
   box-shadow:
-    0 30px 70px -15px rgba(0, 0, 0, 0.07),
-    0 10px 24px -5px rgba(0, 0, 0, 0.03),
-    inset 0 1.5px 1px 0 rgba(255, 255, 255, 1),
-    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.02) !important;
+    0 2px 4px rgba(15, 23, 42, 0.02),
+    0 12px 28px -4px rgba(15, 23, 42, 0.04),
+    0 32px 70px -12px rgba(15, 23, 42, 0.07),
+    inset 0 2px 2px 0 #FFFFFF,
+    inset 0 -1.5px 1.5px 0 rgba(255, 255, 255, 0.5),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.9) !important;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.3s ease !important;
 }
 
 [data-theme="light"] .cta-inner-layout:hover {
-  border-color: rgba(14, 165, 233, 0.45) !important;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.96) 0%, rgba(250, 252, 255, 0.75) 50%, rgba(240, 248, 255, 0.88) 100%) padding-box,
+    linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0.9) 30%, rgba(14, 165, 233, 0.45) 75%, #FFFFFF 100%) border-box !important;
   box-shadow:
-    0 36px 80px -15px rgba(0, 0, 0, 0.1),
-    0 12px 30px -5px rgba(14, 165, 233, 0.15),
-    inset 0 2px 1.5px 0 rgba(255, 255, 255, 1) !important;
+    0 4px 8px rgba(15, 23, 42, 0.02),
+    0 18px 36px -4px rgba(15, 23, 42, 0.06),
+    0 44px 90px -12px rgba(14, 165, 233, 0.14),
+    inset 0 2.5px 2px 0 #FFFFFF,
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.6) !important;
 }
 
 [data-theme="light"] .cta-inner-layout::before {
@@ -6495,19 +6802,45 @@ html.js .floating-badge-item {
   color: #475569 !important;
 }
 
+/* Framer-grade Large Action Cyan Glass Button */
 [data-theme="light"] .btn-primary-cyan-large {
-  background: linear-gradient(135deg, #0284C7 0%, #0EA5E9 50%, #38BDF8 100%) !important;
+  background:
+    linear-gradient(145deg, rgba(14, 165, 233, 0.95) 0%, rgba(2, 132, 199, 0.9) 50%, rgba(3, 105, 161, 0.95) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(186, 230, 253, 0.65) 25%, rgba(2, 132, 199, 0.3) 70%, rgba(255, 255, 255, 0.85) 100%) border-box !important;
   color: #FFFFFF !important;
-  border: 1px solid rgba(255, 255, 255, 0.5) !important;
-  box-shadow: 0 10px 28px rgba(14, 165, 233, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+  border: 1px solid transparent !important;
+  text-shadow: 0 1px 2px rgba(2, 44, 67, 0.5) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  box-shadow:
+    0 2px 4px rgba(14, 165, 233, 0.12),
+    0 8px 22px -2px rgba(14, 165, 233, 0.35),
+    0 24px 48px -6px rgba(14, 165, 233, 0.28),
+    inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -1.5px 1px 0 rgba(0, 0, 0, 0.2) !important;
   font-weight: 700 !important;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, background 0.3s ease !important;
 }
 
 [data-theme="light"] .btn-primary-cyan-large:hover {
-  background: linear-gradient(135deg, #0369A1 0%, #0284C7 50%, #0EA5E9 100%) !important;
+  background:
+    linear-gradient(145deg, rgba(56, 189, 248, 0.98) 0%, rgba(14, 165, 233, 0.92) 50%, rgba(2, 132, 199, 0.96) 100%) padding-box,
+    linear-gradient(180deg, #FFFFFF 0%, rgba(224, 242, 254, 0.85) 30%, rgba(14, 165, 233, 0.45) 75%, #FFFFFF 100%) border-box !important;
   color: #FFFFFF !important;
-  box-shadow: 0 14px 34px rgba(14, 165, 233, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+  box-shadow:
+    0 4px 8px rgba(14, 165, 233, 0.18),
+    0 14px 34px -2px rgba(14, 165, 233, 0.45),
+    0 32px 64px -6px rgba(14, 165, 233, 0.38),
+    inset 0 2px 2px 0 #FFFFFF !important;
   transform: translateY(-2px);
+}
+
+[data-theme="light"] .btn-primary-cyan-large:active {
+  transform: translateY(1px) scale(0.985) !important;
+  box-shadow:
+    0 2px 8px rgba(14, 165, 233, 0.3),
+    inset 0 2px 4px rgba(2, 44, 67, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.8) !important;
 }
 
 [data-theme="light"] .cta-microcopy {
@@ -6744,18 +7077,24 @@ html.js .floating-badge-item {
   color: #6C7885;
 }
 
-/* ── Work Creator Cards (Pure Glassmorphism in Light Mode) ── */
+/* ── Work Creator Cards (Pure Framer Optical Glass in Light Mode) ── */
 [data-theme="light"] .work-creator-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.16) 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.75) !important;
-  backdrop-filter: blur(28px) saturate(180%) contrast(105%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(180%) contrast(105%) !important;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.76) 0%, rgba(246, 250, 254, 0.44) 50%, rgba(234, 242, 252, 0.6) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(212, 224, 238, 0.62) 15%, rgba(168, 185, 206, 0.25) 48%, rgba(206, 222, 238, 0.45) 82%, rgba(255, 255, 255, 0.96) 100%) border-box !important;
+  border: 1px solid transparent !important;
+  backdrop-filter: blur(28px) saturate(190%) contrast(102%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(102%) !important;
   box-shadow:
-    0 16px 40px -10px rgba(15, 23, 42, 0.06),
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.35) !important;
+    0 1px 3px rgba(15, 23, 42, 0.015),
+    0 6px 16px -3px rgba(15, 23, 42, 0.035),
+    0 16px 36px -6px rgba(15, 23, 42, 0.05),
+    0 32px 64px -10px rgba(15, 23, 42, 0.06),
+    inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.45),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.75) !important;
   border-radius: 20px;
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.35s ease, background 0.3s ease;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.35s ease, background 0.3s ease !important;
 }
 
 [data-theme="light"] .work-creator-card::before,
@@ -6765,11 +7104,17 @@ html.js .floating-badge-item {
 
 [data-theme="light"] .work-creator-card:hover {
   transform: translateY(-8px) scale(1.015);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.28) 100%) !important;
-  border-color: rgba(255, 255, 255, 0.95) !important;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.92) 0%, rgba(250, 252, 255, 0.68) 50%, rgba(240, 248, 255, 0.8) 100%) padding-box,
+    linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0.9) 25%, rgba(14, 165, 233, 0.4) 75%, #FFFFFF 100%) border-box !important;
   box-shadow:
-    0 24px 50px -10px rgba(15, 23, 42, 0.08),
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95) !important;
+    0 2px 6px rgba(15, 23, 42, 0.02),
+    0 12px 28px -4px rgba(15, 23, 42, 0.05),
+    0 28px 56px -8px rgba(15, 23, 42, 0.07),
+    0 48px 90px -12px rgba(14, 165, 233, 0.12),
+    inset 0 2px 2px 0 #FFFFFF,
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.6),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.95) !important;
 }
 
 /* Clean portrait framing window */
@@ -6810,7 +7155,7 @@ html.js .floating-badge-item {
 }
 
 [data-theme="light"] .work-creator-body {
-  background: #FFFFFF;
+  background: transparent !important;
 }
 
 [data-theme="light"] .work-creator-name {
@@ -6830,9 +7175,12 @@ html.js .floating-badge-item {
 
 /* Polished High-Contrast Stat Box */
 [data-theme="light"] .work-creator-stat-box {
-  background: #F4F6F8;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.85) 0%, rgba(244, 248, 253, 0.55) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(210, 222, 236, 0.5) 50%, rgba(255, 255, 255, 0.9) 100%) border-box !important;
+  border: 1px solid transparent !important;
   border-radius: 12px;
+  box-shadow: inset 0 1px 1px #FFFFFF, 0 2px 6px rgba(15, 23, 42, 0.03);
 }
 
 [data-theme="light"] .w-stat-num {
@@ -6858,12 +7206,13 @@ html.js .floating-badge-item {
 
 /* Crisp Clean Tags */
 [data-theme="light"] .work-creator-tag-item {
-  background: #ECEFF2;
+  background: rgba(255, 255, 255, 0.85);
   color: #38424B;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: 6px;
   font-weight: 500;
   font-size: 0.72rem;
+  box-shadow: inset 0 1px 0 #FFFFFF;
 }
 
 /* Interactive CTA Row */
@@ -6887,16 +7236,39 @@ html.js .floating-badge-item {
   transform: translate(3px, -3px);
 }
 
-/* ── Standards Section (Light) ── */
+/* ── Standards Section (Framer Optical Glass Cards) ── */
 [data-theme="light"] .standard-card {
-  background: #FFFFFF;
-  border: 1px solid rgba(0, 0, 0, 0.07);
-  box-shadow: var(--shadow-card);
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.76) 0%, rgba(246, 250, 254, 0.44) 50%, rgba(234, 242, 252, 0.6) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(212, 224, 238, 0.62) 15%, rgba(168, 185, 206, 0.25) 48%, rgba(206, 222, 238, 0.45) 82%, rgba(255, 255, 255, 0.96) 100%) border-box !important;
+  border: 1px solid transparent !important;
+  border-radius: 20px;
+  backdrop-filter: blur(28px) saturate(190%) contrast(102%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(102%) !important;
+  box-shadow:
+    0 1px 3px rgba(15, 23, 42, 0.015),
+    0 6px 16px -3px rgba(15, 23, 42, 0.035),
+    0 16px 36px -6px rgba(15, 23, 42, 0.05),
+    0 32px 64px -10px rgba(15, 23, 42, 0.06),
+    inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.45),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.75) !important;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.35s ease, background 0.3s ease !important;
 }
 
 [data-theme="light"] .standard-card:hover {
-  border-color: rgba(14, 165, 233, 0.45);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.06);
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.92) 0%, rgba(250, 252, 255, 0.68) 50%, rgba(240, 248, 255, 0.8) 100%) padding-box,
+    linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0.9) 25%, rgba(14, 165, 233, 0.4) 75%, #FFFFFF 100%) border-box !important;
+  box-shadow:
+    0 2px 6px rgba(15, 23, 42, 0.02),
+    0 12px 28px -4px rgba(15, 23, 42, 0.05),
+    0 28px 56px -8px rgba(15, 23, 42, 0.07),
+    0 48px 90px -12px rgba(14, 165, 233, 0.12),
+    inset 0 2px 2px 0 #FFFFFF,
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.6),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.95) !important;
+  transform: translateY(-6px);
 }
 
 [data-theme="light"] .standard-num {
@@ -6912,22 +7284,45 @@ html.js .floating-badge-item {
   color: #505B67;
 }
 
-/* ── Services Filter (Light) ── */
+/* ── Services Filter (Framer Optical Glass Buttons) ── */
 [data-theme="light"] .service-filter-btn {
-  background: #FFFFFF;
-  border-color: rgba(0, 0, 0, 0.08);
-  color: #505B67;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.82) 0%, rgba(246, 250, 254, 0.52) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(210, 222, 236, 0.6) 20%, rgba(165, 185, 208, 0.25) 50%, rgba(206, 222, 238, 0.5) 80%, rgba(255, 255, 255, 0.95) 100%) border-box !important;
+  border: 1px solid transparent !important;
+  color: #505B67 !important;
+  backdrop-filter: blur(16px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.02),
+    0 4px 10px -2px rgba(15, 23, 42, 0.04),
+    inset 0 1.2px 1.2px 0 #FFFFFF,
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.5) !important;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease, color 0.25s ease !important;
 }
 
 [data-theme="light"] .service-filter-btn:hover {
-  background-color: #F8F9FA;
-  color: #0A0D12;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 252, 255, 0.72) 100%) padding-box,
+    linear-gradient(180deg, #FFFFFF 0%, rgba(14, 165, 233, 0.45) 50%, #FFFFFF 100%) border-box !important;
+  color: #0284C7 !important;
+  transform: translateY(-2px);
+  box-shadow:
+    0 2px 6px rgba(15, 23, 42, 0.02),
+    0 8px 18px -2px rgba(14, 165, 233, 0.14),
+    inset 0 1.5px 1.5px 0 #FFFFFF !important;
 }
 
 [data-theme="light"] .service-filter-btn.active {
-  background-color: #0C1014;
-  color: #FFFFFF;
-  border-color: #0C1014;
+  background:
+    linear-gradient(145deg, rgba(14, 165, 233, 0.95) 0%, rgba(2, 132, 199, 0.9) 100%) padding-box,
+    linear-gradient(180deg, #FFFFFF 0%, rgba(186, 230, 253, 0.6) 30%, rgba(2, 132, 199, 0.3) 70%, #FFFFFF 100%) border-box !important;
+  color: #FFFFFF !important;
+  border-color: transparent !important;
+  box-shadow:
+    0 4px 14px rgba(14, 165, 233, 0.28),
+    0 10px 24px -2px rgba(14, 165, 233, 0.35),
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.85) !important;
 }
 
 [data-theme="light"] .service-tag-pill {
@@ -7026,16 +7421,22 @@ html.js .floating-badge-item {
 
 /* Founder Accordion Cards */
 [data-theme="light"] .founder-accord-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.18) 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.75) !important;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.76) 0%, rgba(246, 250, 254, 0.44) 50%, rgba(234, 242, 252, 0.6) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(212, 224, 238, 0.62) 15%, rgba(168, 185, 206, 0.25) 48%, rgba(206, 222, 238, 0.45) 82%, rgba(255, 255, 255, 0.96) 100%) border-box !important;
+  border: 1px solid transparent !important;
   border-radius: 26px;
-  backdrop-filter: blur(28px) saturate(180%) contrast(105%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(180%) contrast(105%) !important;
+  backdrop-filter: blur(28px) saturate(190%) contrast(102%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(102%) !important;
   box-shadow:
-    0 16px 40px -10px rgba(15, 23, 42, 0.06),
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.35) !important;
-  transition: border-color 0.35s ease, box-shadow 0.35s ease, background 0.35s ease, transform 0.25s ease;
+    0 1px 3px rgba(15, 23, 42, 0.015),
+    0 6px 16px -3px rgba(15, 23, 42, 0.035),
+    0 16px 36px -6px rgba(15, 23, 42, 0.05),
+    0 32px 64px -10px rgba(15, 23, 42, 0.06),
+    inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.45),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.75) !important;
+  transition: border-color 0.35s ease, box-shadow 0.35s ease, background 0.35s ease, transform 0.25s ease !important;
 }
 
 [data-theme="light"] .founder-accord-card::before,
@@ -7044,20 +7445,31 @@ html.js .floating-badge-item {
 }
 
 [data-theme="light"] .founder-accord-card:hover {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.28) 100%) !important;
-  border-color: rgba(255, 255, 255, 0.95) !important;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.92) 0%, rgba(250, 252, 255, 0.68) 50%, rgba(240, 248, 255, 0.8) 100%) padding-box,
+    linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0.9) 25%, rgba(14, 165, 233, 0.4) 75%, #FFFFFF 100%) border-box !important;
   box-shadow:
-    0 24px 50px -10px rgba(15, 23, 42, 0.08),
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95) !important;
+    0 2px 6px rgba(15, 23, 42, 0.02),
+    0 12px 28px -4px rgba(15, 23, 42, 0.05),
+    0 28px 56px -8px rgba(15, 23, 42, 0.07),
+    0 48px 90px -12px rgba(14, 165, 233, 0.12),
+    inset 0 2px 2px 0 #FFFFFF,
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.6),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.95) !important;
 }
 
 [data-theme="light"] .founder-accord-card.is-open {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.22) 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.85) 0%, rgba(248, 251, 255, 0.58) 50%, rgba(236, 245, 254, 0.7) 100%) padding-box,
+    linear-gradient(180deg, #FFFFFF 0%, rgba(220, 232, 246, 0.7) 25%, rgba(14, 165, 233, 0.35) 75%, #FFFFFF 100%) border-box !important;
+  border: 1px solid transparent !important;
   box-shadow:
-    0 24px 55px -10px rgba(15, 23, 42, 0.08),
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.35) !important;
+    0 2px 6px rgba(15, 23, 42, 0.02),
+    0 14px 32px -4px rgba(15, 23, 42, 0.06),
+    0 36px 72px -10px rgba(14, 165, 233, 0.1),
+    inset 0 2px 2px 0 #FFFFFF,
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.6),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.95) !important;
 }
 
 [data-theme="light"] .accord-avatar {
@@ -7195,15 +7607,21 @@ html.js .floating-badge-item {
 }
 
 [data-theme="light"] .pillar-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.18) 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.75) !important;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.76) 0%, rgba(246, 250, 254, 0.44) 50%, rgba(234, 242, 252, 0.6) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(212, 224, 238, 0.62) 15%, rgba(168, 185, 206, 0.25) 48%, rgba(206, 222, 238, 0.45) 82%, rgba(255, 255, 255, 0.96) 100%) border-box !important;
+  border: 1px solid transparent !important;
   border-radius: 20px;
-  backdrop-filter: blur(28px) saturate(200%) contrast(105%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(200%) contrast(105%) !important;
+  backdrop-filter: blur(28px) saturate(190%) contrast(102%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(102%) !important;
   box-shadow:
-    0 14px 38px -10px rgba(15, 23, 42, 0.06),
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.35) !important;
+    0 1px 3px rgba(15, 23, 42, 0.015),
+    0 6px 16px -3px rgba(15, 23, 42, 0.035),
+    0 16px 36px -6px rgba(15, 23, 42, 0.05),
+    0 32px 64px -10px rgba(15, 23, 42, 0.06),
+    inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.45),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.75) !important;
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.35s ease, background 0.3s ease !important;
 }
 
@@ -7214,11 +7632,17 @@ html.js .floating-badge-item {
 
 [data-theme="light"] .pillar-card:hover {
   transform: translateY(-8px);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.28) 100%) !important;
-  border-color: rgba(255, 255, 255, 0.95) !important;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.92) 0%, rgba(250, 252, 255, 0.68) 50%, rgba(240, 248, 255, 0.8) 100%) padding-box,
+    linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0.9) 25%, rgba(14, 165, 233, 0.4) 75%, #FFFFFF 100%) border-box !important;
   box-shadow:
-    0 24px 50px -10px rgba(15, 23, 42, 0.08),
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95) !important;
+    0 2px 6px rgba(15, 23, 42, 0.02),
+    0 12px 28px -4px rgba(15, 23, 42, 0.05),
+    0 28px 56px -8px rgba(15, 23, 42, 0.07),
+    0 48px 90px -12px rgba(14, 165, 233, 0.12),
+    inset 0 2px 2px 0 #FFFFFF,
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.6),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.95) !important;
 }
 
 [data-theme="light"] .pillar-num {
@@ -7282,14 +7706,20 @@ html.js .floating-badge-item {
 /* ── Why Us Page Comparison Cards (Light) ── */
 [data-theme="light"] .comp-card-traditional,
 [data-theme="light"] .comp-card-hv {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.16) 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.75) !important;
-  backdrop-filter: blur(28px) saturate(180%) contrast(105%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(180%) contrast(105%) !important;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.76) 0%, rgba(246, 250, 254, 0.44) 50%, rgba(234, 242, 252, 0.6) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(212, 224, 238, 0.62) 15%, rgba(168, 185, 206, 0.25) 48%, rgba(206, 222, 238, 0.45) 82%, rgba(255, 255, 255, 0.96) 100%) border-box !important;
+  border: 1px solid transparent !important;
+  border-radius: 24px;
+  backdrop-filter: blur(28px) saturate(190%) contrast(102%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(102%) !important;
   box-shadow:
-    0 18px 45px -10px rgba(15, 23, 42, 0.06),
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.35) !important;
+    0 1px 3px rgba(15, 23, 42, 0.015),
+    0 6px 16px -3px rgba(15, 23, 42, 0.035),
+    0 18px 45px -8px rgba(15, 23, 42, 0.06),
+    inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.45),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.75) !important;
 }
 
 [data-theme="light"] .comp-card-name {
@@ -7328,18 +7758,37 @@ html.js .floating-badge-item {
 }
 
 [data-theme="light"] .case-hud-card {
-  background: #F4F6F8;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.85) 0%, rgba(244, 248, 253, 0.55) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(210, 222, 236, 0.5) 50%, rgba(255, 255, 255, 0.9) 100%) border-box !important;
+  border: 1px solid transparent !important;
+  border-radius: 14px;
+  backdrop-filter: blur(16px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+  box-shadow:
+    0 2px 6px rgba(15, 23, 42, 0.03),
+    inset 0 1.2px 1.2px 0 #FFFFFF,
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.5) !important;
 }
 
 [data-theme="light"] .case-hud-val {
   color: #0A0D12;
+  font-weight: 800;
 }
 
 [data-theme="light"] .case-follower-transform-card {
-  background: #FFFFFF;
-  border: 1px solid rgba(0, 0, 0, 0.07);
-  box-shadow: var(--shadow-card);
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.82) 0%, rgba(246, 250, 254, 0.52) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(210, 222, 236, 0.6) 20%, rgba(168, 185, 206, 0.25) 50%, rgba(206, 222, 238, 0.5) 80%, rgba(255, 255, 255, 0.95) 100%) border-box !important;
+  border: 1px solid transparent !important;
+  border-radius: 20px;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  box-shadow:
+    0 1px 3px rgba(15, 23, 42, 0.015),
+    0 8px 24px -4px rgba(15, 23, 42, 0.05),
+    inset 0 1.5px 1.5px 0 #FFFFFF,
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.5) !important;
 }
 
 [data-theme="light"] .case-top-bar {
@@ -7446,9 +7895,30 @@ html.js .floating-badge-item {
 }
 
 [data-theme="light"] .ig-reel-card {
-  background: #FFFFFF;
-  border-color: rgba(0, 0, 0, 0.08);
-  box-shadow: var(--shadow-card);
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.78) 0%, rgba(246, 250, 254, 0.45) 50%, rgba(234, 242, 252, 0.62) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(212, 224, 238, 0.62) 15%, rgba(168, 185, 206, 0.25) 48%, rgba(206, 222, 238, 0.45) 82%, rgba(255, 255, 255, 0.96) 100%) border-box !important;
+  border: 1px solid transparent !important;
+  border-radius: 20px;
+  backdrop-filter: blur(28px) saturate(190%) contrast(102%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(102%) !important;
+  box-shadow:
+    0 1px 3px rgba(15, 23, 42, 0.015),
+    0 6px 16px -3px rgba(15, 23, 42, 0.035),
+    0 16px 36px -6px rgba(15, 23, 42, 0.05),
+    inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.45),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.75) !important;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease !important;
+}
+
+[data-theme="light"] .ig-reel-card:hover {
+  transform: translateY(-6px);
+  box-shadow:
+    0 2px 6px rgba(15, 23, 42, 0.02),
+    0 12px 28px -4px rgba(15, 23, 42, 0.05),
+    0 28px 56px -8px rgba(15, 23, 42, 0.07),
+    inset 0 2px 2px 0 #FFFFFF !important;
 }
 
 /* ── Case Study Agency Breakdown Section (Light Mode) ── */
@@ -7470,18 +7940,33 @@ html.js .floating-badge-item {
 
 /* 3 Strategy Pillar Cards (Frosted Glassmorphism in Light Mode) */
 [data-theme="light"] .breakdown-card {
-  background: linear-gradient(165deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 250, 252, 0.9) 100%);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.78) 0%, rgba(246, 250, 254, 0.45) 50%, rgba(234, 242, 252, 0.62) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(212, 224, 238, 0.62) 15%, rgba(168, 185, 206, 0.25) 48%, rgba(206, 222, 238, 0.45) 82%, rgba(255, 255, 255, 0.96) 100%) border-box !important;
+  border: 1px solid transparent !important;
   border-radius: 18px;
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04), inset 0 1px 1.5px #FFFFFF;
+  backdrop-filter: blur(24px) saturate(190%) contrast(102%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(190%) contrast(102%) !important;
+  box-shadow:
+    0 1px 3px rgba(15, 23, 42, 0.015),
+    0 6px 16px -3px rgba(15, 23, 42, 0.035),
+    0 16px 36px -6px rgba(15, 23, 42, 0.05),
+    inset 0 1.5px 1.5px 0 #FFFFFF,
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.45),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.75) !important;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease !important;
 }
 
 [data-theme="light"] .breakdown-card:hover {
-  border-color: rgba(14, 165, 233, 0.45);
   transform: translateY(-6px);
-  box-shadow: 0 20px 48px -8px rgba(0, 0, 0, 0.08), 0 0 28px rgba(14, 165, 233, 0.12), inset 0 1px 1.5px #FFFFFF;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.92) 0%, rgba(250, 252, 255, 0.68) 50%, rgba(240, 248, 255, 0.8) 100%) padding-box,
+    linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0.9) 25%, rgba(14, 165, 233, 0.4) 75%, #FFFFFF 100%) border-box !important;
+  box-shadow:
+    0 2px 6px rgba(15, 23, 42, 0.02),
+    0 12px 28px -4px rgba(15, 23, 42, 0.05),
+    0 28px 56px -8px rgba(15, 23, 42, 0.07),
+    inset 0 2px 2px 0 #FFFFFF !important;
 }
 
 [data-theme="light"] .breakdown-icon-box {
@@ -8647,28 +9132,40 @@ html.js .floating-badge-item {
 }
 
 [data-theme="light"] .capability-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.16) 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.75) !important;
-  backdrop-filter: blur(28px) saturate(180%) contrast(105%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(180%) contrast(105%) !important;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.76) 0%, rgba(246, 250, 254, 0.44) 50%, rgba(234, 242, 252, 0.6) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(212, 224, 238, 0.62) 15%, rgba(168, 185, 206, 0.25) 48%, rgba(206, 222, 238, 0.45) 82%, rgba(255, 255, 255, 0.96) 100%) border-box !important;
+  border: 1px solid transparent !important;
+  backdrop-filter: blur(28px) saturate(190%) contrast(102%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(102%) !important;
   box-shadow:
-    0 16px 40px -10px rgba(15, 23, 42, 0.06),
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.35) !important;
+    0 1px 3px rgba(15, 23, 42, 0.015),
+    0 6px 16px -3px rgba(15, 23, 42, 0.035),
+    0 16px 36px -6px rgba(15, 23, 42, 0.05),
+    0 32px 64px -10px rgba(15, 23, 42, 0.06),
+    inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.45),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.75) !important;
   position: relative;
   z-index: 1;
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, background 0.3s ease;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, background 0.3s ease !important;
 }
 
 [data-theme="light"] .capability-card:hover,
 [data-theme="light"] .page-work .capability-card:hover,
 [data-theme="light"] .work-capabilities-grid .capability-card:hover {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.28) 100%) !important;
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.92) 0%, rgba(250, 252, 255, 0.68) 50%, rgba(240, 248, 255, 0.8) 100%) padding-box,
+    linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0.9) 25%, rgba(14, 165, 233, 0.4) 75%, #FFFFFF 100%) border-box !important;
   transform: translateY(-8px) scale(1.02);
-  border-color: rgba(255, 255, 255, 0.95) !important;
   box-shadow:
-    0 24px 50px -10px rgba(15, 23, 42, 0.08),
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95) !important;
+    0 2px 6px rgba(15, 23, 42, 0.02),
+    0 12px 28px -4px rgba(15, 23, 42, 0.05),
+    0 28px 56px -8px rgba(15, 23, 42, 0.07),
+    0 48px 90px -12px rgba(14, 165, 233, 0.12),
+    inset 0 2px 2px 0 #FFFFFF,
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.6),
+    inset 1px 1px 0 0 rgba(255, 255, 255, 0.95) !important;
   z-index: 5;
 }
 
@@ -9430,9 +9927,32 @@ html.js .floating-badge-item {
 }
 
 [data-theme="light"] .workflow-card {
-  border-color: rgba(21, 102, 116, 0.14);
-  background: rgba(255, 255, 255, 0.85);
-  box-shadow: 0 14px 30px rgba(23, 71, 80, 0.08);
+  background: 
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(246, 250, 252, 0.72) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(0, 229, 255, 0.28) 45%, rgba(14, 165, 233, 0.12) 100%) border-box !important;
+  border: 1px solid transparent !important;
+  backdrop-filter: blur(28px) saturate(185%) contrast(104%);
+  -webkit-backdrop-filter: blur(28px) saturate(185%) contrast(104%);
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 4px 10px rgba(15, 23, 42, 0.04),
+    0 12px 28px rgba(15, 23, 42, 0.06),
+    0 24px 48px rgba(15, 23, 42, 0.05),
+    inset 0 1px 1.5px rgba(255, 255, 255, 1),
+    inset 0 -1px 1px rgba(0, 229, 255, 0.12) !important;
+}
+
+[data-theme="light"] .workflow-card:hover {
+  background: 
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(246, 250, 252, 0.82) 100%) padding-box,
+    linear-gradient(180deg, #ffffff 0%, rgba(0, 229, 255, 0.5) 45%, rgba(14, 165, 233, 0.25) 100%) border-box !important;
+  box-shadow:
+    0 2px 4px rgba(15, 23, 42, 0.04),
+    0 8px 18px rgba(15, 23, 42, 0.06),
+    0 18px 36px rgba(0, 229, 255, 0.12),
+    0 32px 64px rgba(15, 23, 42, 0.08),
+    inset 0 1.5px 2px rgba(255, 255, 255, 1),
+    inset 0 -1px 1px rgba(0, 229, 255, 0.2) !important;
 }
 
 [data-theme="light"] .workflow-visual {
@@ -9445,8 +9965,14 @@ html.js .floating-badge-item {
 
 [data-theme="light"] .upload-file,
 [data-theme="light"] .distribution-node {
-  background: rgba(255, 255, 255, 0.94);
-  color: #19464f;
+  background: 
+    linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(246, 250, 252, 0.82) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(0, 229, 255, 0.25) 100%) border-box !important;
+  border: 1px solid transparent !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06), inset 0 1px 1px #fff;
+  color: #0f172a;
 }
 
 @media (max-width: 900px) {

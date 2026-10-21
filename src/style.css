@@ -8308,7 +8308,7 @@ html.js .floating-badge-item {
 
   /* New hero responsive — tablet */
   .hero-headline--centered {
-    font-size: clamp(2.4rem, 5.2vw, 3.8rem);
+    font-size: clamp(1.45rem, 3.8vw, 2.75rem);
   }
 
   .hero-sculpture-col {
@@ -8630,7 +8630,7 @@ html.js .floating-badge-item {
   margin: 0 auto;
   padding: 0 var(--container-pad);
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
   gap: 3.5rem;
   align-items: center;
   position: relative;
@@ -8647,6 +8647,10 @@ html.js .floating-badge-item {
 .work-hero-left {
   display: flex;
   flex-direction: column;
+}
+
+.work-hero-line {
+  display: block;
 }
 
 .work-hero-tag {
@@ -8674,9 +8678,9 @@ html.js .floating-badge-item {
 
 .work-hero-title {
   font-family: var(--font-display);
-  font-size: clamp(2.8rem, 5.5vw, 5.2rem);
+  font-size: clamp(2.35rem, 4.3vw, 4.4rem);
   font-weight: 500;
-  line-height: 1.05;
+  line-height: 1.08;
   letter-spacing: -0.03em;
   margin-bottom: 1.15rem;
   background-image: var(--hero-headline-gradient);
@@ -8699,6 +8703,7 @@ html.js .floating-badge-item {
   filter: drop-shadow(0 0 16px rgba(0, 229, 255, 0.4));
   animation: cyanTextSheen 5s ease-in-out infinite;
   display: inline-block;
+  white-space: nowrap;
   padding-bottom: 0;
   margin-bottom: 0;
   padding-right: 0.04em;
@@ -12209,6 +12214,7 @@ html.js .floating-badge-item {
   filter: drop-shadow(0 0 16px rgba(0, 229, 255, 0.4));
   animation: cyanTextSheen 5s ease-in-out infinite;
   display: inline-block;
+  white-space: nowrap;
 }
 
 .team-hero-desc {
@@ -13169,6 +13175,7 @@ html.js .floating-badge-item {
   filter: drop-shadow(0 0 16px rgba(0, 229, 255, 0.4));
   animation: cyanTextSheen 5s ease-in-out infinite;
   display: inline-block;
+  white-space: nowrap;
   padding-bottom: 0;
   margin-bottom: 0;
   padding-right: 0.04em;
@@ -15318,18 +15325,16 @@ main+footer {
   margin-bottom: 1.1rem;
 }
 
-@media (min-width: 1100px) {
-  /* Keep the cinema headline as two intentional lines on wide screens. The
-     centered flex layout otherwise sizes the h1 to its first line and lets
-     the longer second line wrap into a third line. */
-  #hero .hero-headline--centered {
-    width: 100%;
-    max-width: none;
-  }
+/* Keep the cinema headline as two intentional lines. The
+   centered flex layout otherwise sizes the h1 to its first line and lets
+   the longer second line wrap into extra lines. */
+#hero .hero-headline--centered {
+  width: 100%;
+  max-width: none;
+}
 
-  #hero .hero-headline-line {
-    white-space: nowrap;
-  }
+#hero .hero-headline-line {
+  white-space: nowrap;
 }
 
 .hero-description--centered {
@@ -18668,9 +18673,27 @@ body::-webkit-scrollbar {
   /* 4. Balanced Mobile Typography (No giant wrapping headers) */
   .hero-headline,
   .hero-headline--centered {
-    font-size: clamp(1.65rem, 6.2vw, 2.15rem) !important;
-    line-height: 1.16 !important;
+    font-size: clamp(0.92rem, 4.25vw, 1.45rem) !important;
+    line-height: 1.22 !important;
     margin-bottom: 0.9rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    letter-spacing: -0.025em !important;
+  }
+
+  #hero .hero-headline-line,
+  .hero-headline-line {
+    white-space: nowrap !important;
+    display: block !important;
+    width: 100% !important;
+    text-align: center !important;
+  }
+
+  @media (max-width: 360px) {
+    .hero-headline,
+    .hero-headline--centered {
+      font-size: clamp(0.8rem, 3.8vw, 0.95rem) !important;
+    }
   }
 
   .hero-description,

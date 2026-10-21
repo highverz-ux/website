@@ -15226,6 +15226,19 @@ main+footer {
   padding-right: 0.08rem;
 }
 
+.hero-trust-avatars--movies,
+.hero-trust-copy--movies {
+  display: none !important;
+}
+
+.hero-trust-avatars--creators {
+  display: flex !important;
+}
+
+.hero-trust-copy--creators {
+  display: inline !important;
+}
+
 .hero-trust-avatars img {
   width: clamp(1.85rem, 2.15vw, 2.35rem);
   height: clamp(1.85rem, 2.15vw, 2.35rem);
@@ -15235,6 +15248,10 @@ main+footer {
   object-position: center;
   border: 2px solid rgba(8, 15, 21, 0.96);
   box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.16);
+}
+
+.hero-trust-avatars--movies img {
+  object-position: center 20%;
 }
 
 .hero-trust-avatars img+img {
@@ -18238,8 +18255,33 @@ body::after {
 
 /* Light-theme contrast pass for labels that were still inheriting the dark
    hero's white text treatment. */
+[data-theme="light"] .hero-trust-avatars--creators,
+[data-theme="light"] .hero-trust-copy--creators {
+  display: none !important;
+}
+
+[data-theme="light"] .hero-trust-avatars--movies {
+  display: flex !important;
+}
+
+[data-theme="light"] .hero-trust-copy--movies {
+  display: inline !important;
+}
+
 [data-theme="light"] .hero-trust-badge {
   color: #244d58;
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+}
+
+[data-theme="light"] .hero-trust-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px -4px rgba(0, 181, 205, 0.18), inset 0 1px 1.5px rgba(255, 255, 255, 0.95);
+}
+
+[data-theme="light"] .hero-trust-avatars img {
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(0, 181, 205, 0.3);
 }
 
 [data-theme="light"] .hero-trust-copy {
@@ -18247,6 +18289,12 @@ body::after {
   -webkit-text-fill-color: currentColor;
   background-image: none;
   animation: none;
+  font-weight: 500;
+}
+
+[data-theme="light"] .hero-trust-number {
+  color: #0093a8;
+  font-weight: 800;
 }
 
 [data-theme="light"] .hero-trust-label {
@@ -18254,10 +18302,16 @@ body::after {
   -webkit-text-fill-color: currentColor;
   background-image: none;
   animation: none;
+  font-weight: 500;
 }
 
 [data-theme="light"] .hero-trust-chevron {
-  color: #58757e;
+  color: #0093a8;
+  transition: transform 0.25s ease;
+}
+
+[data-theme="light"] .hero-trust-badge:hover .hero-trust-chevron {
+  transform: translateY(2px);
 }
 
 [data-theme="light"] .hero-tag-bar {

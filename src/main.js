@@ -1217,8 +1217,38 @@ function initMobileNav(navbar) {
 
 // The light theme is positioned around cinema and campaign distribution,
 // while dark mode keeps the creator-growth message. Both variants use the
+function applyThemeHeroTrustBadge() {
+  const badge = document.getElementById('hero-trust-badge') || document.querySelector('.hero-trust-badge');
+  if (!badge) return;
+
+  const isLight = document.documentElement.dataset.theme === 'light';
+  badge.setAttribute(
+    'aria-label',
+    isLight
+      ? '4.5 billion views generated across film campaigns'
+      : '4.5 billion views generated across creator growth'
+  );
+
+  if (!badge.dataset.scrollBound) {
+    badge.dataset.scrollBound = 'true';
+    badge.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = document.querySelector('#creators') || document.querySelector('.section-creators');
+      if (target) {
+        if (window.lenis) {
+          window.lenis.scrollTo(target, { offset: -60, duration: 1.2 });
+        } else {
+          target.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    });
+  }
+}
+
 // same word-level markup so the existing reveal timeline remains identical.
 function applyThemeHeroCopy() {
+  applyThemeHeroTrustBadge();
+
   const headline = document.getElementById('hero-headline');
   const description = document.getElementById('hero-desc');
   if (!headline) return;

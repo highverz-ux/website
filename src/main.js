@@ -1233,7 +1233,10 @@ function applyThemeHeroTrustBadge() {
     badge.dataset.scrollBound = 'true';
     badge.addEventListener('click', (e) => {
       e.preventDefault();
-      const target = document.querySelector('#creators') || document.querySelector('.section-creators');
+      const isCurrentlyLight = document.documentElement.dataset.theme === 'light';
+      const target = isCurrentlyLight
+        ? (document.querySelector('#work') || document.querySelector('.section-portfolio') || document.querySelector('#creators'))
+        : (document.querySelector('#creators') || document.querySelector('.section-creators'));
       if (target) {
         if (window.lenis) {
           window.lenis.scrollTo(target, { offset: -60, duration: 1.2 });

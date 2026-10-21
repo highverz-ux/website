@@ -15251,7 +15251,19 @@ main+footer {
 }
 
 .hero-trust-avatars--movies img {
-  object-position: center 20%;
+  object-fit: cover;
+}
+
+.hero-trust-avatars--movies img:nth-child(1) {
+  object-position: center 25%;
+}
+
+.hero-trust-avatars--movies img:nth-child(2) {
+  object-position: center 30%;
+}
+
+.hero-trust-avatars--movies img:nth-child(3) {
+  object-position: center 22%;
 }
 
 .hero-trust-avatars img+img {

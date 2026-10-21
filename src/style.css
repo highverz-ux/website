@@ -7789,6 +7789,7 @@ html.js .floating-badge-item {
     0 8px 24px -4px rgba(15, 23, 42, 0.05),
     inset 0 1.5px 1.5px 0 #FFFFFF,
     inset 0 -1px 1px 0 rgba(255, 255, 255, 0.5) !important;
+  overflow: visible !important;
 }
 
 [data-theme="light"] .case-top-bar {
@@ -7855,16 +7856,26 @@ html.js .floating-badge-item {
 
 [data-theme="light"] .case-trans-item .case-trans-number {
   color: #0A0D12;
+  line-height: 1.32;
+  overflow: visible;
 }
 
 [data-theme="light"] .case-trans-item.highlight .case-trans-number {
+  display: inline-block !important;
+  line-height: 1.35 !important;
+  padding-bottom: 0.25em !important;
+  padding-top: 0.06em !important;
+  padding-right: 0.15em !important;
+  margin-bottom: -0.2em !important;
+  overflow: visible !important;
+  white-space: nowrap !important;
   background: linear-gradient(110deg, #0284C7 0%, #0EA5E9 25%, #38BDF8 50%, #0EA5E9 75%, #0284C7 100%) !important;
   background-size: 250% auto !important;
   -webkit-background-clip: text !important;
   background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
-  filter: drop-shadow(0 0 16px rgba(14, 165, 233, 0.6)) drop-shadow(0 2px 8px rgba(2, 132, 199, 0.35)) !important;
+  filter: drop-shadow(0 0 14px rgba(14, 165, 233, 0.45)) drop-shadow(0 2px 6px rgba(2, 132, 199, 0.25)) !important;
   animation: lightThemeTextReflection 4.5s ease-in-out infinite !important;
   text-shadow: none !important;
 }
@@ -11520,12 +11531,15 @@ html.js .floating-badge-item {
   border-radius: 14px;
   padding: 1.15rem 1.65rem;
   max-width: 580px;
+  overflow: visible;
 }
 
 .case-trans-item {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
+  min-width: 0;
+  overflow: visible;
 }
 
 .case-trans-label {
@@ -11543,15 +11557,30 @@ html.js .floating-badge-item {
 
 .case-trans-number {
   font-family: var(--font-display);
-  font-size: clamp(1.6rem, 2.4vw, 2.1rem);
+  font-size: clamp(1.5rem, 2.3vw, 2.05rem);
   font-weight: 800;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.035em;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
-  line-height: 1.1;
+  line-height: 1.32;
+  display: inline-block;
+  padding-bottom: 0.22em;
+  padding-top: 0.05em;
+  padding-right: 0.15em;
+  margin-bottom: -0.18em;
+  overflow: visible;
+  white-space: nowrap;
 }
 
 .case-trans-item.highlight .case-trans-number {
+  display: inline-block;
+  line-height: 1.35;
+  padding-bottom: 0.25em;
+  padding-top: 0.06em;
+  padding-right: 0.15em;
+  margin-bottom: -0.2em;
+  overflow: visible;
+  white-space: nowrap;
   background: linear-gradient(110deg, #00D5FF 0%, #5EFBFF 28%, #FFFFFF 52%, #23C7D8 78%, #00D5FF 100%);
   background-size: 200% auto;
   -webkit-background-clip: text;

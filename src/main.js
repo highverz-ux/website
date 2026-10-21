@@ -201,7 +201,7 @@ function boot() {
   window.addEventListener('pointerdown', onEarlyInteraction, { passive: true, once: true });
 
   const isWorkPage = window.location.pathname.includes('work') || !!document.querySelector('.work-hero-section');
-  const isCaseStudyPage = window.location.pathname.includes('creator-') || !!document.querySelector('.case-hero-section') || !!document.querySelector('.ig-profile-shell');
+  const isCaseStudyPage = window.location.pathname.includes('creator-') || window.location.pathname.includes('movie-') || !!document.querySelector('.case-hero-section') || !!document.querySelector('.ig-profile-shell');
   const isTeamPage = window.location.pathname.includes('team') || !!document.querySelector('.page-team');
   const isWhyUs = window.location.pathname.includes('why-us') || !!document.querySelector('.page-why-us') || !!document.querySelector('.comparison-section');
   const isCampaignsPage = window.location.pathname.includes('campaigns') || !!document.querySelector('.page-campaigns');
@@ -1354,14 +1354,14 @@ function applyThemeCreatorsCopy() {
     const platform = card.querySelector('.creator-platform');
     const description = card.querySelector('.creator-description');
     const badge = card.querySelector('.badge-growth');
-    const campaignHref = `/campaigns.html?movie=${encodeURIComponent(movie.title)}`;
+    const movieHref = movie.title === 'Runner' ? '/movie-runner.html' : '/movie-kingofkings.html';
 
     if (imageWrap) {
-      imageWrap.href = campaignHref;
+      imageWrap.href = movieHref;
       imageWrap.removeAttribute('target');
       imageWrap.removeAttribute('rel');
-      imageWrap.dataset.cursor = 'FILM BREAKDOWN ↗';
-      imageWrap.setAttribute('aria-label', `${movie.title} film breakdown`);
+      imageWrap.dataset.cursor = 'FILM CASE STUDY ↗';
+      imageWrap.setAttribute('aria-label', `${movie.title} film case study`);
     }
     if (image) {
       image.src = movie.image;
@@ -1371,11 +1371,11 @@ function applyThemeCreatorsCopy() {
     }
     if (name) name.textContent = movie.title;
     if (platform) {
-      platform.href = campaignHref;
+      platform.href = movieHref;
       platform.removeAttribute('target');
       platform.removeAttribute('rel');
-      platform.dataset.cursor = 'CAMPAIGN BREAKDOWN ↗';
-      platform.setAttribute('aria-label', `View ${movie.title} campaign breakdown`);
+      platform.dataset.cursor = 'VIEW CASE STUDY ↗';
+      platform.setAttribute('aria-label', `View ${movie.title} film case study`);
       platform.classList.add('movie-platform');
       platform.innerHTML = `<span>FEATURED FILM</span><svg class="creator-ext-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>`;
     }
@@ -1404,12 +1404,12 @@ function applyThemeCreatorsCopy() {
       `${movie.title} · film`,
       'Audience reach',
       'Cinematic strategy',
-      'View breakdown',
+      'View case studies',
     ];
     meta.forEach((chip, chipIndex) => {
       if (chipIndex === 3) {
-        chip.href = campaignHref;
-        chip.dataset.cursor = 'FILM BREAKDOWN ↗';
+        chip.href = movieHref;
+        chip.dataset.cursor = 'CASE STUDY ↗';
         chip.innerHTML = `<span>${metaCopy[chipIndex]}</span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>`;
       } else {
         chip.innerHTML = `<span>${metaCopy[chipIndex]}</span>`;
@@ -2706,7 +2706,7 @@ export function initPageScripts(pathname, isFromTransition = false) {
   // only needed for callers that intentionally omit it on a fresh document.
   const hasExplicitPath = typeof pathname === 'string' && pathname.length > 0;
   const isWorkPage = normPath.includes('work') || (!hasExplicitPath && !!document.querySelector('.work-hero-section'));
-  const isCaseStudyPage = normPath.includes('creator-') || (!hasExplicitPath && (!!document.querySelector('.case-hero-section') || !!document.querySelector('.ig-profile-shell')));
+  const isCaseStudyPage = normPath.includes('creator-') || normPath.includes('movie-') || (!hasExplicitPath && (!!document.querySelector('.case-hero-section') || !!document.querySelector('.ig-profile-shell')));
   const isTeamPage = normPath.includes('team') || (!hasExplicitPath && !!document.querySelector('.team-hero-section'));
   const isWhyUs = normPath.includes('why-us') || (!hasExplicitPath && !!document.querySelector('.why-hero-section'));
   const isCampaignsPage = normPath.includes('campaigns') || (!hasExplicitPath && !!document.querySelector('.campaign-hero'));
@@ -2761,7 +2761,7 @@ export function triggerPageHeroEntrance(pathname, isFromTransition = false) {
   const isTeam = normPath.includes('team');
   const isWhy = normPath.includes('why-us');
   const isCampaigns = normPath.includes('campaigns');
-  const isCase = normPath.includes('creator-');
+  const isCase = normPath.includes('creator-') || normPath.includes('movie-');
 
   // Own each dedicated hero once. A transition resets this to guarantee entrance executes
   const heroRoot = document.querySelector('.hero-section, .work-hero-section, .team-hero-section, .why-hero-section, .campaign-hero, .case-hero-section');
@@ -3453,17 +3453,22 @@ export function initHeroReelCarousel() {
     lastTime = currentTime;
 
     if (!isDragging) {
-      if (Math.abs(dragVelocity) > 0.5) {
-        // Butter smooth glide with lower friction
+      const currentAutoSpeed = isMobileDevice ? 28 : autoSpeed;
+
+      if (Math.abs(dragVelocity) > 1.0) {
+        // Butter smooth glide with lower friction and expanded 6-7 reel reach
         scrollPosition += dragVelocity * delta;
-        dragVelocity *= Math.pow(0.96, delta * 60);
-        if (Math.abs(dragVelocity) < 0.5) {
+        dragVelocity *= Math.pow(0.982, delta * 60);
+
+        // Once velocity decays near auto-speed and user is done interacting, hand off seamlessly
+        if (!isInteracting && Math.abs(dragVelocity) <= currentAutoSpeed) {
+          dragVelocity = 0;
+        } else if (Math.abs(dragVelocity) <= 1.0) {
           dragVelocity = 0;
         }
       } else if (!isInteracting) {
         // Continuous smooth auto-rotation on all screens (gentle pace on mobile)
-        const speed = isMobileDevice ? 28 : autoSpeed;
-        scrollPosition += speed * autoDirection * delta;
+        scrollPosition += currentAutoSpeed * autoDirection * delta;
       }
 
       scrollPosition = ((scrollPosition % totalWidth) + totalWidth) % totalWidth;
@@ -3547,7 +3552,7 @@ export function initHeroReelCarousel() {
     if (!isDragging) return;
 
     hasMoved = true;
-    const diff = diffX * 1.1;
+    const diff = diffX * 1.55;
 
     const now = performance.now();
     const dt = Math.max(now - lastDragTime, 1);
@@ -3586,24 +3591,36 @@ export function initHeroReelCarousel() {
       try { track.releasePointerCapture(e.pointerId); } catch (_) { }
     }
 
-    // Give even a small swipe a gentle glide.
+    // Expand drag reach and duration to roll across 6-7 reels
     const totalDragDistance = lastDragX - startX;
-    if (Math.abs(totalDragDistance) > 2) {
+    if (Math.abs(totalDragDistance) > 3) {
       autoDirection = totalDragDistance > 0 ? -1 : 1;
-      if (Math.abs(dragVelocity) < 200) {
-        dragVelocity = autoDirection * 350; // Increased base glide speed for buttery smoothness
+      const currentStep = stageStep || (cachedViewportWidth <= 768 ? 125 : 190);
+      // Under decay 0.982 (k ~ 1.09 s^-1), target distance of 6.5 reels requires base velocity ~ 7.1 * stageStep
+      const targetGlideDistance = currentStep * 6.5;
+      const baseGlideVelocity = targetGlideDistance * 1.09;
+
+      const measuredSpeed = Math.abs(dragVelocity);
+      let releaseVelocity;
+      if (measuredSpeed < 180) {
+        // Deliberate swipe or slow release: roll full 6-7 reels smoothly
+        releaseVelocity = baseGlideVelocity;
+      } else {
+        // Faster swipe: scale smoothly up to ~8-9 reels
+        releaseVelocity = Math.max(baseGlideVelocity, Math.min(baseGlideVelocity * 1.5, measuredSpeed * 1.75));
       }
+      dragVelocity = autoDirection * releaseVelocity;
     }
 
     // Re-enable optic CSS transitions for the inertia coast phase
     cardPositions.forEach((p) => { p.style.transition = ''; });
 
-    dragVelocity = Math.max(-1200, Math.min(1200, dragVelocity));
+    dragVelocity = Math.max(-2800, Math.min(2800, dragVelocity));
 
     clearTimeout(resumeTimer);
     resumeTimer = setTimeout(() => {
       isInteracting = false;
-    }, 1600);
+    }, 3400);
   };
 
   const onClickCapture = (e) => {

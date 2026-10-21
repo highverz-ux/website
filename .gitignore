@@ -7,4 +7,6 @@ dist/
 scratch/
 server/leads.json
 server/.cache/
+assets/movie/runner/
+assets/movie/kingofkings/
 

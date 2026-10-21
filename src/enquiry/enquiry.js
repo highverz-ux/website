@@ -9,6 +9,60 @@ const SHEETS_CONFIG_KEY = 'highverz_sheets_webhook_url';
 // Default Google Apps Script URL (can also be configured via Admin HUD or localStorage)
 let GOOGLE_SHEETS_URL = localStorage.getItem(SHEETS_CONFIG_KEY) || '';
 
+export const COUNTRIES = [
+  { code: 'IN', name: 'India', dial: '+91', flag: '🇮🇳' },
+  { code: 'US', name: 'United States', dial: '+1', flag: '🇺🇸' },
+  { code: 'GB', name: 'United Kingdom', dial: '+44', flag: '🇬🇧' },
+  { code: 'AE', name: 'United Arab Emirates', dial: '+971', flag: '🇦🇪' },
+  { code: 'CA', name: 'Canada', dial: '+1', flag: '🇨🇦' },
+  { code: 'AU', name: 'Australia', dial: '+61', flag: '🇦🇺' },
+  { code: 'SG', name: 'Singapore', dial: '+65', flag: '🇸🇬' },
+  { code: 'DE', name: 'Germany', dial: '+49', flag: '🇩🇪' },
+  { code: 'FR', name: 'France', dial: '+33', flag: '🇫🇷' },
+  { code: 'SA', name: 'Saudi Arabia', dial: '+966', flag: '🇸🇦' },
+  { code: 'QA', name: 'Qatar', dial: '+974', flag: '🇶🇦' },
+  { code: 'NL', name: 'Netherlands', dial: '+31', flag: '🇳🇱' },
+  { code: 'CH', name: 'Switzerland', dial: '+41', flag: '🇨🇭' },
+  { code: 'IT', name: 'Italy', dial: '+39', flag: '🇮🇹' },
+  { code: 'ES', name: 'Spain', dial: '+34', flag: '🇪🇸' },
+  { code: 'JP', name: 'Japan', dial: '+81', flag: '🇯🇵' },
+  { code: 'KR', name: 'South Korea', dial: '+82', flag: '🇰🇷' },
+  { code: 'BR', name: 'Brazil', dial: '+55', flag: '🇧🇷' },
+  { code: 'MX', name: 'Mexico', dial: '+52', flag: '🇲🇽' },
+  { code: 'ZA', name: 'South Africa', dial: '+27', flag: '🇿🇦' },
+  { code: 'NZ', name: 'New Zealand', dial: '+64', flag: '🇳🇿' },
+  { code: 'ID', name: 'Indonesia', dial: '+62', flag: '🇮🇩' },
+  { code: 'MY', name: 'Malaysia', dial: '+60', flag: '🇲🇾' },
+  { code: 'TH', name: 'Thailand', dial: '+66', flag: '🇹🇭' },
+  { code: 'PH', name: 'Philippines', dial: '+63', flag: '🇵🇭' },
+  { code: 'VN', name: 'Vietnam', dial: '+84', flag: '🇻🇳' },
+  { code: 'IE', name: 'Ireland', dial: '+353', flag: '🇮🇪' },
+  { code: 'SE', name: 'Sweden', dial: '+46', flag: '🇸🇪' },
+  { code: 'NO', name: 'Norway', dial: '+47', flag: '🇳🇴' },
+  { code: 'DK', name: 'Denmark', dial: '+45', flag: '🇩🇰' },
+  { code: 'FI', name: 'Finland', dial: '+358', flag: '🇫🇮' },
+  { code: 'PT', name: 'Portugal', dial: '+351', flag: '🇵🇹' },
+  { code: 'PL', name: 'Poland', dial: '+48', flag: '🇵🇱' },
+  { code: 'TR', name: 'Turkey', dial: '+90', flag: '🇹🇷' },
+  { code: 'EG', name: 'Egypt', dial: '+20', flag: '🇪🇬' },
+  { code: 'NG', name: 'Nigeria', dial: '+234', flag: '🇳🇬' },
+  { code: 'KE', name: 'Kenya', dial: '+254', flag: '🇰🇪' },
+  { code: 'AR', name: 'Argentina', dial: '+54', flag: '🇦🇷' },
+  { code: 'CL', name: 'Chile', dial: '+56', flag: '🇨🇱' },
+  { code: 'CO', name: 'Colombia', dial: '+57', flag: '🇨🇴' },
+  { code: 'PK', name: 'Pakistan', dial: '+92', flag: '🇵🇰' },
+  { code: 'BD', name: 'Bangladesh', dial: '+880', flag: '🇧🇩' },
+  { code: 'LK', name: 'Sri Lanka', dial: '+94', flag: '🇱🇰' },
+  { code: 'NP', name: 'Nepal', dial: '+977', flag: '🇳🇵' },
+  { code: 'AT', name: 'Austria', dial: '+43', flag: '🇦🇹' },
+  { code: 'BE', name: 'Belgium', dial: '+32', flag: '🇧🇪' },
+  { code: 'GR', name: 'Greece', dial: '+30', flag: '🇬🇷' },
+  { code: 'IL', name: 'Israel', dial: '+972', flag: '🇮🇱' },
+  { code: 'KW', name: 'Kuwait', dial: '+965', flag: '🇰🇼' },
+  { code: 'OM', name: 'Oman', dial: '+968', flag: '🇴🇲' },
+  { code: 'BH', name: 'Bahrain', dial: '+973', flag: '🇧🇭' }
+];
+
 export function initEnquirySystem() {
   injectEnquiryModal();
   injectAdminLeadsModal();
@@ -134,9 +188,32 @@ function injectEnquiryModal() {
               <input type="text" id="enquiry-name" name="name" class="enquiry-input" placeholder="e.g. Alex Gonzalez" required />
             </div>
 
-            <div class="enquiry-field">
-              <label class="enquiry-label" for="enquiry-contact">Email or WhatsApp <span class="req">*</span></label>
-              <input type="text" id="enquiry-contact" name="contact" class="enquiry-input" placeholder="you@domain.com or +1 (555) 000-0000" required />
+            <div class="enquiry-field enquiry-contact-field">
+              <label class="enquiry-label" for="enquiry-contact">Phone / WhatsApp or Email <span class="req">*</span></label>
+              <div class="enquiry-phone-wrap" id="enquiry-phone-wrap">
+                <button type="button" class="enquiry-flag-btn" id="enquiry-flag-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="Select Country Code">
+                  <span class="enquiry-flag-symbol" id="enquiry-selected-flag">🇮🇳</span>
+                  <span class="enquiry-flag-arrow" aria-hidden="true">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </span>
+                </button>
+                <input type="text" id="enquiry-contact" name="contact" class="enquiry-input enquiry-phone-input" placeholder="081234 56789 or you@domain.com" required autocomplete="tel" />
+                <input type="hidden" id="enquiry-country-code" name="countryCode" value="+91" />
+                <input type="hidden" id="enquiry-country-name" name="countryName" value="India" />
+
+                <!-- Flag Country Selector Dropdown -->
+                <div class="enquiry-flag-dropdown" id="enquiry-flag-dropdown" role="listbox" aria-label="Select Country" style="display: none;">
+                  <div class="enquiry-flag-search-box">
+                    <svg class="enquiry-search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" class="enquiry-flag-search-input" id="enquiry-flag-search" placeholder="Search country or code..." autocomplete="off" />
+                  </div>
+                  <ul class="enquiry-flag-list" id="enquiry-flag-list" tabindex="-1">
+                    <!-- Populated dynamically via JS -->
+                  </ul>
+                </div>
+              </div>
             </div>
 
             <div class="enquiry-field" id="enquiry-position-field" hidden>
@@ -395,6 +472,7 @@ function bindModalEvents() {
   // Lenis is stopped while the modal is open, so route wheel input directly
   // to the modal. This keeps the form scrollable across browsers and trackpads.
   modalWindow.addEventListener('wheel', (event) => {
+    if (event.target.closest('.enquiry-flag-dropdown')) return;
     if (formStage.scrollHeight <= formStage.clientHeight) return;
     event.preventDefault();
     event.stopPropagation();
@@ -414,6 +492,9 @@ function bindModalEvents() {
     }
   });
 
+  // Initialize Country Flag Selector for Phone/Contact Field
+  const resetCountrySelector = initCountrySelector(form);
+
   // Handle Form Submission
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -421,8 +502,19 @@ function bindModalEvents() {
     setSubmitLabel('Sending...');
 
     const formData = new FormData(form);
+    const rawData = Object.fromEntries(formData.entries());
+    let contactVal = String(rawData.contact || '').trim();
+    const countryCode = String(rawData.countryCode || '+91').trim();
+    const isEmail = contactVal.includes('@');
+
+    // Prepend dial code if user entered a phone number without +
+    if (!isEmail && contactVal && !contactVal.startsWith('+')) {
+      contactVal = `${countryCode} ${contactVal}`;
+    }
+
     const data = {
-      ...Object.fromEntries(formData.entries()),
+      ...rawData,
+      contact: contactVal,
       type: enquiryType === 'editor' ? 'Join Us Application' : 'Brand Enquiry'
     };
 
@@ -448,10 +540,203 @@ function bindModalEvents() {
   // Reset form to submit another
   resetBtn.addEventListener('click', () => {
     form.reset();
+    if (resetCountrySelector) resetCountrySelector();
     setEnquiryType(enquiryType);
     successStage.classList.remove('is-visible');
     formStage.style.display = 'block';
   });
+}
+
+/**
+ * Initializes the Country Flag Selector inside the Contact/Phone field
+ */
+function initCountrySelector(form) {
+  const phoneWrap = form.querySelector('#enquiry-phone-wrap');
+  const flagBtn = form.querySelector('#enquiry-flag-btn');
+  const flagDropdown = form.querySelector('#enquiry-flag-dropdown');
+  const flagSearch = form.querySelector('#enquiry-flag-search');
+  const flagList = form.querySelector('#enquiry-flag-list');
+  const selectedFlag = form.querySelector('#enquiry-selected-flag');
+  const countryCodeInput = form.querySelector('#enquiry-country-code');
+  const countryNameInput = form.querySelector('#enquiry-country-name');
+  const contactInput = form.querySelector('#enquiry-contact');
+
+  if (!phoneWrap || !flagBtn || !flagDropdown || !flagList) return () => {};
+
+  let currentCountry = 'IN';
+
+  const selectCountryItem = (item) => {
+    if (!item) return;
+    const code = item.dataset.countryCode;
+    const dial = item.dataset.dial;
+    const name = item.dataset.name;
+    const flag = item.dataset.flag;
+
+    currentCountry = code;
+    selectedFlag.textContent = flag;
+    countryCodeInput.value = dial;
+    countryNameInput.value = name;
+
+    closeDropdown();
+    contactInput.focus();
+  };
+
+  const renderCountries = (filter = '') => {
+    const term = filter.trim().toLowerCase();
+    const filtered = COUNTRIES.filter((c) => {
+      if (!term) return true;
+      return (
+        c.name.toLowerCase().includes(term) ||
+        c.dial.toLowerCase().includes(term) ||
+        c.code.toLowerCase().includes(term)
+      );
+    });
+
+    if (!filtered.length) {
+      flagList.innerHTML = `<li class="enquiry-flag-empty">No countries match "${filter}"</li>`;
+      return;
+    }
+
+    flagList.innerHTML = filtered.map((c) => `
+      <li class="enquiry-flag-item ${c.code === currentCountry ? 'is-active' : ''}" data-country-code="${c.code}" data-dial="${c.dial}" data-name="${c.name}" data-flag="${c.flag}" role="option" tabindex="0" aria-selected="${c.code === currentCountry}">
+        <span class="flag-symbol">${c.flag}</span>
+        <span class="country-name">${c.name}</span>
+        <span class="dial-code">${c.dial}</span>
+      </li>
+    `).join('');
+  };
+
+  renderCountries();
+
+  const openDropdown = () => {
+    flagDropdown.style.display = 'flex';
+    flagBtn.setAttribute('aria-expanded', 'true');
+    phoneWrap.classList.add('is-dropdown-open');
+    phoneWrap.closest('.enquiry-contact-field')?.classList.add('has-dropdown-open');
+    flagSearch.value = '';
+    renderCountries();
+    window.setTimeout(() => flagSearch.focus(), 60);
+  };
+
+  const closeDropdown = () => {
+    flagDropdown.style.display = 'none';
+    flagBtn.setAttribute('aria-expanded', 'false');
+    phoneWrap.classList.remove('is-dropdown-open');
+    phoneWrap.closest('.enquiry-contact-field')?.classList.remove('has-dropdown-open');
+  };
+
+  flagBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const isOpen = flagDropdown.style.display !== 'none';
+    if (isOpen) {
+      closeDropdown();
+    } else {
+      openDropdown();
+    }
+  });
+
+  flagSearch.addEventListener('input', (e) => {
+    renderCountries(e.target.value);
+  });
+
+  flagSearch.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeDropdown();
+      contactInput.focus();
+    } else if (e.key === 'Enter') {
+      e.preventDefault(); // Never submit the enquiry modal form on search enter!
+      e.stopPropagation();
+      const firstItem = flagList.querySelector('.enquiry-flag-item');
+      if (firstItem) {
+        selectCountryItem(firstItem);
+      }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const firstItem = flagList.querySelector('.enquiry-flag-item');
+      if (firstItem) {
+        firstItem.focus();
+        firstItem.scrollIntoView({ block: 'nearest' });
+      }
+    }
+  });
+
+  flagList.addEventListener('mousedown', (e) => {
+    // Prevent search input from blurring prematurely on mouse click
+    if (e.target.closest('.enquiry-flag-item')) {
+      e.preventDefault();
+    }
+  });
+
+  flagList.addEventListener('click', (e) => {
+    const item = e.target.closest('.enquiry-flag-item');
+    if (!item) return;
+    e.preventDefault();
+    e.stopPropagation();
+    selectCountryItem(item);
+  });
+
+  flagList.addEventListener('keydown', (e) => {
+    const current = document.activeElement;
+    if (!current || !current.classList.contains('enquiry-flag-item')) return;
+
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      e.stopPropagation();
+      selectCountryItem(current);
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const next = current.nextElementSibling;
+      if (next && next.classList.contains('enquiry-flag-item')) {
+        next.focus();
+        next.scrollIntoView({ block: 'nearest' });
+      }
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const prev = current.previousElementSibling;
+      if (prev && prev.classList.contains('enquiry-flag-item')) {
+        prev.focus();
+        prev.scrollIntoView({ block: 'nearest' });
+      } else {
+        flagSearch.focus();
+      }
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      closeDropdown();
+      contactInput.focus();
+    }
+  });
+
+  // Highlight wrap on contact input focus
+  contactInput.addEventListener('focus', () => {
+    phoneWrap.classList.add('is-focused');
+  });
+  contactInput.addEventListener('blur', () => {
+    phoneWrap.classList.remove('is-focused');
+  });
+
+  // Close when clicking outside phone wrap
+  document.addEventListener('click', (e) => {
+    if (!phoneWrap.contains(e.target)) {
+      closeDropdown();
+    }
+  });
+
+  // Close on Escape
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && flagDropdown.style.display !== 'none') {
+      closeDropdown();
+    }
+  });
+
+  return function reset() {
+    currentCountry = 'IN';
+    selectedFlag.textContent = '🇮🇳';
+    countryCodeInput.value = '+91';
+    countryNameInput.value = 'India';
+    closeDropdown();
+  };
 }
 
 /**

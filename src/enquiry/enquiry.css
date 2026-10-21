@@ -395,6 +395,213 @@ body.enquiry-modal-open .admin-leads-close {
   min-height: 95px;
 }
 
+/* ================================================================
+   PHONE WRAP & COUNTRY FLAG SELECTOR (MATCHING REFERENCE DESIGN)
+   ================================================================ */
+.enquiry-contact-field {
+  position: relative;
+  z-index: 20;
+}
+
+.enquiry-contact-field.has-dropdown-open,
+.enquiry-phone-wrap.is-dropdown-open {
+  z-index: 100 !important;
+}
+
+.enquiry-phone-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: var(--bg-card, rgba(6, 10, 15, 0.7));
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.12));
+  border-radius: 12px;
+  transition: all 0.25s ease;
+}
+
+.enquiry-phone-wrap.is-focused,
+.enquiry-phone-wrap.is-dropdown-open,
+.enquiry-phone-wrap:focus-within {
+  border-color: var(--accent-cyan, #00e5ff);
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.25);
+  background: var(--bg-elevated, rgba(10, 16, 24, 0.85));
+}
+
+.enquiry-flag-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.82rem 0.75rem 0.82rem 0.95rem;
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.12));
+  color: var(--text-primary, #ffffff);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  user-select: none;
+  border-top-left-radius: 11px;
+  border-bottom-left-radius: 11px;
+}
+
+.enquiry-flag-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.enquiry-flag-symbol {
+  font-size: 1.25rem;
+  line-height: 1;
+  display: inline-block;
+  transform: translateY(0.5px);
+}
+
+.enquiry-flag-arrow {
+  display: flex;
+  align-items: center;
+  color: var(--text-muted, #7e8b9b);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+}
+
+.enquiry-phone-wrap.is-dropdown-open .enquiry-flag-arrow {
+  transform: rotate(180deg);
+  color: var(--accent-cyan, #00e5ff);
+}
+
+.enquiry-phone-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding-left: 0.85rem !important;
+  padding-right: 1rem !important;
+  outline: none !important;
+}
+
+/* Dropdown Menu */
+.enquiry-flag-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 320px;
+  max-width: calc(100vw - 2.5rem);
+  max-height: 310px;
+  display: flex;
+  flex-direction: column;
+  background: #090e15 !important;
+  border: 1px solid rgba(0, 229, 255, 0.35);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.95), 0 0 35px rgba(0, 229, 255, 0.18);
+  z-index: 999;
+  overflow: hidden;
+  animation: enquiryFlagDrop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes enquiryFlagDrop {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.enquiry-flag-search-box {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: #0f1622 !important;
+}
+
+.enquiry-search-icon {
+  color: var(--accent-cyan, #00e5ff);
+  flex-shrink: 0;
+}
+
+.enquiry-flag-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary, #ffffff);
+  font-family: var(--font-body, 'Inter', sans-serif);
+  font-size: 0.86rem;
+}
+
+.enquiry-flag-search-input::placeholder {
+  color: var(--text-muted, #64748b);
+}
+
+.enquiry-flag-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.4rem 0;
+  overflow-y: auto;
+  flex: 1;
+  max-height: 245px;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.enquiry-flag-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.enquiry-flag-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+}
+
+.enquiry-flag-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.95rem;
+  font-size: 0.86rem;
+  color: var(--text-secondary, #cbd5e1);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.enquiry-flag-item:hover,
+.enquiry-flag-item.is-active {
+  background: rgba(0, 229, 255, 0.12);
+  color: var(--text-primary, #ffffff);
+}
+
+.enquiry-flag-item .flag-symbol {
+  font-size: 1.15rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.enquiry-flag-item .country-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.enquiry-flag-item .dial-code {
+  color: var(--accent-cyan, #00e5ff);
+  font-weight: 600;
+  font-size: 0.82rem;
+  flex-shrink: 0;
+  margin-left: 0.4rem;
+}
+
+.enquiry-flag-empty {
+  padding: 1.5rem 1rem;
+  text-align: center;
+  font-size: 0.84rem;
+  color: var(--text-muted, #64748b);
+}
+
 /* Chips / Radio Pills */
 .enquiry-chips-wrap {
   display: flex;
@@ -1155,4 +1362,87 @@ body.enquiry-modal-open .admin-leads-close {
     linear-gradient(180deg, #ffffff 0%, rgba(245, 250, 253, 0.85) 100%) padding-box,
     linear-gradient(180deg, #ffffff 0%, rgba(0, 229, 255, 0.5) 100%) border-box !important;
   color: #0284c7;
+}
+
+/* Light Theme Overrides for Flag Selector */
+[data-theme="light"] .enquiry-phone-wrap {
+  background: 
+    linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(248, 251, 253, 0.7) 100%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(0, 229, 255, 0.2) 100%) border-box !important;
+  border: 1px solid transparent !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.03), 0 1px 2px rgba(15, 23, 42, 0.02);
+}
+
+[data-theme="light"] .enquiry-phone-wrap.is-focused,
+[data-theme="light"] .enquiry-phone-wrap.is-dropdown-open,
+[data-theme="light"] .enquiry-phone-wrap:focus-within {
+  background: 
+    linear-gradient(180deg, #ffffff 0%, rgba(248, 252, 254, 0.92) 100%) padding-box,
+    linear-gradient(180deg, #ffffff 0%, rgba(0, 229, 255, 0.65) 100%) border-box !important;
+  box-shadow: 
+    0 0 0 3px rgba(0, 229, 255, 0.16),
+    0 4px 14px rgba(0, 229, 255, 0.1),
+    inset 0 1px 1.5px #fff !important;
+}
+
+[data-theme="light"] .enquiry-flag-btn {
+  border-right-color: rgba(15, 23, 42, 0.08);
+  color: #0f172a;
+}
+
+[data-theme="light"] .enquiry-flag-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .enquiry-flag-arrow {
+  color: #64748b;
+}
+
+[data-theme="light"] .enquiry-phone-input {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .enquiry-phone-input::placeholder {
+  color: #94a3b8 !important;
+}
+
+[data-theme="light"] .enquiry-flag-dropdown {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 229, 255, 0.45) !important;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.18), 0 0 25px rgba(0, 229, 255, 0.15) !important;
+}
+
+[data-theme="light"] .enquiry-flag-search-box {
+  border-bottom: 1px solid #e2e8f0 !important;
+  background: #f8fafc !important;
+}
+
+[data-theme="light"] .enquiry-flag-search-input {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .enquiry-flag-search-input::placeholder {
+  color: #94a3b8 !important;
+}
+
+[data-theme="light"] .enquiry-flag-list {
+  background: #ffffff !important;
+}
+
+[data-theme="light"] .enquiry-flag-item {
+  color: #1e293b !important;
+}
+
+[data-theme="light"] .enquiry-flag-item:hover,
+[data-theme="light"] .enquiry-flag-item:focus,
+[data-theme="light"] .enquiry-flag-item.is-active {
+  background: rgba(0, 229, 255, 0.14) !important;
+  color: #0f172a !important;
+  outline: none;
+}
+
+[data-theme="light"] .enquiry-flag-item .dial-code {
+  color: #008ba3 !important;
 }

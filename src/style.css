@@ -15472,6 +15472,16 @@ main+footer {
   pointer-events: auto;
 }
 
+.ig-reel-card.case-reel-clone .ig-reel-poster {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+}
+
+.ig-reel-card.case-reel-clone .ig-reel-video {
+  display: none !important;
+}
+
 /* The case-study rail is an ambient showcase: reel content, not player controls. */
 .case-reels-section .ig-reel-icon-badge,
 .case-reels-section .ig-sound-toggle-btn,

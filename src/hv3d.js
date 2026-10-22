@@ -30,8 +30,9 @@ export function initHV3D(canvasId, containerId) {
   let disposed = false;
   RectAreaLightUniformsLib.init();
 
-  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+  const isMobileScreen = typeof window !== 'undefined' && window.innerWidth <= 768;
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: !isMobileScreen, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(isMobileScreen ? Math.min(window.devicePixelRatio, 1.15) : Math.min(window.devicePixelRatio, 1.75));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
@@ -644,8 +645,10 @@ export function initHV3D(canvasId, containerId) {
     cyanLight.position.set(-2.4 + Math.min(sweepPhase / 1.5, 1) * 4.8, 0.4, 0.9);
     if (!document.hidden && isInViewport) {
       renderer.render(scene, camera);
+      animationFrame = requestAnimationFrame(animate);
+    } else {
+      animationFrame = 0;
     }
-    animationFrame = requestAnimationFrame(animate);
   };
   resume();
   const dispose = () => {

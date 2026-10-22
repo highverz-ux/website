@@ -77,16 +77,17 @@ export function preloadHomeMedia(onProgress = () => {}) {
     }, source);
   }
 
-  // On mobile, prioritize buffering the 3 initially visible reels (center + 2 adjacent)
+  // On mobile, prioritize buffering ONLY the single initially visible center reel
   // so the intro finishes promptly without saturating mobile cellular pipelines.
+  // The other reels remain lightweight with their posters until scrolled to.
   // On desktop, warm all reels.
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
-  const targetVideos = isMobile && videos.length > 3
-    ? [videos[0], videos[1], videos[videos.length - 1]].filter(Boolean)
+  const targetVideos = isMobile && videos.length > 0
+    ? [videos[0]].filter(Boolean)
     : videos;
 
   if (isMobile) {
-    videos.forEach((video) => {
+    targetVideos.forEach((video) => {
       if (!video) return;
       video.muted = true;
       video.playsInline = true;

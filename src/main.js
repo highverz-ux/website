@@ -328,6 +328,11 @@ function boot() {
   window.addEventListener('load', () => {
     ScrollTrigger.refresh();
 
+    // Register high-performance Service Worker for video and asset caching
+    if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+      navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => {});
+    }
+
     // If page is loaded with an anchor hash (e.g. /work.html#work), scroll smoothly to target
     if (window.location.hash) {
       const hashTarget = document.querySelector(window.location.hash);
@@ -3306,8 +3311,8 @@ export function initHeroReelCarousel() {
     const isMobileDevice = cachedViewportWidth <= 768;
 
     if (isMobileDevice) {
-      // Mobile performance optimization: ONLY decode/play the active center video (and 1 adjacent)
-      // Pausing off-screen reels frees 80-90% of mobile GPU hardware video pipelines!
+      // Mobile performance optimization: ONLY decode/play the active center video!
+      // This frees 80-90% of mobile GPU hardware video pipelines and eliminates lag!
       let centerIdx = Math.round(scrollPosition / stageStep) % count;
       if (centerIdx < 0) centerIdx += count;
 
@@ -3318,12 +3323,13 @@ export function initHeroReelCarousel() {
         if (!video) return;
         let dist = Math.abs(idx - centerIdx);
         if (dist > count / 2) dist = count - dist;
-        // Keep the centered reel and its two visible neighbors playing. The
-        // remaining reels stay paused so mobile never creates ten playback
-        // pipelines at once.
-        if (dist <= 1) {
+        if (dist === 0) {
           loadVideo(video, 'high');
           playVideo(video);
+        } else if (dist === 1) {
+          // Warm immediate neighbor's metadata without starting playback decode
+          loadVideo(video, 'low');
+          try { video.pause(); } catch (_) { }
         } else {
           try { video.pause(); } catch (_) { }
         }
@@ -3339,8 +3345,8 @@ export function initHeroReelCarousel() {
     }
   };
 
-  // Desktop can afford metadata warm-up. On phones, only the three visible
-  // reels receive sources; poster images keep the other cards lightweight.
+  // Desktop can afford metadata warm-up. On phones, only the visible
+  // reel receives sources; poster images keep the other cards lightweight.
   const isMobileViewport = cachedViewportWidth <= 768;
   if (!isMobileViewport) {
     videos.forEach((video) => loadVideo(video, 'low'));
@@ -3376,13 +3382,9 @@ export function initHeroReelCarousel() {
           cancelAnimationFrame(animId);
           animId = null;
         }
-        // Keep the three mobile hero reels buffered/playing while the page
-        // scrolls past them. Restarting video decode on every re-entry can
-        // expose a black frame on phones. Desktop still pauses off-screen
-        // playback to avoid wasting resources.
-        if (cachedViewportWidth > 768) {
-          videos.forEach((video) => { try { video?.pause(); } catch (_) { } });
-        }
+        // Immediately pause all hero reels when scrolled out of view on BOTH mobile and desktop!
+        // This stops all background hardware video decode and network traffic.
+        videos.forEach((video) => { try { video?.pause(); } catch (_) { } });
         return;
       }
       if (!wasVisible && isCarouselVisible) {
@@ -5242,10 +5244,22 @@ function initInstagramReelsPlayer() {
     clone.setAttribute('aria-hidden', 'true');
     clone.setAttribute('tabindex', '-1');
     clone.querySelectorAll('button').forEach((button) => button.setAttribute('tabindex', '-1'));
+    // IMPORTANT PERFORMANCE OPTIMIZATION:
+    // Strip active video elements from cloned cards!
+    // Clones only need their static poster image for the seamless visual wrap.
+    // Having active <video> elements on cloned cards doubles network range requests
+    // and exhausts mobile hardware video decoders.
+    const cloneVideo = clone.querySelector('.ig-reel-video');
+    if (cloneVideo) cloneVideo.remove();
+    const clonePoster = clone.querySelector('.ig-reel-poster');
+    if (clonePoster) {
+      clonePoster.style.opacity = '1';
+      clonePoster.style.visibility = 'visible';
+    }
     rail.appendChild(clone);
   });
 
-  const reelCards = Array.from(rail.querySelectorAll('.ig-reel-card'));
+  const reelCards = Array.from(rail.querySelectorAll('.ig-reel-card:not(.case-reel-clone)'));
   const videos = reelCards.map((card) => card.querySelector('.ig-reel-video')).filter(Boolean);
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let offset = 0;
@@ -5259,6 +5273,7 @@ function initInstagramReelsPlayer() {
   let dragStartX = 0;
   let dragStartOffset = 0;
   let suppressClick = false;
+  let lastPlaybackCheck = 0;
 
   const render = () => {
     rail.style.transform = `translate3d(${-offset}px, 0, 0)`;
@@ -5278,26 +5293,71 @@ function initInstagramReelsPlayer() {
     render();
   };
 
+  const isMobileScreen = () => (typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
+
   const setPlayback = (shouldPlay) => {
-    videos.forEach((video) => {
-      video.defaultMuted = true;
-      video.muted = true;
-      video.loop = true;
-      video.playsInline = true;
-      video.autoplay = true;
-      video.setAttribute('muted', '');
-      video.setAttribute('autoplay', '');
-      video.setAttribute('playsinline', '');
-      video.preload = 'auto';
-      if (!shouldPlay) {
+    if (!shouldPlay || !isVisible || document.hidden) {
+      videos.forEach((video) => {
         try { video.pause(); } catch (_) { }
-        return;
-      }
-      if (video.paused) {
-        const attempt = video.play();
-        if (attempt?.catch) attempt.catch(() => { });
-      }
-    });
+      });
+      return;
+    }
+
+    if (isMobileScreen()) {
+      // Mobile performance: ONLY decode/play the single card closest to screen center!
+      // All other cards remain paused with their posters visible to conserve mobile GPU.
+      const viewportCenter = window.innerWidth / 2;
+      let closestCard = null;
+      let minDistance = Infinity;
+
+      reelCards.forEach((card) => {
+        const rect = card.getBoundingClientRect();
+        if (rect.right > 0 && rect.left < window.innerWidth) {
+          const cardCenter = rect.left + rect.width / 2;
+          const distance = Math.abs(cardCenter - viewportCenter);
+          if (distance < minDistance) {
+            minDistance = distance;
+            closestCard = card;
+          }
+        }
+      });
+
+      reelCards.forEach((card) => {
+        const video = card.querySelector('.ig-reel-video');
+        if (!video) return;
+        video.defaultMuted = true;
+        video.muted = true;
+        video.loop = true;
+        video.playsInline = true;
+        video.setAttribute('playsinline', '');
+        video.setAttribute('muted', '');
+        if (card === closestCard) {
+          video.preload = 'metadata';
+          if (video.paused) {
+            const attempt = video.play();
+            if (attempt?.catch) attempt.catch(() => { });
+          }
+        } else {
+          try { video.pause(); } catch (_) { }
+        }
+      });
+    } else {
+      // Desktop: play all visible cards smoothly
+      videos.forEach((video) => {
+        video.defaultMuted = true;
+        video.muted = true;
+        video.loop = true;
+        video.playsInline = true;
+        video.setAttribute('muted', '');
+        video.setAttribute('autoplay', '');
+        video.setAttribute('playsinline', '');
+        video.preload = 'metadata';
+        if (video.paused) {
+          const attempt = video.play();
+          if (attempt?.catch) attempt.catch(() => { });
+        }
+      });
+    }
   };
 
   const tick = (time) => {
@@ -5307,6 +5367,11 @@ function initInstagramReelsPlayer() {
     if (!reduceMotion && isVisible && !document.hidden && !isHovering && !isDragging && loopWidth) {
       offset = (offset + delta * 0.022) % loopWidth;
       render();
+    }
+    // Update active mobile centered reel every 350ms during marquee motion
+    if (isVisible && !document.hidden && time - lastPlaybackCheck > 350) {
+      lastPlaybackCheck = time;
+      setPlayback(true);
     }
     frameId = requestAnimationFrame(tick);
   };
